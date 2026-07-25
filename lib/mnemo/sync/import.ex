@@ -27,8 +27,8 @@ defmodule Mnemo.Sync.Import do
   live is touched, and the swap is two renames.
   """
 
-  alias Mnemo.RenPy
-  alias Mnemo.Sync.{Engine, Overwrite, Restore}
+  alias Mnemo.{Paths, RenPy}
+  alias Mnemo.Sync.{CaseCheck, Engine, Mirror, Overwrite, Restore}
 
   # A screenshot per entry is what makes the preview worth looking at,
   # but a folder of autosaves can hold hundreds. Past this many the
@@ -179,20 +179,32 @@ defmodule Mnemo.Sync.Import do
          {:ok, found} <- inspect_archive(archive_path, game),
          plan = plan(game, found, mode),
          :ok <- check_something_to_do(plan, found),
+         :ok <- check_case(path, plan),
+         :ok <- Paths.check_length(target_paths(path, plan)),
          {:ok, game, safety} <- Overwrite.safety_generation(game, opts, notify) do
       staging = Overwrite.staging_dir(path, "import")
+      mirrors = Mirror.plan(game, path)
 
       try do
         notify.(:importing)
 
         with :ok <- stage(archive_path, path, staging, plan),
              {:ok, backup} <- swap(path, staging, notify) do
-          finish(game, plan, safety, backup, opts, notify)
+          finish(game, plan, safety, backup, opts, notify, Mirror.apply(mirrors, game, path))
         end
       after
         File.rm_rf(staging)
       end
     end
+  end
+
+  # The staging directory is the longest path an import builds, so it is
+  # measured rather than the live folder.
+  defp target_paths(nil, _plan), do: []
+
+  defp target_paths(path, plan) do
+    dir = Overwrite.staging_dir(path, "import")
+    [dir | Enum.map(plan.write, &Path.join(dir, &1.name))]
   end
 
   defp check_something_to_do(%{write: []}, %{entries: []}),
@@ -202,6 +214,22 @@ defmodule Mnemo.Sync.Import do
     do: {:error, :nothing_to_import, %{already_present: length(found.entries)}}
 
   defp check_something_to_do(_plan, _found), do: :ok
+
+  # What the folder ends up holding: everything the archive writes, plus
+  # what was already there and is not being removed. Two of those folding
+  # into one name on Windows would mean an archive entry quietly landing
+  # on top of a save nobody agreed to replace.
+  defp check_case(nil, _plan), do: :ok
+
+  defp check_case(path, plan) do
+    surviving =
+      case File.ls(path) do
+        {:ok, entries} -> entries -- plan.remove
+        {:error, _} -> []
+      end
+
+    CaseCheck.check(path, surviving ++ Enum.map(plan.write, & &1.name))
+  end
 
   ## Staging
 
@@ -278,8 +306,9 @@ defmodule Mnemo.Sync.Import do
 
   ## Commit
 
-  defp finish(game, plan, safety, backup, opts, notify) do
+  defp finish(game, plan, safety, backup, opts, notify, mirrors) do
     summary = %{
+      mirrors: mirrors,
       imported: length(plan.write),
       skipped: length(plan.skip),
       removed: length(plan.remove),

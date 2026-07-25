@@ -1,0 +1,47 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <title>mnemo</title>
+    <style>
+      :root { color-scheme: light dark; }
+      body {
+        margin: 0;
+        height: 100vh;
+        display: grid;
+        place-items: center;
+        font: 15px/1.5 system-ui, sans-serif;
+        background: Canvas;
+        color: CanvasText;
+      }
+      .box { text-align: center; opacity: 0.75; }
+      .spinner {
+        width: 28px; height: 28px; margin: 0 auto 1rem;
+        border: 3px solid currentColor; border-top-color: transparent;
+        border-radius: 50%; animation: spin 0.9s linear infinite;
+      }
+      @keyframes spin { to { transform: rotate(360deg); } }
+      @media (prefers-reduced-motion: reduce) { .spinner { animation: none; } }
+      #failed { display: none; max-width: 34rem; padding: 0 2rem; }
+    </style>
+  </head>
+  <body>
+    <!-- Shown while the release boots. The shell replaces this page with
+         the real interface as soon as the endpoint reports its port. -->
+    <div class="box" id="starting">
+      <div class="spinner"></div>
+      <p>Starting mnemo…</p>
+    </div>
+    <div class="box" id="failed">
+      <p><strong>mnemo could not start.</strong></p>
+      <p>The background service did not report an address. Close the window and try again.</p>
+    </div>
+    <script type="module">
+      const { listen } = window.__TAURI__?.event ?? {};
+      listen?.("mnemo://unavailable", () => {
+        document.getElementById("starting").style.display = "none";
+        document.getElementById("failed").style.display = "block";
+      });
+    </script>
+  </body>
+</html>

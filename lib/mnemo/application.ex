@@ -19,7 +19,8 @@ defmodule Mnemo.Application do
         fake_drive() ++
         [Mnemo.Drive] ++
         game_autostart() ++
-        [MnemoWeb.Endpoint]
+        [MnemoWeb.Endpoint] ++
+        endpoint_address()
 
     opts = [strategy: :one_for_one, name: Mnemo.Supervisor]
     Supervisor.start_link(children, opts)
@@ -35,6 +36,17 @@ defmodule Mnemo.Application do
 
   defp fake_drive do
     if Mnemo.Drive.Backend.impl() == Mnemo.Drive.Fake, do: [Mnemo.Drive.Fake], else: []
+  end
+
+  # After the endpoint, because it reports the port the endpoint actually
+  # bound to. Only where something is listening: with `server: false` in
+  # test there is no address to publish.
+  defp endpoint_address do
+    if Application.get_env(:mnemo, :publish_endpoint_address, false) do
+      [Mnemo.Endpoint.Address]
+    else
+      []
+    end
   end
 
   defp game_autostart do

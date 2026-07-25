@@ -106,6 +106,8 @@ defmodule MnemoWeb.SettingsLiveTest do
 
     {:ok, view, _html} = live(conn, ~p"/settings")
 
+    view |> element("#change-credentials") |> render_click()
+
     view
     |> form("#credentials-form", credentials: %{client_id: "id-2", client_secret: ""})
     |> render_submit()
@@ -114,15 +116,55 @@ defmodule MnemoWeb.SettingsLiveTest do
     assert Settings.google_client_secret() == "keep-me"
   end
 
-  test "prefills the client id and hints that a secret exists", %{conn: conn} do
+  test "saved credentials stay compact until the user chooses to change them", %{conn: conn} do
     Settings.put_google_client_id("saved-id")
     Settings.put_google_client_secret("saved-secret")
 
-    {:ok, _view, html} = live(conn, ~p"/settings")
+    {:ok, view, _html} = live(conn, ~p"/settings")
 
+    assert has_element?(view, "#credentials-saved-summary")
+    assert has_element?(view, "#change-credentials")
+    refute has_element?(view, "#credentials-editor")
+    refute has_element?(view, "#credentials-form")
+
+    view |> element("#change-credentials") |> render_click()
+
+    assert has_element?(view, "#credentials-editor")
+    assert has_element?(view, "#credentials-form")
+    html = render(view)
     assert html =~ "saved-id"
     assert html =~ "Leave the field blank to keep it."
     refute html =~ "saved-secret"
+  end
+
+  test "saved cover key shows a badge and stays compact until changed", %{conn: conn} do
+    Settings.put("steamgriddb_api_key", "saved-cover-key")
+
+    {:ok, view, html} = live(conn, ~p"/settings")
+
+    assert has_element?(view, "#cover-art .badge-success")
+    assert has_element?(view, "#cover-key-saved-summary")
+    assert has_element?(view, "#change-cover-key")
+    refute has_element?(view, "#cover-form")
+    refute html =~ "saved-cover-key"
+
+    view |> element("#change-cover-key") |> render_click()
+
+    assert has_element?(view, "#cover-form")
+  end
+
+  test "saving a cover key collapses its editor", %{conn: conn} do
+    {:ok, view, _html} = live(conn, ~p"/settings")
+
+    assert has_element?(view, "#cover-form")
+
+    view
+    |> form("#cover-form", cover: %{steamgriddb_api_key: "new-cover-key"})
+    |> render_submit()
+
+    assert Settings.get("steamgriddb_api_key") == "new-cover-key"
+    assert has_element?(view, "#cover-key-saved-summary")
+    refute has_element?(view, "#cover-form")
   end
 
   describe "importing the JSON file from Google" do
@@ -156,7 +198,8 @@ defmodule MnemoWeb.SettingsLiveTest do
 
       html = render(view)
       assert html =~ "Credentials saved."
-      assert html =~ "imported-id.apps.googleusercontent.com"
+      assert has_element?(view, "#credentials-saved-summary")
+      refute has_element?(view, "#credentials-form")
       refute html =~ "GOCSPX-imported"
     end
 
@@ -175,6 +218,7 @@ defmodule MnemoWeb.SettingsLiveTest do
       Settings.put_google_client_secret("kept-secret")
 
       {:ok, view, _html} = live(conn, ~p"/settings")
+      view |> element("#change-credentials") |> render_click()
       upload_json(view, "this is not json")
 
       assert render(view) =~ "not valid JSON"

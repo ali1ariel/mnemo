@@ -39,3 +39,18 @@ npm-debug.log
 *.db
 *.db-*
 
+
+# Digested copies of the static files phx.digest fingerprints in place.
+/priv/static/*-*.*
+/priv/static/*.gz
+/priv/static/images/*-*.*
+/priv/static/images/*.gz
+
+# Rust/Tauri build artifacts and generated editor schemas.
+/desktop/src-tauri/target/
+/desktop/src-tauri/gen/schemas/
+
+# `cargo tauri icon` emits assets for every platform, but this project
+# currently packages Linux using only the icon declared in tauri.conf.json.
+/desktop/src-tauri/icons/*
+!/desktop/src-tauri/icons/icon.png

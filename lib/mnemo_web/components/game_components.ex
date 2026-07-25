@@ -364,7 +364,8 @@ defmodule MnemoWeb.GameComponents do
       detail[:publish_error] &&
         gettext("They are on disk but could not be uploaded yet — sync when you can."),
       detail[:backup] &&
-        gettext("The previous files were kept in a backup folder.")
+        gettext("The previous files were kept in a backup folder."),
+      mirror_note(detail)
     ]
     |> Enum.filter(&is_binary/1)
     |> Enum.join(" ")
@@ -384,6 +385,7 @@ defmodule MnemoWeb.GameComponents do
       _ ->
         base <> " " <> gettext("The previous state was saved first, so this is undoable.")
     end
+    |> then(fn message -> Enum.join(Enum.filter([message, mirror_note(detail)], & &1), " ") end)
   end
 
   def detail_message(%{status: :ok, detail: %{result: :no_changes}}),
@@ -445,6 +447,18 @@ defmodule MnemoWeb.GameComponents do
       %{tag: :empty_generation} ->
         gettext("That generation has no files recorded.")
 
+      %{tag: :path_too_long, limit: limit} ->
+        gettext(
+          "Windows will not accept a file path longer than %{limit} characters, and this one would be. Nothing was touched.",
+          limit: limit
+        )
+
+      %{tag: :case_collision, groups: groups} ->
+        gettext(
+          "This folder treats %{names} as the same file, so writing them would lose one. Nothing was touched.",
+          names: groups |> Enum.map(&Enum.join(&1, " / ")) |> Enum.join("; ")
+        )
+
       %{tag: :unreadable_archive} ->
         gettext("That file could not be opened as a zip archive.")
 
@@ -460,6 +474,24 @@ defmodule MnemoWeb.GameComponents do
   end
 
   def detail_message(_status), do: nil
+
+  # Only worth a sentence when it did not just work: a second copy that
+  # was updated is the expected outcome, one that was skipped is not, and
+  # Ren'Py reads whichever copy is newest.
+  defp mirror_note(detail) do
+    case detail[:mirrors] do
+      %{diverged: [_ | _]} ->
+        gettext(
+          "A second copy of these saves, kept with the game itself, was left as it was because its files did not match. The game may still read that copy."
+        )
+
+      %{failed: [_ | _]} ->
+        gettext("A second copy of these saves, kept with the game itself, could not be updated.")
+
+      _ ->
+        nil
+    end
+  end
 
   defp skipped(detail), do: detail[:skipped] || 0
 end

@@ -56,6 +56,26 @@ defmodule Mnemo.Covers do
     end
   end
 
+  @doc """
+  A cache key for the image currently selected for a game.
+
+  Cover discovery is independent from save generations, so using the
+  generation number in the image URL can leave a screenshot cached after
+  better artwork becomes available.
+  """
+  def version(game) do
+    case source_for(game) do
+      {_kind, file} ->
+        case File.stat(file, time: :posix) do
+          {:ok, stat} -> :erlang.phash2({file, stat.size, stat.mtime})
+          {:error, _} -> 0
+        end
+
+      :none ->
+        0
+    end
+  end
+
   defp source_for(game) do
     with nil <- cached_file(game.id),
          nil <- install_art(game.install_path) do
@@ -118,7 +138,7 @@ defmodule Mnemo.Covers do
     marker = cache_path(game.id) <> ".miss"
 
     cond do
-      not External.configured?() -> :ok
+      not external().configured?() -> :ok
       File.exists?(marker) -> :ok
       game.name in [nil, ""] -> :ok
       true -> start_lookup(game, marker)
@@ -131,7 +151,7 @@ defmodule Mnemo.Covers do
       # Written up front so concurrent renders do not all fire a lookup.
       File.write!(marker, "")
 
-      case External.fetch(game.name) do
+      case external().fetch(game.name) do
         {:ok, bytes, type} ->
           File.write!(cache_path(game.id) <> extension_for(type), bytes)
           File.rm(marker)
@@ -159,14 +179,59 @@ defmodule Mnemo.Covers do
   def for_scan_entry(entry) do
     case install_art(entry[:install]) do
       nil ->
-        case latest_save(entry.path) do
-          nil -> :none
-          save -> read_screenshot(save)
+        case external_scan_cover(entry[:name]) do
+          :none ->
+            case latest_save(entry.path) do
+              nil -> :none
+              save -> read_screenshot(save)
+            end
+
+          cover ->
+            cover
         end
 
       file ->
         read(file, :cover)
     end
+  end
+
+  defp external_scan_cover(name) when name in [nil, ""], do: :none
+
+  defp external_scan_cover(name) do
+    case cached_scan_file(name) do
+      nil ->
+        if external().configured?() do
+          case external().fetch(name) do
+            {:ok, bytes, type} ->
+              File.mkdir_p!(cache_dir())
+              File.write!(scan_cache_path(name) <> extension_for(type), bytes)
+              {:ok, bytes, type, :cover}
+
+            :none ->
+              :none
+          end
+        else
+          :none
+        end
+
+      file ->
+        read(file, :cover)
+    end
+  end
+
+  defp cached_scan_file(name) do
+    (scan_cache_path(name) <> ".*")
+    |> Path.wildcard()
+    |> List.first()
+  end
+
+  defp scan_cache_path(name) do
+    digest = :crypto.hash(:sha256, name) |> Base.url_encode64(padding: false)
+    Path.join(cache_dir(), "scan-#{digest}")
+  end
+
+  defp external do
+    Application.get_env(:mnemo, :cover_external, External)
   end
 
   defp install_art(nil), do: nil

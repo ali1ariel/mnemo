@@ -82,6 +82,9 @@ defmodule Mnemo.MixProject do
       "assets.setup": ["tailwind.install --if-missing", "esbuild.install --if-missing"],
       "assets.build": ["compile", "tailwind mnemo", "esbuild mnemo"],
       "assets.deploy": [
+        # Compile first: colocated hooks and their CSS are written to
+        # _build during compilation, and Tailwind reads them from there.
+        "compile",
         "tailwind mnemo --minify",
         "esbuild mnemo --minify",
         "phx.digest"

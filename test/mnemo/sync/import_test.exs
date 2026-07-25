@@ -327,6 +327,36 @@ defmodule Mnemo.Sync.ImportTest do
       refute File.exists?(Path.join(dir, "1-2-LT1.save"))
     end
 
+    test "an archive entry that would fold onto a save already there", ctx do
+      {game, dir} = enrolled!(ctx.root)
+      on_exit(fn -> Application.delete_env(:mnemo, :case_insensitive_filesystem) end)
+      Application.put_env(:mnemo, :case_insensitive_filesystem, true)
+
+      # The folder has 1-1-LT1.save; on Windows this entry lands on top of
+      # it, which `:add_missing` promised would never happen.
+      path = archive!(ctx, "case.zip", [{"1-1-lt1.save", [seed: "other"]}])
+      before = read(Path.join(dir, "1-1-LT1.save"))
+
+      assert {:error, :case_collision, detail} = Import.run(game, path, @confirmed)
+      assert detail.groups == [["1-1-LT1.save", "1-1-lt1.save"]]
+      assert read(Path.join(dir, "1-1-LT1.save")) == before
+      refute File.exists?(Path.join(dir, "1-1-lt1.save"))
+    end
+
+    test "two archive entries that differ only in case", ctx do
+      {game, _dir} = enrolled!(ctx.root)
+      on_exit(fn -> Application.delete_env(:mnemo, :case_insensitive_filesystem) end)
+      Application.put_env(:mnemo, :case_insensitive_filesystem, true)
+
+      path =
+        archive!(ctx, "case.zip", [
+          {"1-Save-LT1.save", [seed: "a"]},
+          {"1-save-LT1.save", [seed: "b"]}
+        ])
+
+      assert {:error, :case_collision, _} = Import.run(game, path, @confirmed)
+    end
+
     test "when the save folder is gone", ctx do
       {game, dir} = enrolled!(ctx.root)
       path = archive!(ctx, "backup.zip", [{"1-2-LT1.save", [seed: "b"]}])

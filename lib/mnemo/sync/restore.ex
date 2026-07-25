@@ -26,8 +26,8 @@ defmodule Mnemo.Sync.Restore do
   """
 
   alias Mnemo.Drive.{Backend, Remote}
-  alias Mnemo.{Games, RenPy, Sync}
-  alias Mnemo.Sync.Overwrite
+  alias Mnemo.{Games, Paths, RenPy, Sync}
+  alias Mnemo.Sync.{CaseCheck, Mirror, Overwrite}
 
   # Ren'Py rewrites `persistent` on exit, so a folder still being written
   # to is the signal that the game did not actually close.
@@ -55,20 +55,29 @@ defmodule Mnemo.Sync.Restore do
          {:ok, game, safety} <- Overwrite.safety_generation(game, opts, notify),
          {:ok, ctx} <- resolve_remote(game),
          {:ok, files} <- fetch_manifest(ctx, game, number),
+         :ok <- check_case(game, path, Enum.map(files, & &1["rel_path"])),
          {:ok, head} <- observe_head(ctx) do
       notify.(:downloading)
       staging = Overwrite.staging_dir(path, "restore")
 
-      try do
-        with {:ok, _} <- stage(ctx, game, path, staging, files),
-             {:ok, backup} <- swap(path, staging, notify) do
-          finish(game, number, head, safety, backup)
+      with :ok <- Paths.check_length(target_paths(staging, Enum.map(files, & &1["rel_path"]))) do
+        # Decided before the swap: afterwards there is nothing left to
+        # compare a mirror against.
+        mirrors = Mirror.plan(game, path)
+
+        try do
+          with {:ok, _} <- stage(ctx, game, path, staging, files),
+               {:ok, backup} <- swap(path, staging, notify) do
+            finish(game, number, head, safety, backup, Mirror.apply(mirrors, game, path))
+          end
+        after
+          File.rm_rf(staging)
         end
-      after
-        File.rm_rf(staging)
       end
     end
   end
+
+  defp target_paths(dir, names), do: [dir | Enum.map(names, &Path.join(dir, &1))]
 
   ## Guards
 
@@ -170,6 +179,28 @@ defmodule Mnemo.Sync.Restore do
     end
   end
 
+  # What the folder will hold afterwards: the manifest, plus whatever was
+  # never tracked and therefore survives the swap. On a filesystem that
+  # folds case, two of those collapsing into one is a slot silently lost.
+  defp check_case(game, path, names) do
+    tracked = Enum.map(tracked_files(game, path), &elem(&1, 0))
+
+    surviving =
+      case File.ls(path) do
+        {:ok, entries} -> entries -- tracked
+        {:error, _} -> []
+      end
+
+    CaseCheck.check(path, surviving ++ names)
+  end
+
+  defp tracked_files(game, path) do
+    RenPy.tracked_files(path,
+      sync_autosaves: game.sync_autosaves,
+      exclude_patterns: game.exclude_patterns || []
+    )
+  end
+
   ## Staging
 
   defp stage(ctx, game, path, staging, files) do
@@ -194,13 +225,7 @@ defmodule Mnemo.Sync.Restore do
   end
 
   defp clear_tracked(game, staging) do
-    tracked =
-      RenPy.tracked_files(staging,
-        sync_autosaves: game.sync_autosaves,
-        exclude_patterns: game.exclude_patterns || []
-      )
-
-    Enum.reduce_while(tracked, :ok, fn {rel, _slot}, :ok ->
+    Enum.reduce_while(tracked_files(game, staging), :ok, fn {rel, _slot}, :ok ->
       case File.rm(Path.join(staging, rel)) do
         :ok -> {:cont, :ok}
         {:error, reason} -> {:halt, {:error, :staging_failed, %{reason: reason, file: rel}}}
@@ -290,7 +315,7 @@ defmodule Mnemo.Sync.Restore do
 
   ## Commit
 
-  defp finish(game, number, head, safety, backup) do
+  defp finish(game, number, head, safety, backup, mirrors) do
     {:ok, _game} = Games.set_last_generation_seen(game, head)
 
     {:ok,
@@ -298,7 +323,8 @@ defmodule Mnemo.Sync.Restore do
        generation: number,
        safety: safety,
        backup: Overwrite.settle_backup(backup, safety),
-       last_generation_seen: head
+       last_generation_seen: head,
+       mirrors: mirrors
      }}
   end
 

@@ -123,7 +123,7 @@ defmodule MnemoWeb.LibraryLive do
     <div class="card card-side bg-base-200 overflow-hidden" id={"game-#{@game.id}"}>
       <figure class="w-28 sm:w-36 shrink-0 bg-base-300 self-stretch">
         <.game_image
-          src={~p"/covers/#{@game.id}?v=#{@status.last_generation}"}
+          src={~p"/covers/#{@game.id}?v=#{Mnemo.Covers.version(@game)}"}
           kind={Mnemo.Covers.kind(@game)}
           hide_on_error
         />

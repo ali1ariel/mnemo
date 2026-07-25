@@ -156,6 +156,42 @@ defmodule Mnemo.Sync.RestoreTest do
     end
   end
 
+  # ext4 keeps these apart and NTFS does not, so a generation made here
+  # can be one that cannot be written there.
+  describe "restoring onto a filesystem that folds case" do
+    setup %{root: root} do
+      dir = game_dir(root)
+      RenPyFixtures.write_save(dir, "1-Save-LT1.save", seed: "upper")
+      RenPyFixtures.write_save(dir, "1-save-LT1.save", seed: "lower")
+      File.write!(Path.join(dir, "persistent"), "p")
+
+      game = enroll!(root)
+      assert {:ok, %{generation: 1}} = Engine.run(game)
+
+      on_exit(fn -> Application.delete_env(:mnemo, :case_insensitive_filesystem) end)
+      {:ok, game: Games.get!(game.id), dir: dir}
+    end
+
+    test "refuses instead of silently dropping one of the two", %{game: game, dir: dir} do
+      Application.put_env(:mnemo, :case_insensitive_filesystem, true)
+
+      assert {:error, :case_collision, detail} = Restore.run(game, 1, @confirmed)
+      assert detail.groups == [["1-Save-LT1.save", "1-save-LT1.save"]]
+
+      # Refusing is only worth anything if it refuses before touching disk.
+      assert read(Path.join(dir, "1-Save-LT1.save")) != read(Path.join(dir, "1-save-LT1.save"))
+      assert backups(game) == []
+    end
+
+    test "the same generation restores fine where case is kept", %{game: game, dir: dir} do
+      Application.put_env(:mnemo, :case_insensitive_filesystem, false)
+
+      assert {:ok, _} = Restore.run(game, 1, @confirmed)
+      assert File.regular?(Path.join(dir, "1-Save-LT1.save"))
+      assert File.regular?(Path.join(dir, "1-save-LT1.save"))
+    end
+  end
+
   describe "corrupt or missing remote data" do
     setup %{root: root} do
       dir = game_dir(root)

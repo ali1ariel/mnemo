@@ -28,8 +28,6 @@ if System.get_env("MNEMO_FAKE_DRIVE") do
   config :mnemo, :drive_backend, Mnemo.Drive.Fake
 end
 
-config :mnemo, MnemoWeb.Endpoint, http: [port: String.to_integer(System.get_env("PORT", "4000"))]
-
 if config_env() == :prod do
   # The app dir is read-only inside macOS .app bundles and AppImages,
   # so the database lives in the per-user data directory.
@@ -48,10 +46,20 @@ if config_env() == :prod do
       Base.encode64(:crypto.strong_rand_bytes(48))
 
   config :mnemo, MnemoWeb.Endpoint,
-    url: [host: "localhost"],
-    # Loopback only: this is a local desktop app and binding to loopback
-    # does not trigger the Windows Firewall prompt.
-    http: [ip: {127, 0, 0, 1}],
+    # This must match the literal host published in endpoint.json. Phoenix
+    # validates the LiveView WebSocket Origin against this host in production.
+    url: [host: "127.0.0.1"],
+    http: [
+      # Loopback only: this is a local desktop app, and binding to
+      # loopback does not trigger the Windows Firewall prompt.
+      ip: {127, 0, 0, 1},
+      # Port 0 lets the OS pick a free one. A fixed port refuses to start
+      # whenever anything else already holds it, which for something
+      # someone double-clicked is a failure with no explanation. The port
+      # actually bound is published by `Mnemo.Endpoint.Address` for the
+      # window that has to load the interface.
+      port: String.to_integer(System.get_env("PORT") || "0")
+    ],
     secret_key_base: secret_key_base
 
   # ## SSL Support
@@ -85,4 +93,10 @@ if config_env() == :prod do
   #       force_ssl: [hsts: true]
   #
   # Check `Plug.SSL` for all available options in `force_ssl`.
+end
+
+# An explicit PORT wins everywhere, including over the fixed ports dev
+# and test配 use.
+if port = System.get_env("PORT") do
+  config :mnemo, MnemoWeb.Endpoint, http: [port: String.to_integer(port)]
 end

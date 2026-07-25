@@ -32,6 +32,7 @@ defmodule MnemoWeb.SettingsLive do
     socket
     |> assign(:secret_set?, client != nil and client.client_secret != nil)
     |> assign(:credentials_saved?, client != nil)
+    |> assign(:credentials_editing?, client == nil)
     |> assign(
       :credentials_form,
       to_form(%{"client_id" => (client && client.client_id) || "", "client_secret" => ""},
@@ -41,8 +42,11 @@ defmodule MnemoWeb.SettingsLive do
   end
 
   defp assign_cover_form(socket) do
+    key_set? = Settings.get("steamgriddb_api_key") not in [nil, ""]
+
     socket
-    |> assign(:cover_key_set?, Settings.get("steamgriddb_api_key") not in [nil, ""])
+    |> assign(:cover_key_set?, key_set?)
+    |> assign(:cover_editing?, not key_set?)
     |> assign(:cover_form, to_form(%{"steamgriddb_api_key" => ""}, as: :cover))
   end
 
@@ -172,6 +176,14 @@ defmodule MnemoWeb.SettingsLive do
 
   def handle_event("validate_upload", _params, socket), do: {:noreply, socket}
 
+  def handle_event("edit_credentials", _params, socket) do
+    {:noreply, assign(socket, :credentials_editing?, true)}
+  end
+
+  def handle_event("edit_cover_key", _params, socket) do
+    {:noreply, assign(socket, :cover_editing?, true)}
+  end
+
   def handle_event("save_cover_key", %{"cover" => %{"steamgriddb_api_key" => key}}, socket) do
     key = String.trim(key)
 
@@ -289,137 +301,169 @@ defmodule MnemoWeb.SettingsLive do
           </ul>
         </div>
 
-        <details class="collapse collapse-arrow bg-base-300/40" id="oauth-guide">
-          <summary class="collapse-title text-sm font-medium">
-            {gettext("How to get these credentials, step by step")}
-          </summary>
-          <div class="collapse-content text-sm space-y-3">
-            <p class="rounded-box bg-base-100/60 p-3 text-sm">
-              <.icon name="hero-computer-desktop" class="size-4 mr-1 opacity-60" />
-              {gettext(
-                "Already set mnemo up on another computer? Do not create anything new — import the same JSON file here, or paste the same two values, and go straight to step 2."
-              )}
-            </p>
-            <ol class="list-decimal ml-5 space-y-2">
-              <li>
-                {gettext(
-                  "Open the Google Cloud console and sign in with the Google account whose Drive will hold your saves."
-                )}
-                <.guide_link href="https://console.cloud.google.com" label="console.cloud.google.com" />
-              </li>
-              <li>
-                {gettext("Create a project. Any name works — \"mnemo\", for example.")}
-                <.guide_link href="https://console.cloud.google.com/projectcreate" />
-              </li>
-              <li>
-                {gettext("Enable the Google Drive API for that project.")}
-                <.guide_link href="https://console.cloud.google.com/apis/library/drive.googleapis.com" />
-              </li>
-              <li>
-                {gettext(
-                  "Configure the consent screen under \"Google Auth Platform\": choose \"External\" and fill in the app name and your e-mail."
-                )}
-                <.guide_link href="https://console.cloud.google.com/auth/overview" />
-                <p class="text-xs opacity-70 mt-1">
-                  {gettext(
-                    "\"External\" only means a personal Google account instead of a Workspace organization. It does not publish anything, and it does not make your files public."
-                  )}
-                </p>
-              </li>
-              <li>
-                {gettext(
-                  "Publish the app to production under \"Audience\". While it stays in testing, Google drops the connection every 7 days."
-                )}
-                <.guide_link href="https://console.cloud.google.com/auth/audience" />
-              </li>
-              <li>
-                {gettext(
-                  "Create an OAuth client under \"Clients\": application type \"Desktop app\"."
-                )}
-                <.guide_link href="https://console.cloud.google.com/auth/clients" />
-              </li>
-              <li>
-                {gettext(
-                  "Download the client's JSON file and import it above. Keep that file somewhere safe and private — it is what you will reuse on your other computers."
-                )}
-              </li>
-            </ol>
-            <p class="text-xs opacity-70">
-              {gettext(
-                "Google will show an \"unverified app\" warning when you connect. That is expected: the app is yours, you created it minutes ago, and verification only exists for apps distributed to other people. Click \"Advanced\" and continue."
-              )}
-            </p>
-          </div>
-        </details>
-
-        <form
-          id="client-file-form"
-          phx-change="validate_upload"
-          phx-submit="validate_upload"
-          phx-drop-target={@uploads.client_file.ref}
+        <div
+          :if={@credentials_saved? and not @credentials_editing?}
+          id="credentials-saved-summary"
+          class="flex flex-col gap-3 rounded-box border border-success/25 bg-success/5 p-4 sm:flex-row sm:items-center sm:justify-between"
         >
-          <label class="flex cursor-pointer flex-col items-center gap-2 rounded-box border-2 border-dashed border-base-300 p-6 text-center transition-colors hover:border-primary/50 hover:bg-base-300/30">
-            <.icon name="hero-arrow-up-tray" class="size-6 opacity-60" />
-            <span class="text-sm font-medium">
-              {gettext("Import the JSON file downloaded from Google")}
+          <div class="flex items-center gap-3">
+            <span class="flex size-9 shrink-0 items-center justify-center rounded-full bg-success/15 text-success">
+              <.icon name="hero-check" class="size-5" />
             </span>
-            <span class="text-xs opacity-70">
-              {gettext(
-                "Drop the client_secret_….json file here, or click to pick it. mnemo reads the two keys out of it and keeps no copy of the file."
-              )}
-            </span>
-            <.live_file_input upload={@uploads.client_file} class="sr-only" />
-          </label>
-          <p
-            :for={err <- upload_errors(@uploads.client_file)}
-            class="mt-2 text-xs text-error"
+            <div>
+              <p class="text-sm font-medium">{gettext("Google credentials are saved")}</p>
+              <p class="text-xs opacity-65">
+                {gettext("Keep using these credentials unless Google asks you to replace them.")}
+              </p>
+            </div>
+          </div>
+          <.button
+            id="change-credentials"
+            phx-click="edit_credentials"
+            variant="secondary"
+            class="btn btn-sm btn-ghost shrink-0"
           >
-            {upload_error_message(err)}
-          </p>
-          <p
-            :for={entry <- @uploads.client_file.entries}
-            :if={@uploads.client_file.entries != []}
-            class="mt-2 text-xs text-error"
-          >
-            <span :for={err <- upload_errors(@uploads.client_file, entry)}>
-              {upload_error_message(err)}
-            </span>
-          </p>
-        </form>
-
-        <div class="flex items-center gap-3 text-xs uppercase tracking-wide opacity-50">
-          <span class="h-px flex-1 bg-base-300"></span>
-          {gettext("or type them in")}
-          <span class="h-px flex-1 bg-base-300"></span>
+            <.icon name="hero-pencil-square" class="size-4" />
+            {gettext("Change")}
+          </.button>
         </div>
 
-        <.form
-          for={@credentials_form}
-          id="credentials-form"
-          phx-submit="save_credentials"
-          class="space-y-4"
-        >
-          <.input
-            field={@credentials_form[:client_id]}
-            type="text"
-            label={gettext("Client ID")}
-            placeholder="xxxxxxxx.apps.googleusercontent.com"
-            autocomplete="off"
-          />
-          <.input
-            field={@credentials_form[:client_secret]}
-            type="password"
-            label={gettext("Client secret")}
-            placeholder={if @secret_set?, do: "••••••••••••", else: nil}
-            autocomplete="off"
-          />
-          <p :if={@secret_set?} class="text-xs opacity-60">
-            {gettext("A secret is already saved. Leave the field blank to keep it.")}
-          </p>
-          <.button variant="primary" id="save-credentials">
-            {gettext("Save credentials")}
-          </.button>
-        </.form>
+        <div :if={@credentials_editing?} id="credentials-editor" class="space-y-4">
+          <details class="collapse collapse-arrow bg-base-300/40" id="oauth-guide">
+            <summary class="collapse-title text-sm font-medium">
+              {gettext("How to get these credentials, step by step")}
+            </summary>
+            <div class="collapse-content text-sm space-y-3">
+              <p class="rounded-box bg-base-100/60 p-3 text-sm">
+                <.icon name="hero-computer-desktop" class="size-4 mr-1 opacity-60" />
+                {gettext(
+                  "Already set mnemo up on another computer? Do not create anything new — import the same JSON file here, or paste the same two values, and go straight to step 2."
+                )}
+              </p>
+              <ol class="list-decimal ml-5 space-y-2">
+                <li>
+                  {gettext(
+                    "Open the Google Cloud console and sign in with the Google account whose Drive will hold your saves."
+                  )}
+                  <.guide_link
+                    href="https://console.cloud.google.com"
+                    label="console.cloud.google.com"
+                  />
+                </li>
+                <li>
+                  {gettext("Create a project. Any name works — \"mnemo\", for example.")}
+                  <.guide_link href="https://console.cloud.google.com/projectcreate" />
+                </li>
+                <li>
+                  {gettext("Enable the Google Drive API for that project.")}
+                  <.guide_link href="https://console.cloud.google.com/apis/library/drive.googleapis.com" />
+                </li>
+                <li>
+                  {gettext(
+                    "Configure the consent screen under \"Google Auth Platform\": choose \"External\" and fill in the app name and your e-mail."
+                  )}
+                  <.guide_link href="https://console.cloud.google.com/auth/overview" />
+                  <p class="text-xs opacity-70 mt-1">
+                    {gettext(
+                      "\"External\" only means a personal Google account instead of a Workspace organization. It does not publish anything, and it does not make your files public."
+                    )}
+                  </p>
+                </li>
+                <li>
+                  {gettext(
+                    "Publish the app to production under \"Audience\". While it stays in testing, Google drops the connection every 7 days."
+                  )}
+                  <.guide_link href="https://console.cloud.google.com/auth/audience" />
+                </li>
+                <li>
+                  {gettext(
+                    "Create an OAuth client under \"Clients\": application type \"Desktop app\"."
+                  )}
+                  <.guide_link href="https://console.cloud.google.com/auth/clients" />
+                </li>
+                <li>
+                  {gettext(
+                    "Download the client's JSON file and import it above. Keep that file somewhere safe and private — it is what you will reuse on your other computers."
+                  )}
+                </li>
+              </ol>
+              <p class="text-xs opacity-70">
+                {gettext(
+                  "Google will show an \"unverified app\" warning when you connect. That is expected: the app is yours, you created it minutes ago, and verification only exists for apps distributed to other people. Click \"Advanced\" and continue."
+                )}
+              </p>
+            </div>
+          </details>
+
+          <form
+            id="client-file-form"
+            phx-change="validate_upload"
+            phx-submit="validate_upload"
+            phx-drop-target={@uploads.client_file.ref}
+          >
+            <label class="flex cursor-pointer flex-col items-center gap-2 rounded-box border-2 border-dashed border-base-300 p-6 text-center transition-colors hover:border-primary/50 hover:bg-base-300/30">
+              <.icon name="hero-arrow-up-tray" class="size-6 opacity-60" />
+              <span class="text-sm font-medium">
+                {gettext("Import the JSON file downloaded from Google")}
+              </span>
+              <span class="text-xs opacity-70">
+                {gettext(
+                  "Drop the client_secret_….json file here, or click to pick it. mnemo reads the two keys out of it and keeps no copy of the file."
+                )}
+              </span>
+              <.live_file_input upload={@uploads.client_file} class="sr-only" />
+            </label>
+            <p
+              :for={err <- upload_errors(@uploads.client_file)}
+              class="mt-2 text-xs text-error"
+            >
+              {upload_error_message(err)}
+            </p>
+            <p
+              :for={entry <- @uploads.client_file.entries}
+              :if={@uploads.client_file.entries != []}
+              class="mt-2 text-xs text-error"
+            >
+              <span :for={err <- upload_errors(@uploads.client_file, entry)}>
+                {upload_error_message(err)}
+              </span>
+            </p>
+          </form>
+
+          <div class="flex items-center gap-3 text-xs uppercase tracking-wide opacity-50">
+            <span class="h-px flex-1 bg-base-300"></span>
+            {gettext("or type them in")}
+            <span class="h-px flex-1 bg-base-300"></span>
+          </div>
+
+          <.form
+            for={@credentials_form}
+            id="credentials-form"
+            phx-submit="save_credentials"
+            class="space-y-4"
+          >
+            <.input
+              field={@credentials_form[:client_id]}
+              type="text"
+              label={gettext("Client ID")}
+              placeholder="xxxxxxxx.apps.googleusercontent.com"
+              autocomplete="off"
+            />
+            <.input
+              field={@credentials_form[:client_secret]}
+              type="password"
+              label={gettext("Client secret")}
+              placeholder={if @secret_set?, do: "••••••••••••", else: nil}
+              autocomplete="off"
+            />
+            <p :if={@secret_set?} class="text-xs opacity-60">
+              {gettext("A secret is already saved. Leave the field blank to keep it.")}
+            </p>
+            <.button variant="primary" id="save-credentials">
+              {gettext("Save credentials")}
+            </.button>
+          </.form>
+        </div>
       </section>
 
       <section class="card bg-base-200 p-6 space-y-4" id="drive-connection">
@@ -452,16 +496,57 @@ defmodule MnemoWeb.SettingsLive do
       </section>
 
       <section class="card bg-base-200 p-6 space-y-4" id="cover-art">
-        <div>
-          <h2 class="font-semibold">{gettext("Cover art")}</h2>
-          <p class="text-sm opacity-70">
-            {gettext(
-              "Covers come from the game itself: the artwork Steam already stored on this computer, or the icon in the install folder. For games from anywhere else, mnemo can look the cover up on SteamGridDB — paste a free API key to enable it."
-            )}
-          </p>
+        <div class="flex items-start justify-between gap-3">
+          <div>
+            <h2 class="font-semibold">{gettext("Cover art")}</h2>
+            <p class="text-sm opacity-70">
+              {gettext(
+                "Covers come from the game itself: the artwork Steam already stored on this computer, or the icon in the install folder. For games from anywhere else, mnemo can look the cover up on SteamGridDB — paste a free API key to enable it."
+              )}
+            </p>
+          </div>
+          <span class={[
+            "badge badge-soft whitespace-nowrap",
+            if(@cover_key_set?, do: "badge-success", else: "badge-ghost")
+          ]}>
+            {if @cover_key_set?, do: gettext("Saved"), else: gettext("Pending")}
+          </span>
         </div>
 
-        <.form for={@cover_form} id="cover-form" phx-submit="save_cover_key" class="space-y-4">
+        <div
+          :if={@cover_key_set? and not @cover_editing?}
+          id="cover-key-saved-summary"
+          class="flex flex-col gap-3 rounded-box border border-success/25 bg-success/5 p-4 sm:flex-row sm:items-center sm:justify-between"
+        >
+          <div class="flex items-center gap-3">
+            <span class="flex size-9 shrink-0 items-center justify-center rounded-full bg-success/15 text-success">
+              <.icon name="hero-check" class="size-5" />
+            </span>
+            <div>
+              <p class="text-sm font-medium">{gettext("SteamGridDB key is saved")}</p>
+              <p class="text-xs opacity-65">
+                {gettext("External cover lookup is enabled for games without local artwork.")}
+              </p>
+            </div>
+          </div>
+          <.button
+            id="change-cover-key"
+            phx-click="edit_cover_key"
+            variant="secondary"
+            class="btn btn-sm btn-ghost shrink-0"
+          >
+            <.icon name="hero-pencil-square" class="size-4" />
+            {gettext("Change")}
+          </.button>
+        </div>
+
+        <.form
+          :if={@cover_editing?}
+          for={@cover_form}
+          id="cover-form"
+          phx-submit="save_cover_key"
+          class="space-y-4"
+        >
           <.input
             field={@cover_form[:steamgriddb_api_key]}
             type="password"

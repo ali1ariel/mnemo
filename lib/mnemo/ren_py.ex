@@ -108,6 +108,37 @@ defmodule Mnemo.RenPy do
     end
   end
 
+  @doc "Whether two paths name the same directory, through symlinks and all."
+  def same_directory?(a, b), do: directory_identity(a) == directory_identity(b)
+
+  @doc """
+  The other places Ren'Py writes this game's saves.
+
+  `savelocation.init/0` builds a `MultiLocation` from the user savedir
+  *and* `<gamedir>/saves`, and every save goes to all of them while every
+  delete removes from all of them. A game installed as a package
+  therefore has a second copy of its saves that mnemo does not track but
+  the engine still reads — and `load` takes the newest across locations,
+  so a slot left behind in one of them comes back to life.
+
+  Derived from `install_path`, which enrollment records, so no extra
+  state is kept for it.
+  """
+  def mirror_paths(%{install_path: install}) when is_binary(install) do
+    saves = Path.join([install, "game", "saves"])
+    if File.dir?(saves), do: [saves], else: []
+  end
+
+  def mirror_paths(_game), do: []
+
+  @doc "Mirror locations that are not the folder mnemo already tracks."
+  def other_locations(game) do
+    case game_path(game) do
+      nil -> []
+      path -> game |> mirror_paths() |> Enum.reject(&same_directory?(&1, path))
+    end
+  end
+
   defp renpy_install?(path) do
     File.dir?(Path.join(path, "renpy")) and File.dir?(Path.join(path, "game"))
   end

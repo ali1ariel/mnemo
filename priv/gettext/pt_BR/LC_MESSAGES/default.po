@@ -32,14 +32,14 @@ msgid_plural "%{count} minutes ago"
 msgstr[0] "%{count} minuto atrás"
 msgstr[1] "%{count} minutos atrás"
 
-#: lib/mnemo_web/components/game_components.ex:395
+#: lib/mnemo_web/components/game_components.ex:396
 #, elixir-autogen, elixir-format
 msgid "%{count} new file."
 msgid_plural "%{count} new files."
 msgstr[0] "%{count} arquivo novo."
 msgstr[1] "%{count} arquivos novos."
 
-#: lib/mnemo_web/live/enroll_live.ex:345
+#: lib/mnemo_web/live/enroll_live.ex:353
 #, elixir-autogen, elixir-format
 msgid "%{count} save"
 msgid_plural "%{count} saves"
@@ -51,12 +51,12 @@ msgstr[1] "%{count} saves"
 msgid "%{name} enrolled."
 msgstr "%{name} registrado."
 
-#: lib/mnemo_web/components/game_components.ex:435
+#: lib/mnemo_web/components/game_components.ex:436
 #, elixir-autogen, elixir-format
 msgid "A Google Drive request failed. Try again."
 msgstr "Uma chamada ao Google Drive falhou. Tente novamente."
 
-#: lib/mnemo_web/components/game_components.ex:426
+#: lib/mnemo_web/components/game_components.ex:427
 #, elixir-autogen, elixir-format
 msgid "A save file failed validation and was not uploaded: %{file}"
 msgstr "Um save falhou na validação e não foi enviado: %{file}"
@@ -69,7 +69,7 @@ msgstr "Um save falhou na validação e não foi enviado: %{file}"
 msgid "A sync is already running."
 msgstr "Uma sincronização já está em andamento."
 
-#: lib/mnemo_web/components/core_components.ex:375
+#: lib/mnemo_web/components/core_components.ex:380
 #, elixir-autogen, elixir-format
 msgid "Actions"
 msgstr "Ações"
@@ -86,12 +86,12 @@ msgstr "Adicionar um jogo"
 msgid "Add game"
 msgstr "Adicionar jogo"
 
-#: lib/mnemo_web/components/game_components.ex:391
+#: lib/mnemo_web/components/game_components.ex:392
 #, elixir-autogen, elixir-format
 msgid "Already up to date."
 msgstr "Já está atualizado."
 
-#: lib/mnemo_web/components/game_components.ex:405
+#: lib/mnemo_web/components/game_components.ex:406
 #, elixir-autogen, elixir-format
 msgid "Another device synced newer generations."
 msgstr "Outro dispositivo sincronizou gerações mais novas."
@@ -107,7 +107,7 @@ msgstr "Tentando reconectar"
 msgid "Browser did not open? Click here."
 msgstr "O navegador não abriu? Clique aqui."
 
-#: lib/mnemo_web/components/game_components.ex:335
+#: lib/mnemo_web/components/game_components.ex:334
 #, elixir-autogen, elixir-format
 msgid "Conflict"
 msgstr "Conflito"
@@ -129,17 +129,17 @@ msgid "Could not start the sync."
 msgstr "Não foi possível iniciar a sincronização."
 
 #: lib/mnemo_web/live/enroll_live.ex:283
-#: lib/mnemo_web/live/enroll_live.ex:381
+#: lib/mnemo_web/live/enroll_live.ex:383
 #, elixir-autogen, elixir-format
 msgid "Enroll"
 msgstr "Registrar"
 
-#: lib/mnemo_web/live/enroll_live.ex:364
+#: lib/mnemo_web/live/enroll_live.ex:334
 #, elixir-autogen, elixir-format
 msgid "Enrolled"
 msgstr "Registrado"
 
-#: lib/mnemo_web/components/game_components.ex:336
+#: lib/mnemo_web/components/game_components.ex:335
 #, elixir-autogen, elixir-format
 msgid "Error"
 msgstr "Erro"
@@ -158,7 +158,7 @@ msgstr "Jogos encontrados nas pastas de saves Ren'Py desta máquina."
 msgid "Generation %{number}"
 msgstr "Geração %{number}"
 
-#: lib/mnemo_web/components/game_components.ex:394
+#: lib/mnemo_web/components/game_components.ex:395
 #, elixir-autogen, elixir-format
 msgid "Generation %{number} uploaded."
 msgstr "Geração %{number} enviada."
@@ -169,12 +169,12 @@ msgid "Google OAuth client is not configured"
 msgstr "O cliente OAuth do Google não está configurado"
 
 #: lib/mnemo_web/live/library_live.ex:81
-#: lib/mnemo_web/live/settings_live.ex:208
+#: lib/mnemo_web/live/settings_live.ex:220
 #, elixir-autogen, elixir-format
 msgid "Google OAuth client is not configured."
 msgstr "O cliente OAuth do Google não está configurado."
 
-#: lib/mnemo_web/components/game_components.ex:324
+#: lib/mnemo_web/components/game_components.ex:323
 #, elixir-autogen, elixir-format
 msgid "Idle"
 msgstr "Parado"
@@ -200,7 +200,7 @@ msgstr "Nenhum jogo Ren'Py encontrado"
 msgid "No games enrolled yet"
 msgstr "Nenhum jogo registrado ainda"
 
-#: lib/mnemo_web/components/game_components.ex:423
+#: lib/mnemo_web/components/game_components.ex:424
 #: lib/mnemo_web/live/slots_live.ex:406
 #, elixir-autogen, elixir-format
 msgid "No saves found. Launch the game once, quit, and try again."
@@ -226,7 +226,7 @@ msgstr "Saves de Ren'Py, guardados em segurança"
 msgid "Rescan"
 msgstr "Escanear de novo"
 
-#: lib/mnemo_web/components/game_components.ex:429
+#: lib/mnemo_web/components/game_components.ex:430
 #, elixir-autogen, elixir-format
 msgid "Save folder not found: %{path}"
 msgstr "Pasta de saves não encontrada: %{path}"
@@ -241,7 +241,7 @@ msgstr "A varredura das pastas Ren'Py falhou."
 msgid "Scanning…"
 msgstr "Escaneando…"
 
-#: lib/mnemo_web/components/game_components.ex:325
+#: lib/mnemo_web/components/game_components.ex:324
 #, elixir-autogen, elixir-format
 msgid "Snapshotting…"
 msgstr "Criando snapshot…"
@@ -257,7 +257,7 @@ msgstr "Algo deu errado!"
 msgid "Sync now"
 msgstr "Sincronizar agora"
 
-#: lib/mnemo_web/components/game_components.ex:331
+#: lib/mnemo_web/components/game_components.ex:330
 #, elixir-autogen, elixir-format
 msgid "Synced"
 msgstr "Sincronizado"
@@ -267,27 +267,27 @@ msgstr "Sincronizado"
 msgid "The Google Drive session expired. Reconnect to resume syncing."
 msgstr "A sessão do Google Drive expirou. Reconecte para voltar a sincronizar."
 
-#: lib/mnemo_web/components/game_components.ex:414
+#: lib/mnemo_web/components/game_components.ex:415
 #, elixir-autogen, elixir-format
 msgid "The local and remote histories diverged."
 msgstr "Os históricos local e remoto divergiram."
 
-#: lib/mnemo_web/components/game_components.ex:408
+#: lib/mnemo_web/components/game_components.ex:409
 #, elixir-autogen, elixir-format
 msgid "The remote history is behind this device."
 msgstr "O histórico remoto está atrás deste dispositivo."
 
-#: lib/mnemo_web/components/game_components.ex:438
+#: lib/mnemo_web/components/game_components.ex:439
 #, elixir-autogen, elixir-format
 msgid "The sync crashed unexpectedly."
 msgstr "A sincronização quebrou inesperadamente."
 
-#: lib/mnemo_web/components/game_components.ex:459
+#: lib/mnemo_web/components/game_components.ex:472
 #, elixir-autogen, elixir-format
 msgid "The sync failed."
 msgstr "A sincronização falhou."
 
-#: lib/mnemo_web/components/game_components.ex:402
+#: lib/mnemo_web/components/game_components.ex:403
 #, elixir-autogen, elixir-format
 msgid "This game already has history in Drive from another install."
 msgstr "Este jogo já tem histórico no Drive vindo de outra instalação."
@@ -298,17 +298,17 @@ msgstr "Este jogo já tem histórico no Drive vindo de outra instalação."
 msgid "This game is already enrolled."
 msgstr "Este jogo já está registrado."
 
-#: lib/mnemo_web/components/game_components.ex:411
+#: lib/mnemo_web/components/game_components.ex:412
 #, elixir-autogen, elixir-format
 msgid "Two devices wrote the same generation."
 msgstr "Dois dispositivos escreveram a mesma geração."
 
-#: lib/mnemo_web/components/game_components.ex:432
+#: lib/mnemo_web/components/game_components.ex:433
 #, elixir-autogen, elixir-format
 msgid "Upload failed. Nothing was committed; try again."
 msgstr "O envio falhou. Nada foi confirmado; tente novamente."
 
-#: lib/mnemo_web/components/game_components.ex:326
+#: lib/mnemo_web/components/game_components.ex:325
 #, elixir-autogen, elixir-format
 msgid "Uploading…"
 msgstr "Enviando…"
@@ -333,7 +333,7 @@ msgstr "fechar"
 msgid "just now"
 msgstr "agora mesmo"
 
-#: lib/mnemo_web/live/enroll_live.ex:347
+#: lib/mnemo_web/live/enroll_live.ex:355
 #, elixir-autogen, elixir-format
 msgid "last played: %{time}"
 msgstr "jogado por último: %{time}"
@@ -355,13 +355,13 @@ msgid "never"
 msgstr "nunca"
 
 #: lib/mnemo_web/components/game_components.ex:159
-#: lib/mnemo_web/components/game_components.ex:261
+#: lib/mnemo_web/components/game_components.ex:260
 #: lib/mnemo_web/live/enroll_live.ex:323
 #, elixir-autogen, elixir-format
 msgid "no screenshot"
 msgstr "sem screenshot"
 
-#: lib/mnemo_web/live/settings_live.ex:417
+#: lib/mnemo_web/live/settings_live.ex:460
 #, elixir-autogen, elixir-format
 msgid "A secret is already saved. Leave the field blank to keep it."
 msgstr "Um secret já está salvo. Deixe o campo em branco para mantê-lo."
@@ -371,37 +371,37 @@ msgstr "Um secret já está salvo. Deixe o campo em branco para mantê-lo."
 msgid "Add your Google credentials to start syncing."
 msgstr "Adicione suas credenciais do Google para começar a sincronizar."
 
-#: lib/mnemo_web/live/settings_live.ex:486
+#: lib/mnemo_web/live/settings_live.ex:571
 #, elixir-autogen, elixir-format
 msgid "By default mnemo follows the system language."
 msgstr "Por padrão o mnemo segue o idioma do sistema."
 
-#: lib/mnemo_web/live/settings_live.ex:405
+#: lib/mnemo_web/live/settings_live.ex:448
 #, elixir-autogen, elixir-format
 msgid "Client ID"
 msgstr "ID do cliente"
 
-#: lib/mnemo_web/live/settings_live.ex:412
+#: lib/mnemo_web/live/settings_live.ex:455
 #, elixir-autogen, elixir-format
 msgid "Client secret"
 msgstr "Chave secreta do cliente"
 
-#: lib/mnemo_web/live/settings_live.ex:92
+#: lib/mnemo_web/live/settings_live.ex:96
 #, elixir-autogen, elixir-format
 msgid "Credentials saved."
 msgstr "Credenciais salvas."
 
-#: lib/mnemo_web/live/settings_live.ex:450
+#: lib/mnemo_web/live/settings_live.ex:494
 #, elixir-autogen, elixir-format
 msgid "Disconnect"
 msgstr "Desconectar"
 
-#: lib/mnemo_web/live/settings_live.ex:448
+#: lib/mnemo_web/live/settings_live.ex:492
 #, elixir-autogen, elixir-format
 msgid "Disconnect from Google Drive? Synced files stay in your Drive."
 msgstr "Desconectar do Google Drive? Os arquivos sincronizados permanecem no seu Drive."
 
-#: lib/mnemo_web/live/settings_live.ex:484
+#: lib/mnemo_web/live/settings_live.ex:569
 #, elixir-autogen, elixir-format
 msgid "Language"
 msgstr "Idioma"
@@ -411,24 +411,24 @@ msgstr "Idioma"
 msgid "Open Settings"
 msgstr "Abrir Configurações"
 
-#: lib/mnemo_web/live/settings_live.ex:420
+#: lib/mnemo_web/live/settings_live.ex:463
 #, elixir-autogen, elixir-format
 msgid "Save credentials"
 msgstr "Salvar credenciais"
 
 #: lib/mnemo_web/components/layouts.ex:57
 #: lib/mnemo_web/live/settings_live.ex:15
-#: lib/mnemo_web/live/settings_live.ex:221
+#: lib/mnemo_web/live/settings_live.ex:233
 #, elixir-autogen, elixir-format
 msgid "Settings"
 msgstr "Configurações"
 
-#: lib/mnemo_web/live/settings_live.ex:495
+#: lib/mnemo_web/live/settings_live.ex:580
 #, elixir-autogen, elixir-format
 msgid "System default"
 msgstr "Padrão do sistema"
 
-#: lib/mnemo_web/live/settings_live.ex:167
+#: lib/mnemo_web/live/settings_live.ex:171
 #, elixir-autogen, elixir-format
 msgid "The client ID cannot be blank."
 msgstr "O ID do cliente não pode ficar em branco."
@@ -478,233 +478,235 @@ msgstr "Saves"
 msgid "Screenshots are blurred; click one to reveal or hide it."
 msgstr "As screenshots ficam borradas; clique em uma para revelar ou ocultar."
 
-#: lib/mnemo_web/live/enroll_live.ex:358
+#: lib/mnemo_web/live/enroll_live.ex:366
 #, elixir-autogen, elixir-format
 msgid "Hide saves"
 msgstr "Ocultar saves"
 
-#: lib/mnemo_web/live/enroll_live.ex:402
+#: lib/mnemo_web/live/enroll_live.ex:404
 #, elixir-autogen, elixir-format
 msgid "No save slots here yet."
 msgstr "Ainda não há slots de save aqui."
 
-#: lib/mnemo_web/live/enroll_live.ex:358
+#: lib/mnemo_web/live/enroll_live.ex:366
 #, elixir-autogen, elixir-format
 msgid "Preview saves"
 msgstr "Ver saves"
 
-#: lib/mnemo_web/live/settings_live.ex:319
+#: lib/mnemo_web/live/settings_live.ex:362
 #, elixir-autogen, elixir-format
 msgid "Configure the consent screen under \"Google Auth Platform\": choose \"External\" and fill in the app name and your e-mail."
 msgstr "Configure a tela de consentimento em \"Google Auth Platform\": escolha \"Externo\" e preencha o nome do app e seu e-mail."
 
-#: lib/mnemo_web/live/settings_live.ex:311
+#: lib/mnemo_web/live/settings_live.ex:354
 #, elixir-autogen, elixir-format
 msgid "Create a project. Any name works — \"mnemo\", for example."
 msgstr "Crie um projeto. Qualquer nome serve — \"mnemo\", por exemplo."
 
-#: lib/mnemo_web/live/settings_live.ex:336
+#: lib/mnemo_web/live/settings_live.ex:379
 #, elixir-autogen, elixir-format
 msgid "Create an OAuth client under \"Clients\": application type \"Desktop app\"."
 msgstr "Crie um cliente OAuth em \"Clientes\": tipo de aplicativo \"App para computador\"."
 
-#: lib/mnemo_web/live/settings_live.ex:315
+#: lib/mnemo_web/live/settings_live.ex:358
 #, elixir-autogen, elixir-format
 msgid "Enable the Google Drive API for that project."
 msgstr "Ative a API do Google Drive nesse projeto."
 
-#: lib/mnemo_web/live/settings_live.ex:294
+#: lib/mnemo_web/live/settings_live.ex:334
 #, elixir-autogen, elixir-format
 msgid "How to get these credentials, step by step"
 msgstr "Como obter essas credenciais, passo a passo"
 
-#: lib/mnemo_web/live/settings_live.ex:305
+#: lib/mnemo_web/live/settings_live.ex:345
 #, elixir-autogen, elixir-format
 msgid "Open the Google Cloud console and sign in with the Google account whose Drive will hold your saves."
 msgstr "Abra o console do Google Cloud e entre com a conta Google cujo Drive vai guardar seus saves."
 
-#: lib/mnemo_web/live/settings_live.ex:330
+#: lib/mnemo_web/live/settings_live.ex:373
 #, elixir-autogen, elixir-format
 msgid "Publish the app to production under \"Audience\". While it stays in testing, Google drops the connection every 7 days."
 msgstr "Publique o app em produção em \"Público-alvo\". Enquanto estiver em teste, o Google derruba a conexão a cada 7 dias."
 
-#: lib/mnemo_web/live/settings_live.ex:242
+#: lib/mnemo_web/live/settings_live.ex:254
 #, elixir-autogen, elixir-format
 msgid "mnemo connects to your Drive as a Google OAuth client of type \"Desktop app\". Paste its credentials here — the guide below shows how to create them for free."
 msgstr "O mnemo se conecta ao seu Drive como um cliente OAuth do Google do tipo \"App para computador\". Cole as credenciais aqui — o guia abaixo mostra como criá-las gratuitamente."
 
-#: lib/mnemo_web/live/settings_live.ex:151
+#: lib/mnemo_web/live/settings_live.ex:155
 #, elixir-autogen, elixir-format
 msgid "open in the console"
 msgstr "abrir no console"
 
-#: lib/mnemo_web/live/settings_live.ex:324
+#: lib/mnemo_web/live/settings_live.ex:367
 #, elixir-autogen, elixir-format
 msgid "\"External\" only means a personal Google account instead of a Workspace organization. It does not publish anything, and it does not make your files public."
 msgstr "\"Externo\" significa apenas uma conta Google pessoal em vez de uma organização Workspace. Não publica nada nem torna seus arquivos públicos."
 
-#: lib/mnemo_web/live/settings_live.ex:348
+#: lib/mnemo_web/live/settings_live.ex:391
 #, elixir-autogen, elixir-format
 msgid "Google will show an \"unverified app\" warning when you connect. That is expected: the app is yours, you created it minutes ago, and verification only exists for apps distributed to other people. Click \"Advanced\" and continue."
 msgstr "Ao conectar, o Google mostra um aviso de \"app não verificado\". É esperado: o app é seu, você acabou de criá-lo, e a verificação só existe para apps distribuídos a outras pessoas. Clique em \"Avançado\" e continue."
 
-#: lib/mnemo_web/live/settings_live.ex:270
+#: lib/mnemo_web/live/settings_live.ex:282
 #, elixir-autogen, elixir-format
 msgid "On the authorization screen Google words it like this:"
 msgstr "Na tela de autorização o Google diz assim:"
 
-#: lib/mnemo_web/live/settings_live.ex:272
+#: lib/mnemo_web/live/settings_live.ex:284
 #, elixir-autogen, elixir-format
 msgid "See, edit, create and delete only the specific Google Drive files you use with this app"
 msgstr "Ver, editar, criar e excluir apenas os arquivos específicos do Google Drive que você usar com este app"
 
-#: lib/mnemo_web/live/settings_live.ex:278
+#: lib/mnemo_web/live/settings_live.ex:290
 #, elixir-autogen, elixir-format
 msgid "The credentials are yours: they belong to a Google project in your own account and never leave this computer. mnemo has no server of its own, so nobody else — including whoever wrote it — can reach your saves."
 msgstr "As credenciais são suas: pertencem a um projeto Google na sua própria conta e nunca saem deste computador. O mnemo não tem servidor próprio, então ninguém mais — nem quem escreveu o programa — alcança seus saves."
 
-#: lib/mnemo_web/live/settings_live.ex:265
+#: lib/mnemo_web/live/settings_live.ex:277
 #, elixir-autogen, elixir-format
 msgid "The permission requested covers only files this app itself created. The rest of your Drive — documents, photos, files from other apps — stays invisible to it. Google enforces that on their side; it is not a promise made by mnemo's code."
 msgstr "A permissão pedida cobre apenas os arquivos que o próprio app criou. O resto do seu Drive — documentos, fotos, arquivos de outros apps — continua invisível para ele. Quem garante isso é o Google, do lado deles; não é uma promessa do código do mnemo."
 
-#: lib/mnemo_web/live/settings_live.ex:283
+#: lib/mnemo_web/live/settings_live.ex:295
 #, elixir-autogen, elixir-format
 msgid "You can revoke this access whenever you want."
 msgstr "Você pode revogar esse acesso quando quiser."
 
-#: lib/mnemo_web/live/settings_live.ex:261
+#: lib/mnemo_web/live/settings_live.ex:273
 #, elixir-autogen, elixir-format
 msgid "mnemo only ever sees the folder it creates"
 msgstr "O mnemo só enxerga a pasta que ele mesmo cria"
 
-#: lib/mnemo_web/live/settings_live.ex:286
+#: lib/mnemo_web/live/settings_live.ex:298
 #, elixir-autogen, elixir-format
 msgid "your Google account permissions"
 msgstr "permissões da sua conta Google"
 
-#: lib/mnemo_web/live/settings_live.ex:132
+#: lib/mnemo_web/live/settings_live.ex:136
 #, elixir-autogen, elixir-format
 msgid "Connected"
 msgstr "Conectado"
 
-#: lib/mnemo_web/live/settings_live.ex:94
+#: lib/mnemo_web/live/settings_live.ex:98
 #, elixir-autogen, elixir-format
 msgid "Credentials saved. Now authorize access in step 2 below."
 msgstr "Credenciais salvas. Agora autorize o acesso no passo 2, abaixo."
 
-#: lib/mnemo_web/live/settings_live.ex:435
+#: lib/mnemo_web/live/settings_live.ex:479
 #, elixir-autogen, elixir-format
 msgid "Finish step 1 first. Saving the credentials does not connect anything on its own — the authorization happens here."
 msgstr "Conclua o passo 1 primeiro. Salvar as credenciais sozinho não conecta nada — a autorização acontece aqui."
 
-#: lib/mnemo_web/live/settings_live.ex:224
+#: lib/mnemo_web/live/settings_live.ex:236
 #, elixir-autogen, elixir-format
 msgid "Google Drive"
 msgstr "Google Drive"
 
-#: lib/mnemo_web/live/settings_live.ex:135
-#: lib/mnemo_web/live/settings_live.ex:251
+#: lib/mnemo_web/live/settings_live.ex:139
+#: lib/mnemo_web/live/settings_live.ex:263
+#: lib/mnemo_web/live/settings_live.ex:512
 #, elixir-autogen, elixir-format
 msgid "Pending"
 msgstr "Pendente"
 
-#: lib/mnemo_web/live/settings_live.ex:134
+#: lib/mnemo_web/live/settings_live.ex:138
 #, elixir-autogen, elixir-format
 msgid "Reconnect needed"
 msgstr "Reconexão necessária"
 
-#: lib/mnemo_web/live/settings_live.ex:251
+#: lib/mnemo_web/live/settings_live.ex:263
+#: lib/mnemo_web/live/settings_live.ex:512
 #, elixir-autogen, elixir-format
 msgid "Saved"
 msgstr "Salvas"
 
-#: lib/mnemo_web/live/settings_live.ex:240
+#: lib/mnemo_web/live/settings_live.ex:252
 #, elixir-autogen, elixir-format
 msgid "Step 1 · Credentials"
 msgstr "Passo 1 · Credenciais"
 
-#: lib/mnemo_web/live/settings_live.ex:428
+#: lib/mnemo_web/live/settings_live.ex:472
 #, elixir-autogen, elixir-format
 msgid "Step 2 · Authorize access"
 msgstr "Passo 2 · Autorizar acesso"
 
-#: lib/mnemo_web/live/settings_live.ex:431
+#: lib/mnemo_web/live/settings_live.ex:475
 #, elixir-autogen, elixir-format
 msgid "This opens your browser so Google can confirm that this computer may use the credentials from step 1."
 msgstr "Isto abre seu navegador para o Google confirmar que este computador pode usar as credenciais do passo 1."
 
-#: lib/mnemo_web/live/settings_live.ex:133
+#: lib/mnemo_web/live/settings_live.ex:137
 #, elixir-autogen, elixir-format
 msgid "Waiting…"
 msgstr "Aguardando…"
 
-#: lib/mnemo_web/live/settings_live.ex:299
+#: lib/mnemo_web/live/settings_live.ex:339
 #, elixir-autogen, elixir-format
 msgid "Already set mnemo up on another computer? Do not create anything new — import the same JSON file here, or paste the same two values, and go straight to step 2."
 msgstr "Já configurou o mnemo em outro computador? Não crie nada novo — importe o mesmo arquivo JSON aqui, ou cole os mesmos dois valores, e vá direto para o passo 2."
 
-#: lib/mnemo_web/live/settings_live.ex:342
+#: lib/mnemo_web/live/settings_live.ex:385
 #, elixir-autogen, elixir-format
 msgid "Download the client's JSON file and import it above. Keep that file somewhere safe and private — it is what you will reuse on your other computers."
 msgstr "Baixe o arquivo JSON do cliente e importe-o acima. Guarde esse arquivo em um lugar seguro e privado — é ele que você vai reutilizar nos seus outros computadores."
 
-#: lib/mnemo_web/live/settings_live.ex:367
+#: lib/mnemo_web/live/settings_live.ex:410
 #, elixir-autogen, elixir-format
 msgid "Drop the client_secret_….json file here, or click to pick it. mnemo reads the two keys out of it and keeps no copy of the file."
 msgstr "Arraste o arquivo client_secret_….json para cá, ou clique para escolhê-lo. O mnemo lê as duas chaves dele e não guarda cópia do arquivo."
 
-#: lib/mnemo_web/live/settings_live.ex:123
+#: lib/mnemo_web/live/settings_live.ex:127
 #, elixir-autogen, elixir-format
 msgid "File is too large."
 msgstr "O arquivo é grande demais."
 
-#: lib/mnemo_web/live/settings_live.ex:364
+#: lib/mnemo_web/live/settings_live.ex:407
 #, elixir-autogen, elixir-format
 msgid "Import the JSON file downloaded from Google"
 msgstr "Importar o arquivo JSON baixado do Google"
 
-#: lib/mnemo_web/live/settings_live.ex:124
+#: lib/mnemo_web/live/settings_live.ex:128
 #, elixir-autogen, elixir-format
 msgid "Only .json files are accepted."
 msgstr "Somente arquivos .json são aceitos."
 
-#: lib/mnemo_web/live/settings_live.ex:226
+#: lib/mnemo_web/live/settings_live.ex:238
 #, elixir-autogen, elixir-format
 msgid "Setting this up takes two steps, and both are needed: first you tell mnemo which Google app to use, then you authorize that app to reach your Drive."
 msgstr "A configuração tem dois passos, e os dois são necessários: primeiro você diz ao mnemo qual app do Google usar, depois autoriza esse app a acessar seu Drive."
 
-#: lib/mnemo_web/live/settings_live.ex:125
+#: lib/mnemo_web/live/settings_live.ex:129
 #, elixir-autogen, elixir-format
 msgid "That file could not be read."
 msgstr "Não foi possível ler esse arquivo."
 
-#: lib/mnemo_web/live/settings_live.ex:110
+#: lib/mnemo_web/live/settings_live.ex:114
 #, elixir-autogen, elixir-format
 msgid "That file is not valid JSON. Download it again from the Google console."
 msgstr "Esse arquivo não é um JSON válido. Baixe-o novamente no console do Google."
 
-#: lib/mnemo_web/live/settings_live.ex:114
+#: lib/mnemo_web/live/settings_live.ex:118
 #, elixir-autogen, elixir-format
 msgid "That file is too large to be an OAuth client file."
 msgstr "Esse arquivo é grande demais para ser um arquivo de cliente OAuth."
 
-#: lib/mnemo_web/live/settings_live.ex:118
+#: lib/mnemo_web/live/settings_live.ex:122
 #, elixir-autogen, elixir-format
 msgid "This JSON does not look like a Google OAuth client file. It should be the one downloaded under \"Clients\" in the console."
 msgstr "Este JSON não parece um arquivo de cliente OAuth do Google. Deve ser aquele baixado em \"Clientes\", no console."
 
-#: lib/mnemo_web/live/settings_live.ex:104
+#: lib/mnemo_web/live/settings_live.ex:108
 #, elixir-autogen, elixir-format
 msgid "This file belongs to a \"Web application\" client. mnemo needs one of type \"Desktop app\" — create a new client with that type and download it again."
 msgstr "Este arquivo é de um cliente do tipo \"Aplicativo da Web\". O mnemo precisa de um do tipo \"App para computador\" — crie um cliente novo com esse tipo e baixe de novo."
 
-#: lib/mnemo_web/live/settings_live.ex:231
+#: lib/mnemo_web/live/settings_live.ex:243
 #, elixir-autogen, elixir-format
 msgid "You create the credentials once in your life and reuse the very same ones on every computer. The authorization in step 2 is what happens once per computer."
 msgstr "Você cria as credenciais uma vez na vida e reutiliza exatamente as mesmas em todos os computadores. A autorização do passo 2 é que acontece uma vez por computador."
 
-#: lib/mnemo_web/live/settings_live.ex:392
+#: lib/mnemo_web/live/settings_live.ex:435
 #, elixir-autogen, elixir-format
 msgid "or type them in"
 msgstr "ou digite manualmente"
@@ -718,7 +720,7 @@ msgid_plural "%{count} files"
 msgstr[0] "%{count} arquivo"
 msgstr[1] "%{count} arquivos"
 
-#: lib/mnemo_web/components/game_components.ex:441
+#: lib/mnemo_web/components/game_components.ex:442
 #, elixir-autogen, elixir-format
 msgid "A file could not be downloaded intact. Nothing on disk was touched."
 msgstr "Não foi possível baixar um arquivo íntegro. Nada no disco foi tocado."
@@ -738,7 +740,7 @@ msgstr "Backup apagado."
 msgid "Backup folders"
 msgstr "Pastas de backup"
 
-#: lib/mnemo_web/live/enroll_live.ex:500
+#: lib/mnemo_web/live/enroll_live.ex:502
 #: lib/mnemo_web/live/slots_live.ex:661
 #: lib/mnemo_web/live/slots_live.ex:824
 #, elixir-autogen, elixir-format
@@ -776,7 +778,7 @@ msgstr "Apagar"
 msgid "Delete this backup folder permanently?"
 msgstr "Apagar esta pasta de backup permanentemente?"
 
-#: lib/mnemo_web/components/game_components.ex:328
+#: lib/mnemo_web/components/game_components.ex:327
 #, elixir-autogen, elixir-format
 msgid "Downloading…"
 msgstr "Baixando…"
@@ -796,12 +798,12 @@ msgstr "Histórico"
 msgid "Put this folder back and move the current one aside?"
 msgstr "Colocar esta pasta de volta e mover a atual para o lado?"
 
-#: lib/mnemo_web/components/game_components.ex:330
+#: lib/mnemo_web/components/game_components.ex:329
 #, elixir-autogen, elixir-format
 msgid "Putting files in place…"
 msgstr "Colocando os arquivos no lugar…"
 
-#: lib/mnemo_web/components/game_components.ex:444
+#: lib/mnemo_web/components/game_components.ex:445
 #, elixir-autogen, elixir-format
 msgid "Putting the files in place failed. The previous folder was left as it was."
 msgstr "Falhou ao colocar os arquivos no lugar. A pasta anterior foi mantida como estava."
@@ -817,7 +819,7 @@ msgstr "Substituir os saves atuais pela geração %{number}?"
 msgid "Restore"
 msgstr "Restaurar"
 
-#: lib/mnemo_web/components/game_components.ex:332
+#: lib/mnemo_web/components/game_components.ex:331
 #, elixir-autogen, elixir-format
 msgid "Restored"
 msgstr "Restaurado"
@@ -827,19 +829,19 @@ msgstr "Restaurado"
 msgid "Roll back"
 msgstr "Reverter"
 
-#: lib/mnemo_web/components/game_components.ex:327
+#: lib/mnemo_web/components/game_components.ex:326
 #, elixir-autogen, elixir-format
 msgid "Saving current state…"
 msgstr "Salvando o estado atual…"
 
-#: lib/mnemo_web/live/enroll_live.ex:474
+#: lib/mnemo_web/live/enroll_live.ex:476
 #: lib/mnemo_web/live/slots_live.ex:635
 #: lib/mnemo_web/live/slots_live.ex:810
 #, elixir-autogen, elixir-format
 msgid "Something wrote to this folder %{time} — the game may still be open."
 msgstr "Algo escreveu nesta pasta %{time} — o jogo pode estar aberto."
 
-#: lib/mnemo_web/components/game_components.ex:447
+#: lib/mnemo_web/components/game_components.ex:448
 #, elixir-autogen, elixir-format
 msgid "That generation has no files recorded."
 msgstr "Essa geração não tem arquivos registrados."
@@ -849,7 +851,7 @@ msgstr "Essa geração não tem arquivos registrados."
 msgid "The files on disk now are saved as a new generation first, so you can come back to them."
 msgstr "Os arquivos que estão no disco agora são salvos como uma nova geração antes, então dá para voltar a eles."
 
-#: lib/mnemo_web/live/enroll_live.ex:486
+#: lib/mnemo_web/live/enroll_live.ex:488
 #: lib/mnemo_web/live/slots_live.ex:648
 #: lib/mnemo_web/live/slots_live.ex:749
 #: lib/mnemo_web/live/slots_live.ex:816
@@ -901,12 +903,12 @@ msgstr "Não foi possível resolver o conflito."
 msgid "Keep these files"
 msgstr "Ficar com estes"
 
-#: lib/mnemo_web/components/game_components.ex:347
+#: lib/mnemo_web/components/game_components.ex:346
 #, elixir-autogen, elixir-format
 msgid "Kept this device's files. The other version stays in the history."
 msgstr "Ficamos com os arquivos deste dispositivo. A outra versão continua no histórico."
 
-#: lib/mnemo_web/components/game_components.ex:334
+#: lib/mnemo_web/components/game_components.ex:333
 #, elixir-autogen, elixir-format
 msgid "Resolved"
 msgstr "Resolvido"
@@ -931,7 +933,7 @@ msgstr "O outro dispositivo"
 msgid "This device"
 msgstr "Este dispositivo"
 
-#: lib/mnemo_web/components/game_components.ex:351
+#: lib/mnemo_web/components/game_components.ex:350
 #, elixir-autogen, elixir-format
 msgid "Took the other device's files. This device's version was saved to the history first."
 msgstr "Trouxemos os arquivos do outro dispositivo. A versão deste foi salva no histórico antes."
@@ -961,7 +963,7 @@ msgstr "só aqui"
 msgid "only there"
 msgstr "só lá"
 
-#: lib/mnemo_web/components/game_components.ex:417
+#: lib/mnemo_web/components/game_components.ex:418
 #, elixir-autogen, elixir-format
 msgid "Nothing was overwritten. Pick which side to keep below."
 msgstr "Nada foi sobrescrito. Escolha abaixo com qual lado ficar."
@@ -1001,87 +1003,87 @@ msgstr "Opções salvas."
 msgid "Save options"
 msgstr "Salvar opções"
 
-#: lib/mnemo_web/live/enroll_live.ex:330
+#: lib/mnemo_web/live/enroll_live.ex:338
 #, elixir-autogen, elixir-format
 msgid "game install folder"
 msgstr "pasta de instalação do jogo"
 
-#: lib/mnemo_web/live/enroll_live.ex:335
+#: lib/mnemo_web/live/enroll_live.ex:343
 #, elixir-autogen, elixir-format
 msgid "Ren'Py keeps a second copy of these saves, mirrored automatically:"
 msgid_plural "Ren'Py keeps other copies of these saves, mirrored automatically:"
 msgstr[0] "O Ren'Py mantém uma segunda cópia destes saves, espelhada automaticamente:"
 msgstr[1] "O Ren'Py mantém outras cópias destes saves, espelhadas automaticamente:"
 
-#: lib/mnemo_web/live/settings_live.ex:456
+#: lib/mnemo_web/live/settings_live.ex:501
 #, elixir-autogen, elixir-format
 msgid "Cover art"
 msgstr "Capa do jogo"
 
-#: lib/mnemo_web/live/settings_live.ex:187
+#: lib/mnemo_web/live/settings_live.ex:199
 #, elixir-autogen, elixir-format
 msgid "Cover art settings saved."
 msgstr "Configurações de capa salvas."
 
-#: lib/mnemo_web/live/settings_live.ex:458
+#: lib/mnemo_web/live/settings_live.ex:503
 #, elixir-autogen, elixir-format
 msgid "Covers come from the game itself: the artwork Steam already stored on this computer, or the icon in the install folder. For games from anywhere else, mnemo can look the cover up on SteamGridDB — paste a free API key to enable it."
 msgstr "As capas vêm do próprio jogo: a arte que a Steam já guardou neste computador, ou o ícone da pasta de instalação. Para jogos de qualquer outra origem, o mnemo pode buscar a capa no SteamGridDB — cole uma chave de API gratuita para habilitar."
 
-#: lib/mnemo_web/live/settings_live.ex:474
+#: lib/mnemo_web/live/settings_live.ex:559
 #, elixir-autogen, elixir-format
 msgid "Get a key"
 msgstr "Obter uma chave"
 
-#: lib/mnemo_web/live/settings_live.ex:478
+#: lib/mnemo_web/live/settings_live.ex:563
 #, elixir-autogen, elixir-format
 msgid "Save key"
 msgstr "Salvar chave"
 
-#: lib/mnemo_web/live/settings_live.ex:468
+#: lib/mnemo_web/live/settings_live.ex:553
 #, elixir-autogen, elixir-format
 msgid "SteamGridDB API key"
 msgstr "Chave de API do SteamGridDB"
 
-#: lib/mnemo_web/live/settings_live.ex:469
+#: lib/mnemo_web/live/settings_live.ex:554
 #, elixir-autogen, elixir-format
 msgid "optional"
 msgstr "opcional"
 
-#: lib/mnemo_web/live/settings_live.ex:476
+#: lib/mnemo_web/live/settings_live.ex:561
 #, elixir-autogen, elixir-format
 msgid "— without one, games with no local artwork keep using a save screenshot."
 msgstr "— sem ela, jogos sem arte local continuam usando a screenshot de um save."
 
-#: lib/mnemo_web/components/game_components.ex:303
+#: lib/mnemo_web/components/game_components.ex:302
 #, elixir-autogen, elixir-format
 msgid "%{count} duplicate ignored"
 msgid_plural "%{count} duplicates ignored"
 msgstr[0] "%{count} duplicata ignorada"
 msgstr[1] "%{count} duplicatas ignoradas"
 
-#: lib/mnemo_web/components/game_components.ex:296
+#: lib/mnemo_web/components/game_components.ex:295
 #, elixir-autogen, elixir-format
 msgid "%{count} other file ignored"
 msgid_plural "%{count} other files ignored"
 msgstr[0] "%{count} outro arquivo ignorado"
 msgstr[1] "%{count} outros arquivos ignorados"
 
-#: lib/mnemo_web/components/game_components.ex:294
+#: lib/mnemo_web/components/game_components.ex:293
 #, elixir-autogen, elixir-format
 msgid "%{count} save found"
 msgid_plural "%{count} saves found"
 msgstr[0] "%{count} save encontrado"
 msgstr[1] "%{count} saves encontrados"
 
-#: lib/mnemo_web/components/game_components.ex:358
+#: lib/mnemo_web/components/game_components.ex:357
 #, elixir-autogen, elixir-format
 msgid "%{count} save imported."
 msgid_plural "%{count} saves imported."
 msgstr[0] "%{count} save importado."
 msgstr[1] "%{count} saves importados."
 
-#: lib/mnemo_web/live/enroll_live.ex:467
+#: lib/mnemo_web/live/enroll_live.ex:469
 #: lib/mnemo_web/live/slots_live.ex:616
 #, elixir-autogen, elixir-format
 msgid "%{count} save will be written."
@@ -1089,7 +1091,7 @@ msgid_plural "%{count} saves will be written."
 msgstr[0] "%{count} save será gravado."
 msgstr[1] "%{count} saves serão gravados."
 
-#: lib/mnemo_web/components/game_components.ex:360
+#: lib/mnemo_web/components/game_components.ex:359
 #, elixir-autogen, elixir-format
 msgid "%{count} was already in the folder and was left alone."
 msgid_plural "%{count} were already in the folder and were left alone."
@@ -1115,7 +1117,7 @@ msgstr "Confirme que o jogo está fechado antes de importar."
 msgid "Could not start the import."
 msgstr "Não foi possível iniciar a importação."
 
-#: lib/mnemo_web/components/game_components.ex:456
+#: lib/mnemo_web/components/game_components.ex:469
 #, elixir-autogen, elixir-format
 msgid "Every save in that archive is already in the folder."
 msgstr "Todos os saves desse arquivo já estão na pasta."
@@ -1135,23 +1137,23 @@ msgstr "Importar"
 msgid "Import saves from a zip"
 msgstr "Importar saves de um zip"
 
-#: lib/mnemo_web/components/game_components.ex:333
+#: lib/mnemo_web/components/game_components.ex:332
 #, elixir-autogen, elixir-format
 msgid "Imported"
 msgstr "Importado"
 
-#: lib/mnemo_web/live/enroll_live.ex:447
+#: lib/mnemo_web/live/enroll_live.ex:449
 #: lib/mnemo_web/live/slots_live.ex:563
 #, elixir-autogen, elixir-format
 msgid "No Ren'Py saves in this archive. mnemo looks for files named the way Ren'Py names them, such as 1-1-LT1.save."
 msgstr "Nenhum save do Ren'Py neste arquivo. O mnemo procura arquivos com os nomes que o Ren'Py usa, como 1-1-LT1.save."
 
-#: lib/mnemo_web/components/game_components.ex:453
+#: lib/mnemo_web/components/game_components.ex:466
 #, elixir-autogen, elixir-format
 msgid "No Ren'Py saves were found in that archive."
 msgstr "Nenhum save do Ren'Py foi encontrado nesse arquivo."
 
-#: lib/mnemo_web/components/game_components.ex:315
+#: lib/mnemo_web/components/game_components.ex:314
 #, elixir-autogen, elixir-format
 msgid "Only .zip archives can be imported."
 msgstr "Só é possível importar arquivos .zip."
@@ -1161,18 +1163,18 @@ msgstr "Só é possível importar arquivos .zip."
 msgid "Only add what is missing"
 msgstr "Adicionar apenas o que está faltando"
 
-#: lib/mnemo_web/live/enroll_live.ex:512
+#: lib/mnemo_web/live/enroll_live.ex:514
 #: lib/mnemo_web/live/slots_live.ex:673
 #, elixir-autogen, elixir-format
 msgid "Pick another file"
 msgstr "Escolher outro arquivo"
 
-#: lib/mnemo_web/components/game_components.ex:316
+#: lib/mnemo_web/components/game_components.ex:315
 #, elixir-autogen, elixir-format
 msgid "Pick one archive at a time."
 msgstr "Escolha um arquivo por vez."
 
-#: lib/mnemo_web/components/game_components.ex:329
+#: lib/mnemo_web/components/game_components.ex:328
 #, elixir-autogen, elixir-format
 msgid "Reading the archive…"
 msgstr "Lendo o arquivo…"
@@ -1192,14 +1194,14 @@ msgstr "Os saves que já estão na pasta ficam exatamente como estão."
 msgid "Saves already in the folder but missing from the archive are never removed."
 msgstr "Saves que estão na pasta mas não estão no arquivo nunca são removidos."
 
-#: lib/mnemo_web/components/game_components.ex:450
+#: lib/mnemo_web/components/game_components.ex:463
 #: lib/mnemo_web/live/enroll_live.ex:212
 #: lib/mnemo_web/live/slots_live.ex:343
 #, elixir-autogen, elixir-format
 msgid "That file could not be opened as a zip archive."
 msgstr "Não foi possível abrir esse arquivo como um zip."
 
-#: lib/mnemo_web/components/game_components.ex:314
+#: lib/mnemo_web/components/game_components.ex:313
 #, elixir-autogen, elixir-format
 msgid "That file is too large to import."
 msgstr "Esse arquivo é grande demais para importar."
@@ -1209,17 +1211,17 @@ msgstr "Esse arquivo é grande demais para importar."
 msgid "The current files are published as a generation first, so this stays undoable."
 msgstr "Os arquivos atuais são publicados como uma geração antes, então dá para voltar atrás."
 
-#: lib/mnemo_web/components/game_components.ex:368
+#: lib/mnemo_web/components/game_components.ex:367
 #, elixir-autogen, elixir-format
 msgid "The previous files were kept in a backup folder."
 msgstr "Os arquivos anteriores foram mantidos em uma pasta de backup."
 
-#: lib/mnemo_web/components/game_components.ex:317
+#: lib/mnemo_web/components/game_components.ex:316
 #, elixir-autogen, elixir-format
 msgid "The upload failed. Try again."
 msgstr "O envio falhou. Tente de novo."
 
-#: lib/mnemo_web/components/game_components.ex:366
+#: lib/mnemo_web/components/game_components.ex:365
 #, elixir-autogen, elixir-format
 msgid "They are on disk but could not be uploaded yet — sync when you can."
 msgstr "Eles estão no disco, mas ainda não foram enviados — sincronize quando puder."
@@ -1229,12 +1231,12 @@ msgstr "Eles estão no disco, mas ainda não foram enviados — sincronize quand
 msgid "Unlocked content and seen text"
 msgstr "Conteúdo desbloqueado e texto já visto"
 
-#: lib/mnemo_web/components/game_components.ex:276
+#: lib/mnemo_web/components/game_components.ex:275
 #, elixir-autogen, elixir-format
 msgid "already in the folder"
 msgstr "já está na pasta"
 
-#: lib/mnemo_web/components/game_components.ex:276
+#: lib/mnemo_web/components/game_components.ex:275
 #, elixir-autogen, elixir-format
 msgid "new"
 msgstr "novo"
@@ -1244,7 +1246,7 @@ msgstr "novo"
 msgid "%{name} was added. Importing the saves now."
 msgstr "%{name} foi adicionado. Importando os saves agora."
 
-#: lib/mnemo_web/live/enroll_live.ex:492
+#: lib/mnemo_web/live/enroll_live.ex:494
 #, elixir-autogen, elixir-format
 msgid "Enroll and import"
 msgstr "Registrar e importar"
@@ -1255,12 +1257,12 @@ msgid "Enrolling, and bringing old saves back"
 msgstr "Registrar um jogo e trazer saves antigos de volta"
 
 #: lib/mnemo_web/live/enroll_live.ex:282
-#: lib/mnemo_web/live/enroll_live.ex:372
+#: lib/mnemo_web/live/enroll_live.ex:374
 #, elixir-autogen, elixir-format
 msgid "Import saves"
 msgstr "Importar saves"
 
-#: lib/mnemo_web/live/enroll_live.ex:425
+#: lib/mnemo_web/live/enroll_live.ex:427
 #, elixir-autogen, elixir-format
 msgid "Import saves into %{name}"
 msgstr "Importar saves para %{name}"
@@ -1270,7 +1272,7 @@ msgstr "Importar saves para %{name}"
 msgid "So the save sitting in a freshly installed game is there to identify the folder, nothing more. If your real saves are in a zip — a backup you made or a Google Takeout export — use %{button} instead of %{enroll}: it enrols the game and puts your archive in place of what the folder holds now."
 msgstr "Ou seja: o save que está num jogo recém-instalado serve para identificar a pasta, nada além disso. Se os seus saves de verdade estão em um zip — um backup que você fez ou uma exportação do Google Takeout — use %{button} em vez de %{enroll}: isso registra o jogo e coloca o seu arquivo no lugar do que a pasta tem hoje."
 
-#: lib/mnemo_web/live/enroll_live.ex:428
+#: lib/mnemo_web/live/enroll_live.ex:430
 #, elixir-autogen, elixir-format
 msgid "The %{count} save in this folder will be replaced by what the archive holds. It is published as a generation first, so it stays recoverable."
 msgid_plural "The %{count} saves in this folder will be replaced by what the archive holds. They are published as a generation first, so they stay recoverable."
@@ -1301,3 +1303,49 @@ msgstr "Solte um .zip aqui, ou clique para escolher"
 #, elixir-autogen, elixir-format
 msgid "Uploading %{name}…"
 msgstr "Enviando %{name}…"
+
+#: lib/mnemo_web/components/game_components.ex:489
+#, elixir-autogen, elixir-format
+msgid "A second copy of these saves, kept with the game itself, could not be updated."
+msgstr "Uma segunda cópia destes saves, mantida junto do próprio jogo, não pôde ser atualizada."
+
+#: lib/mnemo_web/components/game_components.ex:484
+#, elixir-autogen, elixir-format
+msgid "A second copy of these saves, kept with the game itself, was left as it was because its files did not match. The game may still read that copy."
+msgstr "Uma segunda cópia destes saves, mantida junto do próprio jogo, ficou como estava porque os arquivos dela não conferiam. O jogo ainda pode ler essa cópia."
+
+#: lib/mnemo_web/components/game_components.ex:457
+#, elixir-autogen, elixir-format
+msgid "This folder treats %{names} as the same file, so writing them would lose one. Nothing was touched."
+msgstr "Esta pasta trata %{names} como o mesmo arquivo, então gravar os dois perderia um deles. Nada foi tocado."
+
+#: lib/mnemo_web/components/game_components.ex:451
+#, elixir-autogen, elixir-format
+msgid "Windows will not accept a file path longer than %{limit} characters, and this one would be. Nothing was touched."
+msgstr "O Windows não aceita um caminho de arquivo com mais de %{limit} caracteres, e este passaria disso. Nada foi tocado."
+
+#: lib/mnemo_web/live/settings_live.ex:327
+#: lib/mnemo_web/live/settings_live.ex:539
+#, elixir-autogen, elixir-format
+msgid "Change"
+msgstr "Trocar"
+
+#: lib/mnemo_web/live/settings_live.ex:528
+#, elixir-autogen, elixir-format
+msgid "External cover lookup is enabled for games without local artwork."
+msgstr "A busca externa de capas está ativa para jogos sem arte local."
+
+#: lib/mnemo_web/live/settings_live.ex:314
+#, elixir-autogen, elixir-format
+msgid "Google credentials are saved"
+msgstr "As credenciais do Google estão salvas"
+
+#: lib/mnemo_web/live/settings_live.ex:316
+#, elixir-autogen, elixir-format
+msgid "Keep using these credentials unless Google asks you to replace them."
+msgstr "Continue usando estas credenciais, a menos que o Google peça para substituí-las."
+
+#: lib/mnemo_web/live/settings_live.ex:526
+#, elixir-autogen, elixir-format
+msgid "SteamGridDB key is saved"
+msgstr "A chave do SteamGridDB está salva"

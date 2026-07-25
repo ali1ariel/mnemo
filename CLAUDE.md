@@ -57,15 +57,19 @@ Each `.save` is a **zip archive** containing the screenshot taken at save time p
 
 **Identity is `save_directory` plus a UUID.** The path is never stored as identity; it is always derived from `os_root + save_directory`. This solves the Proton case without a per-game mapping table.
 
-**Cover art comes from the save itself.** A game's default cover is the screenshot extracted from its most recent save. There is no SteamGridDB, IGDB, or Steam CDN integration — coverage for Ren'Py and itch.io titles is poor, and the embedded screenshot is better and free. Manual image upload overrides it for anyone who wants that.
+**Cover art has a local answer before it has a network one.** In order: art already downloaded for the game; the Steam capsule Steam itself cached under `appcache/librarycache`, found through `appmanifest_<id>.acf`; the `icon.png` every packaged Ren'Py build ships; and finally the screenshot inside the most recent save. Only when all of those miss is SteamGridDB asked, in the background, with a marker left behind so a game with no art anywhere does not hit the network on every render. The screenshot alone is never enough — many Ren'Py titles are on Steam and have real artwork — but it is always there as a floor, which is why no lookup ever blocks a page.
+
+**Published art renders sharp; save screenshots do not.** A screenshot is an arbitrary frame of the game and cannot be assumed safe to show, so it stays behind a click-to-reveal blur. Cover art is made to be looked at. The source therefore has to be known before rendering, not after.
 
 **Compression is unnecessary.** `.save` is a zip and `persistent` is already compressed. Do not add a compression layer; upload bytes as they are.
 
-**`persistent` is progress and must be synced**, but it is the highest-churn file — Ren'Py rewrites it during reading as text is seen. A change to `persistent` alone should not trigger sync with the same urgency as a new `.save`; use a longer debounce window for it.
+**`persistent` is progress and must be synced.** It is also the highest-churn file — Ren'Py rewrites it during reading as text is seen — which is one reason sync is a button rather than a background loop: a change to `persistent` alone is rarely worth a generation.
 
 ## Architecture
 
-Core separation: **GenServers run the sync engine; SQLite holds the persisted record; LiveView observes.** Live process state is the source for the UI; the database is updated at meaningful checkpoints (snapshot created, generation confirmed, conflict detected), never on every debounce transition.
+Core separation: **GenServers run the sync engine; SQLite holds the persisted record; LiveView observes.** Live process state is the source for the UI; the database is updated at meaningful checkpoints only — snapshot created, generation confirmed, conflict detected.
+
+**Sync is explicit.** There is no watcher and no periodic sweep: syncing happens when someone presses the button. This is a deliberate reduction, not a missing feature. It removes the debounce state machine, the port that dies across suspend and has to be resurrected, the reconciler that exists to cover for that port, and the generation churn that made retention urgent. Do not reintroduce a file watcher without deciding what to do about all four.
 
 ```
 Mnemo.Application
@@ -74,15 +78,14 @@ Mnemo.Application
 ├── Mnemo.Game.Registry          # Registry, keys: :unique
 ├── Mnemo.Game.Supervisor        # DynamicSupervisor, one child per game
 │   └── Mnemo.Game.Server        # GenServer + state machine
-├── Mnemo.Watcher                # file_system + Port.monitor + restart
-├── Mnemo.Reconciler             # periodic safety sweep
 ├── Mnemo.RenPy                  # slot name parsing, zip, screenshot
 ├── Mnemo.Drive                  # GenServer: token, refresh, rate limit
 ├── Task.Supervisor              # bounded concurrent uploads
-└── MnemoWeb.Endpoint            # loopback
+├── MnemoWeb.Endpoint            # loopback, port 0
+└── Mnemo.Endpoint.Address       # writes the bound port for the launcher
 ```
 
-`Game.Server` states: `:idle → :dirty → :settling → :snapshotting → :uploading → :ok | :conflict | :error`.
+`Game.Server` states: `:idle → :snapshotting → :uploading → :ok | :conflict | :error`, plus `:safety_snapshot → :downloading | :importing → :swapping` while restoring or importing.
 
 ### Errors are structured, never strings
 
@@ -165,19 +168,16 @@ The executable name is not derivable from `save_directory`, so reliable automati
 ## Sync cycle
 
 ```
-watcher fires
-  → debounce (30–60s of quiet; longer window if only `persistent` changed)
+someone presses sync
   → snapshot to a temp directory
   → validate every `.save` as a zip
   → hash (:crypto.hash(:sha256, ...))
-  → look up blobs; upload only new hashes
+  → list the remote blobs; upload only hashes it does not already hold
   → write the generation N+1 manifest
   → update local state and PubSub.broadcast
 ```
 
-`Reconciler` runs every 5–10 minutes comparing local hashes against the last manifest. It is the safety net for a dead watcher, events lost across suspend/hibernate, and external edits. Without it, a dead port process leaves syncing silently deaf.
-
-`Watcher` wraps `file_system` with `Port.monitor` and restarts the port when it dies.
+**Which blobs to upload is asked of the remote, never of the local `blobs` table.** That table is a cache: it survives the Drive folder being deleted, the account being switched, and `mix mnemo.reset --remote`. Trusting it lets a cycle skip uploads and publish a manifest pointing at bytes that are not there — a sync that reports success over a hollow backup, discovered only when someone tries to restore. One `list_children` per cycle removes the whole class.
 
 Autosaves and quicksaves change every few minutes of play. Respect `sync_autosaves` per game, off by default — syncing them multiplies generations without proportional value.
 
@@ -185,14 +185,15 @@ Autosaves and quicksaves change every few minutes of play. Respect `sync_autosav
 
 The interface speaks Ren'Py, not files.
 
-- **Library** — grid of games with cover (most recent save's screenshot), last sync, and state.
-- **Enroll** — scan the OS root listing found subfolders, with a preview screenshot so the user can recognize the game (`save_directory` is usually cryptic). Plus a manual folder-picking button for portable installs.
+- **Library** — grid of games with cover art, last sync, and state.
+- **Enroll** — scan the OS root listing found subfolders, with a preview so the user can recognize the game (`save_directory` is usually cryptic). Folders that mirror one another are collapsed into one entry, since enrolling a game twice would give it two lineages.
+- **Import** — take the saves out of a zip the player already has, which is how a Google Takeout export or a hand-made backup gets back onto a machine. Read wherever the saves sit inside the archive; the folder structure around them is discarded. From the game page an import is additive by default. From the enroll screen it also enrols, and replaces what is in the folder, because there the only thing in it is the reference save rule 2 requires.
 - **Slots** — grid of pages and slots the way Ren'Py renders them, with each save's screenshot. Autosaves and quicksaves in a separate section.
 - **History** — timeline of generations with date, device, how many slots changed, and thumbnails of the changed slots. This is what makes history navigable instead of a table of timestamps.
 - **Restore** — brings back generation N, always with a prior snapshot and confirmation that the game is closed.
 - **Conflict** — both sides with date, device, and thumbnails of the diverging slots. The choice must be informed, never made over two black boxes.
-- **Retention** — last 20 generations plus the first of each day for the last 30. Pruning is garbage collection: remove manifests, then delete blobs referenced by _no_ remaining manifest. Order matters.
-- **Verify** — re-hash local files against the last manifest. Runs at boot and on demand.
+- **Retention** — last 20 generations plus the first of each day for the last 30. Pruning is garbage collection: remove manifests, then delete blobs referenced by _no_ remaining manifest. Order matters. Less pressing without a watcher — generations only appear when someone asks for one — but growth is still unbounded over time.
+- **Verify** — re-hash local files against the last manifest, on demand.
 - **Archive game** — uninstalling does not remove the `%APPDATA%` folder, so an orphaned folder looks installed forever. Do not try to truly validate installation; display "last changed N months ago" and offer to archive.
 
 ## Cross-platform
@@ -201,9 +202,11 @@ The per-OS roots are in the Ren'Py layout section. What matters: **game identity
 
 In the remote manifest, always store relative POSIX-style paths, translated on restore.
 
-ext4 is case-sensitive, NTFS is not: files differing only in case collide when restoring Linux → Windows.
+**Ren'Py writes every save to more than one place.** `savelocation.init/0` builds a `MultiLocation` from the user savedir *and* `<gamedir>/saves`; a save goes to all of them, a delete removes from all of them, and `load` reads whichever is newest. A restore that only clears the tracked folder therefore half works — the slot reappears from the packaged copy the next time the game opens. Restore and import propagate to the other locations, but only to ones that still match the tracked folder: a copy that drifted holds bytes no generation captured, and overwriting those would be an overwrite with nothing to come back to.
 
-Windows: `MAX_PATH` of 260 characters still bites. Use the `\\?\` prefix on file operations.
+**ext4 is case-sensitive, NTFS is not**: two saves whose names differ only in case are separate files here and one file there. Restoring such a generation on Windows would write both to the same path and report success over a slot that is gone. Whether the target folds case is asked of the filesystem by writing a probe file, not of `:os.type` — case-sensitive volumes exist on Windows and case-insensitive ones on Linux. The restore is refused rather than performed.
+
+**Windows `MAX_PATH`**: the paths this application builds are not close to 260 characters — `%APPDATA%\RenPy\<save_directory>\<file>` with a staging suffix measures around 125 for a real game, and the Proton layout that does get long is Linux-side. The `\\?\` prefix is deliberately **not** used: it requires backslash-only normalised paths, while everything here is built with `Path.join/2`, so adopting it means rewriting path construction throughout the code that overwrites saves — untested, for 135 characters of slack. The limit is checked and named instead, so an overrun is a refusal rather than `:enametoolong` from the middle of a restore. Revisit if a real path ever gets close.
 
 ## Google OAuth
 
@@ -224,8 +227,10 @@ Bandwidth: compare metadata `md5Checksum` before downloading; `changes.list` wit
 - **SQLite path** via `:filename.basedir(:user_data, "mnemo")` in `config/runtime.exs`. The application directory is read-only in macOS `.app` bundles and AppImages.
 - **Migrations run at boot**, not via Mix: `Ecto.Migrator.with_repo(Repo, &Ecto.Migrator.run(&1, :up, all: true))` before the supervision tree starts. A release has no Mix.
 - **WAL is mandatory**: `journal_mode: :wal` and a generous `busy_timeout`. Several `Game.Server` processes writing in parallel produce intermittent `database is locked` with the default journal.
-- **Endpoint on `127.0.0.1` with port 0.** Listening on loopback does not trigger the Windows Firewall prompt.
-- Autostart at logon (never as a Windows Service — tokens and paths are per user). Closing the window hides to tray; it **must not** shut down the BEAM.
+- **Endpoint on `127.0.0.1` with port 0.** Loopback does not trigger the Windows Firewall prompt, and port 0 means the application still starts when something else holds the port it wanted — there is nowhere to report that failure before the window exists. `Mnemo.Endpoint.Address` writes the bound port to `<user_data>/mnemo/endpoint.json` for the launcher, and removes it on shutdown so a stale address never outlives the process. A file rather than `bin/mnemo rpc`, which needs a named node and epmd that an embedded runtime may not have.
+- **No `force_ssl`.** There is no certificate and no https to redirect to; keeping it leaves a host-based exclusion list as the only thing between the application and an unreachable interface.
+- **A second instance is refused** by the BEAM's own node name, which is enough to stop two copies fighting over the same database and lineage. Crude — the launcher should raise the existing window instead.
+- Closing the window hides to tray; it **must not** shut down the BEAM.
 
 ## Gettext
 
@@ -252,10 +257,14 @@ Sync bugs live in the improbable interleaving, which is what property testing fi
 
 ## Phases
 
-- **v0** — one game, scan of `%APPDATA%\RenPy`, manual sync button, OAuth end to end, SQLite storing hashes, screenshot extraction working.
-- **v1** — watcher with debounce, generation protocol with conflict detection, slot grid. Usable.
-- **v2** — automatic pull, history with thumbnails, restore with rollback, manual enrollment for portable installs.
-- **v3** — Tauri packaging, tray, autostart, pruning, metered-network awareness.
+- **v0** — one game, scan of `%APPDATA%\RenPy`, manual sync button, OAuth end to end, SQLite storing hashes, screenshot extraction working. **Done.**
+- **v1** — generation protocol with conflict detection, slot grid, restore with rollback, archive import, cover art. Usable. **Done.**
+- **v2** — history with thumbnails, retention and pruning, verify on demand, manual folder-picking enrollment, resumable uploads above ~5 MB.
+- **v3** — Tauri packaging, tray, metered-network awareness.
+
+Autostart at logon was dropped along with the watcher: an application that
+starts itself and then syncs nothing is worse than one that is opened when
+it is wanted.
 
 ## Do not
 
@@ -266,6 +275,7 @@ Sync bugs live in the improbable interleaving, which is what property testing fi
 - Do not build a remote backend — Drive is already the consistent coordination point. A server only if cross-user sharing ever happens.
 - Do not use `phx.gen.live` / `phx.gen.context`.
 - Do not use timestamps to order generations.
-- Do not persist debounce transitions.
+- Do not add a file watcher or a background sync loop; see the architecture section for what that costs.
+- Do not trust the local `blobs` table to decide what the remote already holds.
 - Do not auto-merge saves.
 - Do not create save directories.

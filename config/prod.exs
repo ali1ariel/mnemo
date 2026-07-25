@@ -7,17 +7,14 @@ import Config
 # before starting your production server.
 config :mnemo, MnemoWeb.Endpoint, cache_static_manifest: "priv/static/cache_manifest.json"
 
-# Force using SSL in production. This also sets the "strict-security-transport" header,
-# known as HSTS. If you have a health check endpoint, you may want to exclude it below.
-# Note `:force_ssl` is required to be set at compile-time.
-config :mnemo, MnemoWeb.Endpoint,
-  force_ssl: [
-    rewrite_on: [:x_forwarded_proto],
-    exclude: [
-      # paths: ["/health"],
-      hosts: ["localhost", "127.0.0.1"]
-    ]
-  ]
+# The launcher needs the address the endpoint picked; see
+# `Mnemo.Endpoint.Address`.
+config :mnemo, publish_endpoint_address: true
+
+# No `force_ssl`. This endpoint listens on loopback and is reached by a
+# window on the same machine; there is no certificate and no https to
+# redirect to. Keeping it would leave a host-based exclusion list as the
+# only thing between the application and an unreachable interface.
 
 # Do not print debug messages in production
 config :logger, level: :info

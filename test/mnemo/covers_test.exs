@@ -19,6 +19,9 @@ defmodule Mnemo.CoversTest do
     on_exit(fn ->
       Application.delete_env(:mnemo, :steam_roots)
       Application.delete_env(:mnemo, :cover_cache_dir)
+      Application.delete_env(:mnemo, :cover_external)
+      Application.delete_env(:mnemo, :cover_external_test_pid)
+      Application.delete_env(:mnemo, :cover_external_test_result)
       File.rm_rf!(base)
     end)
 
@@ -105,6 +108,19 @@ defmodule Mnemo.CoversTest do
     assert Covers.kind(game) == :cover
   end
 
+  test "image version changes when a better cover replaces the fallback", ctx do
+    install = install!(ctx.steam, "Some Game")
+    File.write!(Path.join(install, "icon.png"), @png)
+    game = game!(ctx.saves_root, %{install_path: install})
+
+    fallback_version = Covers.version(game)
+
+    File.mkdir_p!(ctx.cache)
+    File.write!(Path.join(ctx.cache, "#{game.id}.jpg"), @jpg)
+
+    refute Covers.version(game) == fallback_version
+  end
+
   test "a game with nothing anywhere reports no cover", ctx do
     dir = Path.join(ctx.saves_root, "Empty-1")
     File.mkdir_p!(dir)
@@ -158,6 +174,23 @@ defmodule Mnemo.CoversTest do
                Covers.for_scan_entry(%{path: dir, install: nil})
 
       assert bytes == RenPyFixtures.png()
+    end
+
+    test "fetches and caches external art before using a save screenshot", ctx do
+      Application.put_env(:mnemo, :cover_external, Mnemo.CoverExternalFake)
+      Application.put_env(:mnemo, :cover_external_test_pid, self())
+      Application.put_env(:mnemo, :cover_external_test_result, {:ok, @jpg, "image/jpeg"})
+
+      dir = Path.join(ctx.saves_root, "CampBuddy-1")
+      RenPyFixtures.write_save(dir, "1-1-LT1.save")
+      entry = %{path: dir, install: nil, name: "Camp Buddy"}
+
+      assert {:ok, @jpg, "image/jpeg", :cover} = Covers.for_scan_entry(entry)
+      assert_receive {:cover_fetch, "Camp Buddy"}
+
+      Application.put_env(:mnemo, :cover_external_test_result, :none)
+      assert {:ok, @jpg, "image/jpeg", :cover} = Covers.for_scan_entry(entry)
+      refute_receive {:cover_fetch, "Camp Buddy"}
     end
   end
 end
