@@ -147,13 +147,25 @@ jobs:
             | xargs -0 sha256sum > artifacts/SHA256SUMS
 
       - name: Create GitHub Release
+        shell: bash
         env:
           GH_TOKEN: ${{ github.token }}
           GH_REPO: ${{ github.repository }}
-        run: gh release create "$GITHUB_REF_NAME" --verify-tag --generate-notes --title "mnemo $GITHUB_REF_NAME"
+        # Creating is skipped when the release is already there, so a job
+        # that failed while uploading can be re-run to finish the job.
+        run: |
+          gh release view "$GITHUB_REF_NAME" > /dev/null 2>&1 && exit 0
+          gh release create "$GITHUB_REF_NAME" --verify-tag --generate-notes --title "mnemo $GITHUB_REF_NAME"
 
       - name: Upload release files
+        shell: bash
         env:
           GH_TOKEN: ${{ github.token }}
           GH_REPO: ${{ github.repository }}
-        run: gh release upload "$GITHUB_REF_NAME" artifacts/**/* artifacts/SHA256SUMS
+        # Not a glob: the Linux artifact keeps the `appimage/` and `deb/`
+        # directories it was uploaded with, and `artifacts/**/*` without
+        # globstar expands to those directories as well as the files in
+        # them, which `gh release upload` refuses.
+        run: |
+          mapfile -t files < <(find artifacts -type f | sort)
+          gh release upload "$GITHUB_REF_NAME" --clobber "${files[@]}"

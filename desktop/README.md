@@ -78,17 +78,22 @@ executable on Windows.
 
 ## Publishing GitHub Releases
 
-Pushing a semantic version tag runs `.github/workflows/release.yml`:
+Pushing a semantic version tag runs `.github/workflows/release.yml`.
+`mix mnemo.tag` writes the version, commits it and tags that commit:
 
 ```sh
-git tag v0.1.0
-git push origin v0.1.0
+mix mnemo.tag 1.2.0        # or: patch, minor, major
+mix mnemo.tag patch --push # tag and push in one step
 ```
 
 GitHub builds the Elixir release and Tauri bundle independently on
 Ubuntu and Windows, then publishes all three installers plus
-`SHA256SUMS` in one GitHub Release. The tag must match the versions in
-`mix.exs`, `src-tauri/Cargo.toml`, and `src-tauri/tauri.conf.json`.
+`SHA256SUMS` in one GitHub Release.
+
+The tag must match the versions in `mix.exs`, `src-tauri/Cargo.toml`,
+`src-tauri/tauri.conf.json` and `src-tauri/Cargo.lock`, which is what the
+task exists for — the workflow checks all of them before it builds, so a
+bump that misses one is a failure discovered after the tag is public.
 
 ## Decisions worth knowing before changing them
 

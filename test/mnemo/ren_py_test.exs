@@ -178,6 +178,44 @@ defmodule Mnemo.RenPyTest do
     end
   end
 
+  describe "parse_library_paths/1" do
+    test "unescapes the separators a Windows library is written with" do
+      vdf = ~S"""
+      "libraryfolders"
+      {
+        "0"
+        {
+          "path"    "C:\\Program Files (x86)\\Steam"
+        }
+        "1"
+        {
+          "path"    "D:\\SteamLibrary"
+        }
+      }
+      """
+
+      assert RenPy.parse_library_paths(vdf) ==
+               [~S"C:\Program Files (x86)\Steam", ~S"D:\SteamLibrary"]
+    end
+
+    test "a Linux library needs no unescaping" do
+      vdf = ~S("path"    "/home/player/.local/share/Steam")
+
+      assert RenPy.parse_library_paths(vdf) == ["/home/player/.local/share/Steam"]
+    end
+
+    test "a quote inside a path does not end the value early" do
+      vdf = ~S|"path"    "/mnt/games/say \"yes\"/steam"|
+
+      assert RenPy.parse_library_paths(vdf) == [~S|/mnt/games/say "yes"/steam|]
+    end
+
+    test "a file with no libraries yields nothing" do
+      assert RenPy.parse_library_paths("") == []
+      assert RenPy.parse_library_paths(~S|"contentstatsid"    "12345"|) == []
+    end
+  end
+
   describe "group_mirrors/1" do
     defp entry(path, kind, name) do
       %{

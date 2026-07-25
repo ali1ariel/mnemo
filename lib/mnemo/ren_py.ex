@@ -104,7 +104,29 @@ defmodule Mnemo.RenPy do
   defp directory_identity(path) do
     case File.stat(path) do
       {:ok, %{major_device: device, inode: inode}} when inode > 0 -> {device, inode}
-      _ -> path
+      _ -> canonical_path(path)
+    end
+  end
+
+  # Windows reports no inode, so on that platform the fallback above is
+  # the only comparison there is and it has to do the work: `\` and `/`
+  # both separate, runs of either collapse, and the filesystem does not
+  # distinguish case. On Unix a backslash is a legal character in a file
+  # name and is left alone.
+  defp canonical_path(path) do
+    case :os.type() do
+      {:win32, _} ->
+        path |> String.replace("\\", "/") |> collapse_separators() |> String.downcase()
+
+      _ ->
+        collapse_separators(path)
+    end
+  end
+
+  defp collapse_separators(path) do
+    case String.replace(path, ~r|/{2,}|, "/") do
+      "/" -> "/"
+      collapsed -> String.trim_trailing(collapsed, "/")
     end
   end
 
@@ -176,7 +198,7 @@ defmodule Mnemo.RenPy do
     steam_roots()
     |> Enum.flat_map(fn root -> [root | library_paths(root)] end)
     |> Enum.map(&Path.join([&1, "steamapps", "common"]))
-    |> Enum.uniq()
+    |> Enum.uniq_by(&canonical_path/1)
     |> Enum.filter(&File.dir?/1)
   end
 
@@ -196,13 +218,26 @@ defmodule Mnemo.RenPy do
     vdf = Path.join([steam_root, "steamapps", "libraryfolders.vdf"])
 
     case File.read(vdf) do
-      {:ok, contents} ->
-        Regex.scan(~r/"path"\s+"([^"]+)"/, contents, capture: :all_but_first)
-        |> List.flatten()
-
-      {:error, _} ->
-        []
+      {:ok, contents} -> parse_library_paths(contents)
+      {:error, _} -> []
     end
+  end
+
+  @doc """
+  The library directories listed in a `libraryfolders.vdf`.
+
+  VDF stores quoted strings with escapes, so a Windows library is written
+  `C:\\\\Program Files (x86)\\\\Steam` and the raw capture is not a path
+  anybody else on the machine spells that way. Unescaping is what keeps
+  the enrollment screen honest: the default library also arrives from
+  `%PROGRAMFILES(X86)%`, and two spellings of one directory scan as two
+  Steam installs, listing every game found under it twice.
+  """
+  def parse_library_paths(contents) do
+    ~r/"path"\s+"((?:[^"\\]|\\.)*)"/
+    |> Regex.scan(contents, capture: :all_but_first)
+    |> List.flatten()
+    |> Enum.map(&Regex.replace(~r/\\(.)/, &1, "\\1"))
   end
 
   def game_path(%{install_root: install_root, save_directory: save_directory}) do

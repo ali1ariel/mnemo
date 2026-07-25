@@ -21,7 +21,14 @@ use std::{
     time::{Duration, Instant},
 };
 
+#[cfg(windows)]
+use std::os::windows::process::CommandExt;
+
 use tauri::{Emitter, Manager, RunEvent, WebviewUrl, WebviewWindowBuilder};
+
+/// `CREATE_NO_WINDOW`: run the child without a console of its own.
+#[cfg(windows)]
+const CREATE_NO_WINDOW: u32 = 0x0800_0000;
 
 /// How long to wait for the release to publish its address. The BEAM
 /// boots and migrates in about a second on a warm machine; this is the
@@ -78,7 +85,9 @@ fn main() {
                 .join("bin")
                 .join(if cfg!(windows) { "mnemo.bat" } else { "mnemo" });
 
-            let child = Command::new(&release)
+            let mut command = Command::new(&release);
+
+            command
                 .arg("start")
                 .env("PHX_SERVER", "true")
                 // Both processes use these exact paths. Platform APIs do
@@ -90,8 +99,17 @@ fn main() {
                 // and no port a firewall might ask about. The cost is
                 // that `bin/mnemo stop` and `rpc` stop working, so
                 // shutdown is a signal — see `terminate`.
-                .env("RELEASE_DISTRIBUTION", "none")
-                .spawn()?;
+                .env("RELEASE_DISTRIBUTION", "none");
+
+            // The release entry point on Windows is a batch file, so the
+            // child is `cmd.exe`, which allocates a console of its own —
+            // a terminal window next to the application for the whole of
+            // its life. `windows_subsystem = "windows"` above only keeps
+            // this process from getting one; the child needs its own say.
+            #[cfg(windows)]
+            command.creation_flags(CREATE_NO_WINDOW);
+
+            let child = command.spawn()?;
 
             app.state::<Backend>().0.lock().unwrap().child = Some(child);
 

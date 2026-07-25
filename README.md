@@ -59,6 +59,17 @@ mix test        # runs against the in-memory Drive fake
 mix precommit   # compile --warnings-as-errors + format + tests
 ```
 
+### Cutting a release
+
+```sh
+mix mnemo.tag 1.2.0                # or: patch, minor, major
+mix mnemo.tag patch --push         # tag and push, which starts the build
+```
+
+Writes the version to `mix.exs`, `tauri.conf.json`, `Cargo.toml` and
+`Cargo.lock`, commits exactly that, and tags the commit. See
+[desktop/README.md](desktop/README.md#publishing-github-releases).
+
 ### Starting over
 
 ```sh
