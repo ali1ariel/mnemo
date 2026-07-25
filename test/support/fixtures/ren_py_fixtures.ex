@@ -47,6 +47,31 @@ defmodule Mnemo.RenPyFixtures do
     path
   end
 
+  @doc "A valid save as bytes, without writing it anywhere."
+  def save_bytes(opts \\ []) do
+    {:ok, {_name, bytes}} = :zip.create(~c"save.zip", members(opts), [:memory])
+    bytes
+  end
+
+  @doc """
+  A zip holding the given members, for exercising imports.
+
+  Each member is `{path_inside_the_archive, save_opts}`, or
+  `{path, {:raw, bytes}}` for something that is not a save — which is how
+  `persistent`, macOS resource forks and truncated files get in.
+  """
+  def write_archive(path, members) do
+    entries =
+      Enum.map(members, fn
+        {member, {:raw, bytes}} -> {to_charlist(member), bytes}
+        {member, opts} -> {to_charlist(member), save_bytes(opts)}
+      end)
+
+    File.mkdir_p!(Path.dirname(path))
+    {:ok, _} = :zip.create(to_charlist(path), entries)
+    path
+  end
+
   defp members(opts) do
     seed = Keyword.get(opts, :seed, "seed")
 

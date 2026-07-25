@@ -9,7 +9,11 @@ defmodule MnemoWeb.SlotsLive do
   import MnemoWeb.GameComponents
 
   alias Mnemo.{Drive, Game, Games, RenPy, Sync}
-  alias Mnemo.Sync.{Conflict, Restore}
+  alias Mnemo.Sync.{Conflict, Import, Restore}
+
+  # Real archives are whole save folders, and a Ren'Py save with a
+  # screenshot runs to a few megabytes each.
+  @max_archive_size 1_000_000_000
 
   @impl true
   def mount(%{"id" => id}, _session, socket) do
@@ -28,6 +32,14 @@ defmodule MnemoWeb.SlotsLive do
        |> assign(drive: Drive.status())
        |> assign(status: game_status(game))
        |> assign(confirm_restore: nil)
+       |> assign(pending_import: nil)
+       |> allow_upload(:archive,
+         accept: ~w(.zip),
+         max_entries: 1,
+         max_file_size: @max_archive_size,
+         auto_upload: true,
+         progress: &handle_archive_progress/3
+       )
        |> assign_saves()
        |> assign_history()
        |> assign_conflict()}
@@ -55,6 +67,15 @@ defmodule MnemoWeb.SlotsLive do
           last_generation: game.last_generation_seen
         }
     end
+  end
+
+  # An upload nobody committed to is this view's to clean up. Once it is
+  # handed to an import the import owns it, because navigating to another
+  # page tears this process down while the work is still reading.
+  @impl true
+  def terminate(_reason, socket) do
+    clear_pending_import(socket)
+    :ok
   end
 
   defp assign_saves(socket) do
@@ -181,6 +202,61 @@ defmodule MnemoWeb.SlotsLive do
     end
   end
 
+  def handle_event("validate_archive", _params, socket), do: {:noreply, socket}
+
+  def handle_event("set_import_mode", %{"mode" => mode}, socket) do
+    mode = if mode == "overwrite", do: :overwrite, else: :add_missing
+    pending = socket.assigns.pending_import
+
+    if pending do
+      {:noreply,
+       assign(socket, :pending_import, %{
+         pending
+         | plan: Import.plan(socket.assigns.game, pending.found, mode)
+       })}
+    else
+      {:noreply, socket}
+    end
+  end
+
+  def handle_event("cancel_import", _params, socket) do
+    {:noreply, clear_pending_import(socket)}
+  end
+
+  def handle_event("import", params, socket) do
+    pending = socket.assigns.pending_import
+
+    opts = [
+      mode: pending.plan.mode,
+      confirmed_closed: params["confirmed"] == "true",
+      force: params["force"] == "true",
+      discard_archive: true
+    ]
+
+    case Game.import_archive(socket.assigns.game.id, pending.path, opts) do
+      :ok ->
+        {:noreply, assign(socket, :pending_import, nil)}
+
+      {:error, :confirmation_required, _} ->
+        {:noreply,
+         put_flash(socket, :error, gettext("Confirm the game is closed before importing."))}
+
+      {:error, :game_may_be_running, _} ->
+        {:noreply,
+         put_flash(
+           socket,
+           :error,
+           gettext("The save folder is still changing. Close the game and try again.")
+         )}
+
+      {:error, :busy} ->
+        {:noreply, put_flash(socket, :error, gettext("A sync is already running."))}
+
+      _ ->
+        {:noreply, put_flash(socket, :error, gettext("Could not start the import."))}
+    end
+  end
+
   def handle_event("save_options", params, socket) do
     attrs = %{
       name: String.trim(params["name"] || ""),
@@ -242,6 +318,54 @@ defmodule MnemoWeb.SlotsLive do
       {:error, _tag, _detail} ->
         {:noreply, put_flash(socket, :error, gettext("Could not delete the backup."))}
     end
+  end
+
+  ## Importing an archive
+
+  defp handle_archive_progress(:archive, entry, socket) do
+    if entry.done? do
+      path = store_upload(socket, entry)
+
+      case Import.inspect_archive(path, socket.assigns.game) do
+        {:ok, found} ->
+          {:noreply,
+           assign(socket, :pending_import, %{
+             path: path,
+             name: entry.client_name,
+             found: found,
+             plan: Import.plan(socket.assigns.game, found, :add_missing)
+           })}
+
+        {:error, :unreadable_archive, _detail} ->
+          File.rm(path)
+
+          {:noreply,
+           put_flash(socket, :error, gettext("That file could not be opened as a zip archive."))}
+      end
+    else
+      {:noreply, socket}
+    end
+  end
+
+  defp store_upload(socket, entry) do
+    consume_uploaded_entry(socket, entry, fn %{path: uploaded} ->
+      # The name the browser sent only labels the upload; it never joins a
+      # path anything is written to.
+      destination =
+        Path.join(System.tmp_dir!(), "mnemo-upload-#{System.unique_integer([:positive])}.zip")
+
+      File.cp!(uploaded, destination)
+      {:ok, destination}
+    end)
+  end
+
+  defp clear_pending_import(socket) do
+    case socket.assigns.pending_import do
+      %{path: path} -> File.rm(path)
+      nil -> :ok
+    end
+
+    assign(socket, :pending_import, nil)
   end
 
   @impl true
@@ -319,6 +443,13 @@ defmodule MnemoWeb.SlotsLive do
           </div>
         </div>
       </section>
+
+      <.import_panel
+        pending={@pending_import}
+        uploads={@uploads}
+        syncing?={@status.syncing?}
+        seconds_since_write={@seconds_since_write}
+      />
 
       <section class="card bg-base-200 p-6 space-y-4" id="game-options">
         <h2 class="font-semibold">{gettext("Options")}</h2>
@@ -398,6 +529,151 @@ defmodule MnemoWeb.SlotsLive do
         </div>
       </section>
     </Layouts.app>
+    """
+  end
+
+  attr :pending, :map, default: nil
+  attr :uploads, :map, required: true
+  attr :syncing?, :boolean, default: false
+  attr :seconds_since_write, :integer, default: nil
+
+  defp import_panel(assigns) do
+    ~H"""
+    <section class="card bg-base-200 p-6 space-y-4" id="import-archive">
+      <div>
+        <h2 class="font-semibold">{gettext("Import saves from a zip")}</h2>
+        <p class="text-sm opacity-70">
+          {gettext(
+            "For a backup you made by hand or a Google Takeout export. Saves are read wherever they sit inside the archive; the folders around them are ignored."
+          )}
+        </p>
+      </div>
+
+      <form :if={@pending == nil} id="archive-form" phx-change="validate_archive">
+        <.archive_dropzone id="archive-dropzone" upload={@uploads.archive} />
+      </form>
+
+      <div :if={@pending} id="import-preview" class="space-y-4">
+        <div class="flex items-baseline justify-between gap-4 flex-wrap">
+          <p class="text-sm font-mono truncate">{@pending.name}</p>
+          <.archive_summary found={@pending.found} />
+        </div>
+
+        <p :if={@pending.found.entries == []} class="text-sm" id="import-nothing">
+          {gettext(
+            "No Ren'Py saves in this archive. mnemo looks for files named the way Ren'Py names them, such as 1-1-LT1.save."
+          )}
+        </p>
+
+        <.archive_entries :if={@pending.found.entries != []} entries={@pending.found.entries} />
+
+        <form
+          :if={@pending.found.entries != []}
+          id="import-form"
+          phx-submit="import"
+          class="space-y-3 border-t border-base-300 pt-4"
+        >
+          <fieldset class="space-y-2">
+            <label class="flex items-start gap-3">
+              <input
+                type="radio"
+                name="mode"
+                value="add_missing"
+                class="radio radio-sm mt-0.5"
+                checked={@pending.plan.mode == :add_missing}
+                phx-click="set_import_mode"
+                phx-value-mode="add_missing"
+              />
+              <span class="text-sm">
+                <span class="font-medium">{gettext("Only add what is missing")}</span>
+                <span class="block opacity-70">
+                  {gettext("Saves already in the folder are left exactly as they are.")}
+                </span>
+              </span>
+            </label>
+            <label class="flex items-start gap-3">
+              <input
+                type="radio"
+                name="mode"
+                value="overwrite"
+                class="radio radio-sm mt-0.5"
+                checked={@pending.plan.mode == :overwrite}
+                phx-click="set_import_mode"
+                phx-value-mode="overwrite"
+              />
+              <span class="text-sm">
+                <span class="font-medium">{gettext("Replace saves of the same name")}</span>
+                <span class="block opacity-70">
+                  {gettext(
+                    "The current files are published as a generation first, so this stays undoable."
+                  )}
+                </span>
+              </span>
+            </label>
+          </fieldset>
+
+          <p class="text-sm" id="import-summary">
+            {ngettext(
+              "%{count} save will be written.",
+              "%{count} saves will be written.",
+              length(@pending.plan.write)
+            )}
+            <span :if={@pending.plan.skip != []}>
+              {ngettext(
+                "%{count} will be left untouched.",
+                "%{count} will be left untouched.",
+                length(@pending.plan.skip)
+              )}
+            </span>
+          </p>
+
+          <p class="text-sm opacity-70">
+            {gettext("Saves already in the folder but missing from the archive are never removed.")}
+          </p>
+
+          <p :if={recent_write?(@seconds_since_write)} class="text-sm text-warning">
+            {gettext("Something wrote to this folder %{time} — the game may still be open.",
+              time: relative_time(DateTime.add(DateTime.utc_now(), -(@seconds_since_write || 0)))
+            )}
+          </p>
+
+          <label class="flex items-center gap-2 text-sm">
+            <input
+              type="checkbox"
+              name="confirmed"
+              value="true"
+              class="checkbox checkbox-sm"
+              required
+            />
+            {gettext("The game is closed")}
+          </label>
+          <input :if={recent_write?(@seconds_since_write)} type="hidden" name="force" value="true" />
+
+          <div class="flex gap-2">
+            <.button
+              variant="primary"
+              id="confirm-import"
+              disabled={@syncing? or @pending.plan.write == []}
+            >
+              {gettext("Import")}
+            </.button>
+            <button type="button" class="btn btn-ghost" phx-click="cancel_import" id="cancel-import">
+              {gettext("Cancel")}
+            </button>
+          </div>
+        </form>
+
+        <button
+          :if={@pending.found.entries == []}
+          type="button"
+          class="btn btn-ghost"
+          phx-click="cancel_import"
+          id="cancel-import-empty"
+        >
+          {gettext("Pick another file")}
+        </button>
+      </div>
+    </section>
     """
   end
 

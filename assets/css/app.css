@@ -33,10 +33,16 @@
   --color-base-200: oklch(25.26% 0.014 253.1);
   --color-base-300: oklch(20.15% 0.012 254.09);
   --color-base-content: oklch(97.807% 0.029 256.847);
-  --color-primary: oklch(58% 0.233 277.117);
-  --color-primary-content: oklch(96% 0.018 272.314);
-  --color-secondary: oklch(58% 0.233 277.117);
-  --color-secondary-content: oklch(96% 0.018 272.314);
+  /* Four points darker, which also brings it inside the sRGB gamut the
+     original value sat just outside of, and a pure white label: 5.53:1
+     against 4.14:1 before. */
+  --color-primary: oklch(54% 0.233 277.117);
+  --color-primary-content: oklch(100% 0 0);
+  /* Desaturated on purpose, the way the light theme already does it: a
+     secondary button that shares the primary's colour is not a second
+     level of anything. */
+  --color-secondary: oklch(62% 0.03 264.364);
+  --color-secondary-content: oklch(20.15% 0.012 254.09);
   --color-accent: oklch(60% 0.25 292.717);
   --color-accent-content: oklch(96% 0.016 293.756);
   --color-neutral: oklch(37% 0.044 257.287);
@@ -69,7 +75,11 @@
   --color-base-300: oklch(92% 0.004 286.32);
   --color-base-content: oklch(21% 0.006 285.885);
   --color-primary: oklch(70% 0.213 47.604);
-  --color-primary-content: oklch(98% 0.016 73.684);
+  /* Dark on orange, not white: this orange is light enough that a
+     near-white label lands at 2.75:1, and the primary button is the one
+     every screen leads with. Brand colour kept exactly; only the label
+     moved. 5.52:1. */
+  --color-primary-content: oklch(25% 0.05 73.684);
   --color-secondary: oklch(55% 0.027 264.364);
   --color-secondary-content: oklch(98% 0.002 247.839);
   --color-accent: oklch(0% 0 0);

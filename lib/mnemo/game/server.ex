@@ -3,7 +3,8 @@ defmodule Mnemo.Game.Server do
   Per-game process holding live sync state.
 
   States: `:idle → :snapshotting → :uploading → :ok | :conflict | :error`,
-  plus `:safety_snapshot → :downloading → :swapping` while restoring.
+  plus `:safety_snapshot → :downloading | :importing → :swapping` while
+  restoring or importing an archive.
   (`:dirty` and `:settling` arrive with the watcher in v1.) The work runs
   in a supervised task so this process stays responsive to status
   queries; the database is only touched at checkpoints.
@@ -12,7 +13,7 @@ defmodule Mnemo.Game.Server do
   use GenServer, restart: :transient
 
   alias Mnemo.{Games, Sync}
-  alias Mnemo.Sync.{Conflict, Engine, Restore}
+  alias Mnemo.Sync.{Conflict, Engine, Import, Restore}
 
   def start_link(game_id) do
     GenServer.start_link(__MODULE__, game_id, name: via(game_id))
@@ -65,6 +66,25 @@ defmodule Mnemo.Game.Server do
       {:reply, :ok,
        run_task(state, :safety_snapshot, fn notify ->
          Restore.run(game, number, opts, notify)
+       end)}
+    else
+      error -> {:reply, error, state}
+    end
+  end
+
+  def handle_call({:import, _archive, _opts}, _from, %{task_ref: ref} = state) when ref != nil do
+    {:reply, {:error, :busy}, state}
+  end
+
+  def handle_call({:import, archive_path, opts}, _from, state) do
+    game = state.game
+
+    # An import writes to the same folder a restore does, so it answers
+    # to the same guards, and for the same reason: inline, as an answer.
+    with :ok <- Restore.precheck(game, opts) do
+      {:reply, :ok,
+       run_task(state, :safety_snapshot, fn notify ->
+         Import.run(game, archive_path, opts, notify)
        end)}
     else
       error -> {:reply, error, state}
@@ -126,6 +146,10 @@ defmodule Mnemo.Game.Server do
               detail: %{result: :no_changes},
               last_synced_at: DateTime.utc_now(:second)
           }
+
+        # Before the :safety clause: an import summary carries one too.
+        {:ok, %{imported: _} = summary} ->
+          %{state | status: :imported, detail: summary, last_synced_at: DateTime.utc_now(:second)}
 
         {:ok, %{resolution: _} = summary} ->
           %{state | status: :resolved, detail: summary, last_synced_at: DateTime.utc_now(:second)}

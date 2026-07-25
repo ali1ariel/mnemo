@@ -299,4 +299,164 @@ defmodule MnemoWeb.SlotsLiveTest do
       assert File.read!(Path.join(new_backup, "persistent")) == "gen1"
     end
   end
+
+  describe "importing an archive" do
+    setup %{root: root} do
+      dir = Path.join(root, "MyGame-123")
+      RenPyFixtures.write_save(dir, "1-1-LT1.save", seed: "on-disk")
+      File.write!(Path.join(dir, "persistent"), "p")
+
+      {:ok, game} =
+        Games.enroll(%{save_directory: "MyGame-123", install_root: root, name: "My Game"})
+
+      assert {:ok, %{generation: 1}} = Engine.run(game)
+
+      {:ok, game: Games.get!(game.id), dir: dir}
+    end
+
+    test "the upload area reads as somewhere to put a file", %{conn: conn, game: game} do
+      {:ok, view, html} = live(conn, ~p"/games/#{game.id}")
+
+      # A plain file input looks like a form field to fill in, so the
+      # input is hidden behind a target that also accepts a dragged file.
+      assert has_element?(view, "#archive-dropzone[phx-drop-target]")
+      assert has_element?(view, "#archive-dropzone input[type=file].sr-only")
+      assert html =~ "Drop a .zip here"
+    end
+
+    test "picking a zip previews it before anything is written", %{
+      conn: conn,
+      game: game,
+      dir: dir
+    } do
+      {:ok, view, _html} = live(conn, ~p"/games/#{game.id}")
+
+      html =
+        upload_archive(view, [
+          {"Takeout/MyGame-123/1-1-LT1.save", [seed: "x"]},
+          {"Takeout/MyGame-123/1-2-LT1.save", [seed: "y", save_name: "before the cave"]}
+        ])
+
+      assert has_element?(view, "#import-preview")
+      assert html =~ "backup.zip"
+      assert html =~ "before the cave"
+      assert has_element?(view, "#import-entry-1-1-LT1-save")
+      assert has_element?(view, "#import-entry-1-2-LT1-save")
+
+      # Only the save the folder does not have is counted.
+      assert html =~ "1 save will be written."
+      refute File.exists?(Path.join(dir, "1-2-LT1.save"))
+    end
+
+    test "confirming adds the missing save and leaves the existing one alone", %{
+      conn: conn,
+      game: game,
+      dir: dir
+    } do
+      Mnemo.Game.subscribe()
+      untouched = File.read!(Path.join(dir, "1-1-LT1.save"))
+
+      {:ok, view, _html} = live(conn, ~p"/games/#{game.id}")
+
+      upload_archive(view, [
+        {"1-1-LT1.save", [seed: "from-archive"]},
+        {"1-2-LT1.save", [seed: "y"]}
+      ])
+
+      view |> form("#import-form", %{"confirmed" => "true"}) |> render_submit()
+
+      game_id = game.id
+      assert_receive {:game, ^game_id, %{status: :imported}}, 5_000
+      _ = :sys.get_state(view.pid)
+
+      assert File.regular?(Path.join(dir, "1-2-LT1.save"))
+      assert File.read!(Path.join(dir, "1-1-LT1.save")) == untouched
+      assert render(view) =~ "1 save imported."
+    end
+
+    test "switching to replace mode changes what will be written", %{conn: conn, game: game} do
+      {:ok, view, _html} = live(conn, ~p"/games/#{game.id}")
+
+      upload_archive(view, [
+        {"1-1-LT1.save", [seed: "x"]},
+        {"1-2-LT1.save", [seed: "y"]}
+      ])
+
+      html =
+        view
+        |> element("#import-form input[phx-value-mode=overwrite]")
+        |> render_click()
+
+      assert html =~ "2 saves will be written."
+    end
+
+    test "the import needs a confirmation that the game is closed", %{conn: conn, game: game} do
+      {:ok, view, _html} = live(conn, ~p"/games/#{game.id}")
+
+      upload_archive(view, [{"1-2-LT1.save", [seed: "y"]}])
+
+      assert has_element?(view, "#import-form input[name=confirmed][required]")
+    end
+
+    test "cancelling drops the upload without touching the folder", %{
+      conn: conn,
+      game: game,
+      dir: dir
+    } do
+      {:ok, view, _html} = live(conn, ~p"/games/#{game.id}")
+
+      upload_archive(view, [{"1-2-LT1.save", [seed: "y"]}])
+      view |> element("#cancel-import") |> render_click()
+
+      refute has_element?(view, "#import-preview")
+      assert has_element?(view, "#archive-form")
+      refute File.exists?(Path.join(dir, "1-2-LT1.save"))
+    end
+
+    test "a zip with no Ren'Py saves says so instead of offering to import", %{
+      conn: conn,
+      game: game
+    } do
+      {:ok, view, _html} = live(conn, ~p"/games/#{game.id}")
+
+      html = upload_archive(view, [{"holiday.jpg", {:raw, "jpeg"}}])
+
+      assert has_element?(view, "#import-nothing")
+      refute has_element?(view, "#import-form")
+      assert html =~ "No Ren&#39;Py saves in this archive."
+    end
+
+    test "a file that is not a zip is refused", %{conn: conn, game: game} do
+      {:ok, view, _html} = live(conn, ~p"/games/#{game.id}")
+
+      input =
+        file_input(view, "#archive-form", :archive, [
+          %{name: "backup.zip", content: :crypto.strong_rand_bytes(256), type: "application/zip"}
+        ])
+
+      html = render_upload(input, "backup.zip")
+
+      refute has_element?(view, "#import-preview")
+      assert html =~ "could not be opened as a zip archive"
+    end
+  end
+
+  defp upload_archive(view, members, name \\ "backup.zip") do
+    input =
+      file_input(view, "#archive-form", :archive, [
+        %{name: name, content: archive_bytes(members), type: "application/zip"}
+      ])
+
+    render_upload(input, name)
+  end
+
+  defp archive_bytes(members) do
+    path =
+      Path.join(System.tmp_dir!(), "mnemo-archive-#{System.unique_integer([:positive])}.zip")
+
+    RenPyFixtures.write_archive(path, members)
+    bytes = File.read!(path)
+    File.rm!(path)
+    bytes
+  end
 end

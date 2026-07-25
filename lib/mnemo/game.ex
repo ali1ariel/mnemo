@@ -54,6 +54,19 @@ defmodule Mnemo.Game do
   end
 
   @doc """
+  Add the saves held in a zip to the game folder.
+
+  Same guards as `restore/3`, since it writes to the same place. `:mode`
+  decides whether an archive entry may replace a file of the same name;
+  the default, `:add_missing`, says it may not.
+  """
+  def import_archive(game_id, archive_path, opts \\ []) do
+    with {:ok, pid} <- ensure_started(game_id) do
+      GenServer.call(pid, {:import, archive_path, opts}, 30_000)
+    end
+  end
+
+  @doc """
   Settle a diverged lineage with `:keep_local` or `:keep_remote`.
 
   Both are lossless; the choice decides which side ends up on disk.

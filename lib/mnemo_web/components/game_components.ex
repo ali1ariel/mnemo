@@ -170,11 +170,150 @@ defmodule MnemoWeb.GameComponents do
     """
   end
 
-  defp slot_title({:slot, _page, name}), do: name
-  defp slot_title({:auto, n}), do: gettext("Autosave %{n}", n: n)
-  defp slot_title({:quick, n}), do: gettext("Quicksave %{n}", n: n)
+  @doc "How Ren'Py labels a slot on its own save screens."
+  def slot_title({:slot, _page, name}), do: name
+  def slot_title({:auto, n}), do: gettext("Autosave %{n}", n: n)
+  def slot_title({:quick, n}), do: gettext("Quicksave %{n}", n: n)
+  def slot_title(:persistent), do: gettext("Unlocked content and seen text")
 
   defp dom_id(file), do: String.replace(file, ~r/[^A-Za-z0-9]+/, "-")
+
+  @doc """
+  Where a zip gets dropped or picked.
+
+  A bare file input reads as a form field — something to fill in — and
+  not as a place to put a file. This is a target instead: an outline
+  around empty space, an icon, and the whole rectangle clickable. It
+  also takes a dragged file, which the input on its own does not.
+  """
+  attr :upload, Phoenix.LiveView.UploadConfig, required: true
+  attr :id, :string, required: true
+
+  def archive_dropzone(assigns) do
+    ~H"""
+    <div class="space-y-2 p-4">
+      <label
+        id={@id}
+        phx-drop-target={@upload.ref}
+        class={[
+          "flex flex-col items-center justify-center gap-2 rounded-box px-6 py-10 text-center",
+          "border-2 border-dashed border-base-content/25 bg-base-100",
+          "cursor-pointer transition-colors",
+          "hover:border-primary hover:bg-primary/5",
+          "focus-within:border-primary focus-within:bg-primary/5"
+        ]}
+      >
+        <.live_file_input upload={@upload} class="sr-only" />
+        <.icon name="hero-arrow-up-tray" class="size-8 opacity-40" />
+        <span class="font-medium">
+          {gettext("Drop a .zip here, or click to choose one")}
+        </span>
+        <span class="text-sm opacity-60">
+          {gettext("A backup you made by hand, or a Google Takeout export.")}
+        </span>
+      </label>
+
+      <div :for={entry <- @upload.entries} :if={not entry.done?} class="space-y-1">
+        <p class="text-sm opacity-70">
+          {gettext("Uploading %{name}…", name: entry.client_name)}
+        </p>
+        <progress class="progress progress-primary w-full" value={entry.progress} max="100"></progress>
+      </div>
+
+      <p :for={error <- upload_errors(@upload)} class="text-sm text-error">
+        {archive_error_message(error)}
+      </p>
+      <div :for={entry <- @upload.entries}>
+        <p :for={error <- upload_errors(@upload, entry)} class="text-sm text-error">
+          {archive_error_message(error)}
+        </p>
+      </div>
+    </div>
+    """
+  end
+
+  @doc """
+  The saves found inside an archive, before any of them are written.
+
+  `mark_existing` says whether to point out the ones the folder already
+  has. It is worth showing when the import is additive and the player is
+  choosing what to keep, and only noise when the whole folder is being
+  replaced anyway.
+  """
+  attr :entries, :list, required: true
+  attr :mark_existing, :boolean, default: true
+
+  def archive_entries(assigns) do
+    ~H"""
+    <div class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-4">
+      <div
+        :for={entry <- @entries}
+        class="card bg-base-100 overflow-hidden"
+        id={"import-entry-#{dom_id(entry.name)}"}
+      >
+        <figure class="aspect-video bg-base-300">
+          <.censored_image :if={entry.screenshot} src={data_url(entry.screenshot)} />
+          <div
+            :if={entry.screenshot == nil}
+            class="grid h-full w-full place-items-center text-xs opacity-40"
+          >
+            {gettext("no screenshot")}
+          </div>
+        </figure>
+        <div class="card-body p-3 gap-1">
+          <p class="text-sm font-medium">{slot_title(entry.slot)}</p>
+          <p :if={entry.save_name} class="text-sm italic opacity-80">{entry.save_name}</p>
+          <p class="text-xs opacity-60">{format_bytes(entry.size)}</p>
+          <span
+            :if={@mark_existing}
+            class={[
+              "badge badge-soft badge-sm self-start",
+              entry.present? && "badge-warning",
+              not entry.present? && "badge-success"
+            ]}
+          >
+            {if entry.present?, do: gettext("already in the folder"), else: gettext("new")}
+          </span>
+        </div>
+      </div>
+    </div>
+    """
+  end
+
+  defp data_url(png), do: "data:image/png;base64," <> Base.encode64(png)
+
+  @doc """
+  How many saves an archive holds, and how much of it was not a save.
+  """
+  attr :found, :map, required: true
+
+  def archive_summary(assigns) do
+    ~H"""
+    <p class="text-sm opacity-70">
+      {ngettext("%{count} save found", "%{count} saves found", length(@found.entries))}
+      <span :if={@found.ignored > 0}>
+        · {ngettext(
+          "%{count} other file ignored",
+          "%{count} other files ignored",
+          @found.ignored
+        )}
+      </span>
+      <span :if={@found.duplicates > 0}>
+        · {ngettext(
+          "%{count} duplicate ignored",
+          "%{count} duplicates ignored",
+          @found.duplicates
+        )}
+      </span>
+    </p>
+    """
+  end
+
+  @doc "Why a zip could not be used, in words the player can act on."
+  def archive_error_message(:too_large), do: gettext("That file is too large to import.")
+  def archive_error_message(:not_accepted), do: gettext("Only .zip archives can be imported.")
+  def archive_error_message(:too_many_files), do: gettext("Pick one archive at a time.")
+  def archive_error_message(_other), do: gettext("The upload failed. Try again.")
 
   attr :status, :map, required: true
 
@@ -186,9 +325,11 @@ defmodule MnemoWeb.GameComponents do
         :uploading -> {"badge-info", gettext("Uploading…")}
         :safety_snapshot -> {"badge-info", gettext("Saving current state…")}
         :downloading -> {"badge-info", gettext("Downloading…")}
+        :importing -> {"badge-info", gettext("Reading the archive…")}
         :swapping -> {"badge-info", gettext("Putting files in place…")}
         :ok -> {"badge-success", gettext("Synced")}
         :restored -> {"badge-success", gettext("Restored")}
+        :imported -> {"badge-success", gettext("Imported")}
         :resolved -> {"badge-success", gettext("Resolved")}
         :conflict -> {"badge-warning", gettext("Conflict")}
         :error -> {"badge-error", gettext("Error")}
@@ -209,6 +350,24 @@ defmodule MnemoWeb.GameComponents do
     gettext(
       "Took the other device's files. This device's version was saved to the history first."
     )
+  end
+
+  def detail_message(%{status: :imported, detail: detail}) do
+    [
+      ngettext("%{count} save imported.", "%{count} saves imported.", detail[:imported] || 0),
+      skipped(detail) > 0 &&
+        ngettext(
+          "%{count} was already in the folder and was left alone.",
+          "%{count} were already in the folder and were left alone.",
+          skipped(detail)
+        ),
+      detail[:publish_error] &&
+        gettext("They are on disk but could not be uploaded yet — sync when you can."),
+      detail[:backup] &&
+        gettext("The previous files were kept in a backup folder.")
+    ]
+    |> Enum.filter(&is_binary/1)
+    |> Enum.join(" ")
   end
 
   def detail_message(%{status: :restored, detail: detail}) do
@@ -286,10 +445,21 @@ defmodule MnemoWeb.GameComponents do
       %{tag: :empty_generation} ->
         gettext("That generation has no files recorded.")
 
+      %{tag: :unreadable_archive} ->
+        gettext("That file could not be opened as a zip archive.")
+
+      %{tag: :no_saves_in_archive} ->
+        gettext("No Ren'Py saves were found in that archive.")
+
+      %{tag: :nothing_to_import} ->
+        gettext("Every save in that archive is already in the folder.")
+
       _ ->
         gettext("The sync failed.")
     end
   end
 
   def detail_message(_status), do: nil
+
+  defp skipped(detail), do: detail[:skipped] || 0
 end

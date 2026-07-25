@@ -25,11 +25,9 @@ defmodule Mnemo.Sync.Restore do
   the whole directory, so it must never be read as "delete the rest".
   """
 
-  require Logger
-
   alias Mnemo.Drive.{Backend, Remote}
   alias Mnemo.{Games, RenPy, Sync}
-  alias Mnemo.Sync.Engine
+  alias Mnemo.Sync.Overwrite
 
   # Ren'Py rewrites `persistent` on exit, so a folder still being written
   # to is the signal that the game did not actually close.
@@ -54,12 +52,12 @@ defmodule Mnemo.Sync.Restore do
     path = RenPy.game_path(game)
 
     with :ok <- precheck(game, opts),
-         {:ok, game, safety} <- safety_generation(game, opts, notify),
+         {:ok, game, safety} <- Overwrite.safety_generation(game, opts, notify),
          {:ok, ctx} <- resolve_remote(game),
          {:ok, files} <- fetch_manifest(ctx, game, number),
          {:ok, head} <- observe_head(ctx) do
       notify.(:downloading)
-      staging = staging_dir(path)
+      staging = Overwrite.staging_dir(path, "restore")
 
       try do
         with {:ok, _} <- stage(ctx, game, path, staging, files),
@@ -129,34 +127,6 @@ defmodule Mnemo.Sync.Restore do
     |> Enum.max(DateTime, fn -> nil end)
   end
 
-  ## Safety generation
-
-  # Publishing the current state first is what satisfies "every restore is
-  # reversible via the generation created before it". It is best effort:
-  # during conflict resolution the lineage refuses new generations by
-  # design, and that is exactly when the backup folder has to be kept.
-  defp safety_generation(game, opts, notify) do
-    if Keyword.get(opts, :safety_generation, true) do
-      notify.(:safety_snapshot)
-
-      case Engine.run(game) do
-        {:ok, :no_changes} ->
-          {:ok, reload(game), :current}
-
-        {:ok, %{generation: number}} ->
-          {:ok, reload(game), {:published, number}}
-
-        {:error, tag, detail} ->
-          Logger.warning("restore safety generation failed: #{inspect({tag, detail})}")
-          {:ok, reload(game), {:unavailable, tag}}
-      end
-    else
-      {:ok, game, {:unavailable, :skipped}}
-    end
-  end
-
-  defp reload(game), do: Games.get(game.id) || game
-
   ## Remote
 
   defp resolve_remote(game) do
@@ -201,13 +171,6 @@ defmodule Mnemo.Sync.Restore do
   end
 
   ## Staging
-
-  # A sibling of the game folder, never the system temp dir: the swap is a
-  # rename, and rename across filesystems fails with :exdev. /tmp is very
-  # often a different filesystem (tmpfs on most Linux setups).
-  defp staging_dir(path) do
-    path <> ".mnemo-restore-#{System.unique_integer([:positive])}"
-  end
 
   defp stage(ctx, game, path, staging, files) do
     with :ok <- copy_current(path, staging),
@@ -322,38 +285,7 @@ defmodule Mnemo.Sync.Restore do
 
   defp swap(path, staging, notify) do
     notify.(:swapping)
-    backup = backup_path(path)
-
-    with :ok <- rename(path, backup, :backup_failed) do
-      case File.rename(staging, path) do
-        :ok ->
-          {:ok, backup}
-
-        {:error, reason} ->
-          # The live folder is already out of the way; put it back before
-          # returning, or the game loses its saves to a failed restore.
-          rollback_message = File.rename(backup, path)
-
-          {:error, :swap_failed,
-           %{reason: reason, backup: backup, rolled_back: rollback_message == :ok}}
-      end
-    end
-  end
-
-  defp rename(from, to, tag) do
-    case File.rename(from, to) do
-      :ok -> :ok
-      {:error, reason} -> {:error, tag, %{reason: reason, from: from, to: to}}
-    end
-  end
-
-  defp backup_path(path) do
-    stamp =
-      DateTime.utc_now()
-      |> DateTime.to_iso8601(:basic)
-      |> String.replace(~r/[^0-9]/, "")
-
-    path <> ".bak-#{stamp}"
+    Overwrite.swap(path, staging)
   end
 
   ## Commit
@@ -361,34 +293,13 @@ defmodule Mnemo.Sync.Restore do
   defp finish(game, number, head, safety, backup) do
     {:ok, _game} = Games.set_last_generation_seen(game, head)
 
-    kept? =
-      case safety do
-        # Either a new generation captured the previous state, or nothing
-        # had changed and the existing head already plays that role. Only
-        # then is it safe to drop the folder.
-        {:published, _} -> discard_backup(backup)
-        :current -> discard_backup(backup)
-        {:unavailable, _} -> true
-      end
-
     {:ok,
      %{
        generation: number,
        safety: safety,
-       backup: if(kept?, do: backup),
+       backup: Overwrite.settle_backup(backup, safety),
        last_generation_seen: head
      }}
-  end
-
-  defp discard_backup(backup) do
-    case File.rm_rf(backup) do
-      {:ok, _} ->
-        false
-
-      {:error, reason, _} ->
-        Logger.warning("could not remove restore backup #{backup}: #{inspect(reason)}")
-        true
-    end
   end
 
   ## Backups
@@ -433,9 +344,9 @@ defmodule Mnemo.Sync.Restore do
 
     with :ok <- check_owned_backup(game, backup_path),
          :ok <- check_target(path) do
-      current_backup = backup_path(path)
+      current_backup = Overwrite.backup_path(path)
 
-      with :ok <- rename(path, current_backup, :backup_failed) do
+      with :ok <- Overwrite.rename(path, current_backup, :backup_failed) do
         case File.rename(backup_path, path) do
           :ok ->
             {:ok, %{restored_from: backup_path, backup: current_backup}}

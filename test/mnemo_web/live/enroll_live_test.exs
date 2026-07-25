@@ -4,6 +4,7 @@ defmodule MnemoWeb.EnrollLiveTest do
   import Phoenix.LiveViewTest
 
   alias Mnemo.Drive.Fake
+  alias Mnemo.Sync.Restore
   alias Mnemo.{Games, RenPyFixtures}
 
   setup do
@@ -98,5 +99,156 @@ defmodule MnemoWeb.EnrollLiveTest do
 
     assert has_element?(view, "#scan-entry-saves-0")
     assert render(view) =~ "No save slots here yet."
+  end
+
+  describe "enrolling by importing an archive" do
+    setup %{root: root} do
+      dir = Path.join(root, "SomeGame-1")
+      # What a freshly installed game looks like: launched once, quit.
+      RenPyFixtures.write_save(dir, "1-1-LT1.save", seed: "reference")
+      File.write!(Path.join(dir, "persistent"), "reference")
+      {:ok, dir: dir}
+    end
+
+    test "the screen explains what the reference save is for", %{conn: conn} do
+      {:ok, view, _html} = live(conn, ~p"/enroll")
+      html = render_async(view)
+
+      assert has_element?(view, "#enroll-help")
+      assert html =~ "mnemo never creates a save folder"
+      assert html =~ "identify the folder"
+      assert html =~ "published as a generation first"
+    end
+
+    test "every unenrolled game offers both enrol and import", %{conn: conn} do
+      {:ok, view, _html} = live(conn, ~p"/enroll")
+      render_async(view)
+
+      assert has_element?(view, "#enroll-0")
+      assert has_element?(view, "#import-0")
+    end
+
+    test "an enrolled game offers neither", %{conn: conn, root: root} do
+      {:ok, _game} = Games.enroll(%{save_directory: "SomeGame-1", install_root: root})
+
+      {:ok, view, _html} = live(conn, ~p"/enroll")
+      render_async(view)
+
+      refute has_element?(view, "#enroll-0")
+      refute has_element?(view, "#import-0")
+    end
+
+    test "picking a zip previews it without enrolling anything", %{conn: conn, dir: dir} do
+      {:ok, view, _html} = live(conn, ~p"/enroll")
+      render_async(view)
+
+      html = upload_archive(view, [{"1-2-LT1.save", [seed: "b", save_name: "chapter two"]}])
+
+      assert has_element?(view, "#import-preview-0")
+      assert html =~ "chapter two"
+      assert html =~ "1 save will be written."
+
+      # Nothing committed yet, on either side.
+      assert Games.list() == []
+      assert File.regular?(Path.join(dir, "1-1-LT1.save"))
+    end
+
+    test "confirming enrols the game and replaces the folder with the archive", %{
+      conn: conn,
+      dir: dir
+    } do
+      Mnemo.Game.subscribe()
+
+      {:ok, view, _html} = live(conn, ~p"/enroll")
+      render_async(view)
+
+      upload_archive(view, [
+        {"1-2-LT1.save", [seed: "b"]},
+        {"1-3-LT1.save", [seed: "c"]}
+      ])
+
+      view |> form("#import-form-0", %{"confirmed" => "true"}) |> render_submit()
+
+      assert [game] = Games.list()
+      assert game.save_directory == "SomeGame-1"
+      assert_redirect(view, "/games/#{game.id}")
+
+      game_id = game.id
+      assert_receive {:game, ^game_id, %{status: :imported}}, 5_000
+
+      # The reference save is gone: it only ever identified the folder.
+      assert File.ls!(dir) |> Enum.sort() == ["1-2-LT1.save", "1-3-LT1.save"]
+    end
+
+    test "the replaced saves stay recoverable from the history", %{conn: conn, dir: dir} do
+      Mnemo.Game.subscribe()
+
+      {:ok, view, _html} = live(conn, ~p"/enroll")
+      render_async(view)
+
+      upload_archive(view, [{"1-2-LT1.save", [seed: "b"]}])
+      view |> form("#import-form-0", %{"confirmed" => "true"}) |> render_submit()
+
+      assert [game] = Games.list()
+      game_id = game.id
+      assert_receive {:game, ^game_id, %{status: :imported}}, 5_000
+
+      assert {:ok, _} =
+               Restore.run(Games.get!(game.id), 1, confirmed_closed: true, force: true)
+
+      assert File.read!(Path.join(dir, "persistent")) == "reference"
+      assert File.regular?(Path.join(dir, "1-1-LT1.save"))
+    end
+
+    test "the import needs a confirmation that the game is closed", %{conn: conn} do
+      {:ok, view, _html} = live(conn, ~p"/enroll")
+      render_async(view)
+
+      upload_archive(view, [{"1-2-LT1.save", [seed: "b"]}])
+
+      assert has_element?(view, "#import-form-0 input[name=confirmed][required]")
+    end
+
+    test "cancelling leaves the game unenrolled and the folder alone", %{conn: conn, dir: dir} do
+      {:ok, view, _html} = live(conn, ~p"/enroll")
+      render_async(view)
+
+      upload_archive(view, [{"1-2-LT1.save", [seed: "b"]}])
+      view |> element("#cancel-import-0") |> render_click()
+
+      refute has_element?(view, "#import-panel-0")
+      assert has_element?(view, "#import-0")
+      assert Games.list() == []
+      assert File.regular?(Path.join(dir, "1-1-LT1.save"))
+    end
+
+    test "a zip with no Ren'Py saves cannot be imported", %{conn: conn} do
+      {:ok, view, _html} = live(conn, ~p"/enroll")
+      render_async(view)
+
+      upload_archive(view, [{"holiday.jpg", {:raw, "jpeg"}}])
+
+      assert has_element?(view, "#import-nothing-0")
+      refute has_element?(view, "#import-form-0")
+    end
+  end
+
+  defp upload_archive(view, members, name \\ "backup.zip") do
+    view |> element("#import-0") |> render_click()
+
+    input =
+      file_input(view, "#archive-form-0", :archive, [
+        %{name: name, content: archive_bytes(members), type: "application/zip"}
+      ])
+
+    render_upload(input, name)
+  end
+
+  defp archive_bytes(members) do
+    path = Path.join(System.tmp_dir!(), "mnemo-archive-#{System.unique_integer([:positive])}.zip")
+    RenPyFixtures.write_archive(path, members)
+    bytes = File.read!(path)
+    File.rm!(path)
+    bytes
   end
 end

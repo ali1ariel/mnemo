@@ -286,11 +286,11 @@ defmodule Mnemo.RenPy do
     end
   end
 
-  @internal_dir_re ~r/\.(bak|mnemo-restore)-\d+$/
+  @internal_dir_re ~r/\.(?:bak|mnemo-[a-z]+)-\d+$/
 
   @doc """
-  Directories mnemo itself puts next to a game folder: restore backups
-  and staging areas.
+  Directories mnemo itself puts next to a game folder: backups and
+  staging areas.
 
   They hold real `.save` files, so the scan has to skip them — otherwise
   a restore backup would show up on the enrollment screen as a game of
@@ -478,19 +478,12 @@ defmodule Mnemo.RenPy do
           slot: slot,
           size: size,
           mtime: DateTime.from_unix!(mtime),
-          save_name: save_display_name(full),
+          save_name: save_name(full),
           screenshot?: screenshot_member?(full)
         }
       ]
     else
       _ -> []
-    end
-  end
-
-  defp save_display_name(path) do
-    case save_metadata(path) do
-      {:ok, %{"_save_name" => name}} when is_binary(name) and name != "" -> name
-      _ -> nil
     end
   end
 
@@ -520,36 +513,56 @@ defmodule Mnemo.RenPy do
 
   ## Zip format
 
+  @typedoc """
+  A `.save` to read: a path, or `{name, bytes}` for one still held in
+  memory — which is what a save nested inside an imported archive is.
+  """
+  @type archive :: Path.t() | {String.t(), binary()}
+
+  # An in-memory archive is what lets a save nested in an imported zip be
+  # read without unpacking the outer one to disk. The two :zip entry
+  # points disagree on how to receive it: foldl/3 wants the name beside
+  # the bytes, extract/2 wants the bytes alone.
+  defp fold_source({name, bytes}) when is_binary(bytes), do: {to_charlist(name), bytes}
+  defp fold_source(path), do: to_charlist(path)
+
+  defp extract_source({_name, bytes}) when is_binary(bytes), do: bytes
+  defp extract_source(path), do: to_charlist(path)
+
+  defp archive_name({name, _bytes}), do: Path.basename(name)
+  defp archive_name(path), do: Path.basename(path)
+
   @doc """
   Open and fully extract a `.save` in memory, checking CRCs.
 
   This is what prevents propagating a truncated file captured mid-write —
   the one scenario where mnemo would destroy data.
   """
-  def validate_save(path) do
+  @spec validate_save(archive()) :: :ok | {:error, map()}
+  def validate_save(archive) do
     collect = fn name, _info, get_bin, acc ->
       _content = get_bin.()
       [name | acc]
     end
 
-    case safe_foldl(collect, to_charlist(path)) do
+    case safe_foldl(collect, fold_source(archive)) do
       {:ok, members} ->
         case @required_members -- members do
           [] ->
             :ok
 
           missing ->
-            {:error, %{file: Path.basename(path), missing: Enum.map(missing, &to_string/1)}}
+            {:error, %{file: archive_name(archive), missing: Enum.map(missing, &to_string/1)}}
         end
 
       {:error, reason} ->
-        {:error, %{file: Path.basename(path), reason: reason}}
+        {:error, %{file: archive_name(archive), reason: reason}}
     end
   end
 
   # :zip raises on some malformed archives instead of returning an error.
-  defp safe_foldl(fun, path) do
-    case :zip.foldl(fun, [], path) do
+  defp safe_foldl(fun, source) do
+    case :zip.foldl(fun, [], source) do
       {:ok, members} -> {:ok, members}
       {:error, reason} -> {:error, reason}
     end
@@ -559,8 +572,29 @@ defmodule Mnemo.RenPy do
     :exit, reason -> {:error, reason}
   end
 
-  def extract_screenshot(path) do
-    case :zip.extract(to_charlist(path), [{:file_list, [@screenshot_member]}, :memory]) do
+  @doc """
+  Walk every member of a zip once, folding with
+  `fun.(name, get_info, get_bin, acc)`.
+
+  Reading a large archive member by member beats extracting it: only the
+  bytes the caller keeps stay in memory.
+  """
+  @spec fold_members((charlist(), (-> tuple()), (-> binary()), acc -> acc), acc, archive()) ::
+          {:ok, acc} | {:error, term()}
+        when acc: term()
+  def fold_members(fun, acc, archive), do: safe_foldl(fun, acc, fold_source(archive))
+
+  defp safe_foldl(fun, acc, source) do
+    :zip.foldl(fun, acc, source)
+  rescue
+    e -> {:error, Exception.message(e)}
+  catch
+    :exit, reason -> {:error, reason}
+  end
+
+  @spec extract_screenshot(archive()) :: {:ok, binary()} | {:error, term()}
+  def extract_screenshot(archive) do
+    case :zip.extract(extract_source(archive), [{:file_list, [@screenshot_member]}, :memory]) do
       {:ok, [{_name, png}]} -> {:ok, png}
       {:ok, []} -> {:error, :no_screenshot}
       {:error, reason} -> {:error, reason}
@@ -570,9 +604,10 @@ defmodule Mnemo.RenPy do
   end
 
   @doc "Decoded `json` member: save name, Ren'Py version, creation time."
-  def save_metadata(path) do
+  @spec save_metadata(archive()) :: {:ok, map()} | {:error, term()}
+  def save_metadata(archive) do
     with {:ok, [{_name, json}]} <-
-           :zip.extract(to_charlist(path), [{:file_list, [~c"json"]}, :memory]),
+           :zip.extract(extract_source(archive), [{:file_list, [~c"json"]}, :memory]),
          {:ok, meta} <- Jason.decode(json) do
       {:ok, meta}
     else
@@ -581,5 +616,14 @@ defmodule Mnemo.RenPy do
     end
   rescue
     e -> {:error, Exception.message(e)}
+  end
+
+  @doc "The player-facing name a save carries, or nil."
+  @spec save_name(archive()) :: String.t() | nil
+  def save_name(archive) do
+    case save_metadata(archive) do
+      {:ok, %{"_save_name" => name}} when is_binary(name) and name != "" -> name
+      _ -> nil
+    end
   end
 end

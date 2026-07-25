@@ -32,38 +32,39 @@ msgid_plural "%{count} minutes ago"
 msgstr[0] ""
 msgstr[1] ""
 
-#: lib/mnemo_web/components/game_components.ex:205
+#: lib/mnemo_web/components/game_components.ex:395
 #, elixir-autogen, elixir-format
 msgid "%{count} new file."
 msgid_plural "%{count} new files."
 msgstr[0] ""
 msgstr[1] ""
 
-#: lib/mnemo_web/live/enroll_live.ex:178
+#: lib/mnemo_web/live/enroll_live.ex:345
 #, elixir-autogen, elixir-format
 msgid "%{count} save"
 msgid_plural "%{count} saves"
 msgstr[0] ""
 msgstr[1] ""
 
-#: lib/mnemo_web/live/enroll_live.ex:101
+#: lib/mnemo_web/live/enroll_live.ex:114
 #, elixir-autogen, elixir-format
 msgid "%{name} enrolled."
 msgstr ""
 
-#: lib/mnemo_web/components/game_components.ex:245
+#: lib/mnemo_web/components/game_components.ex:435
 #, elixir-autogen, elixir-format
 msgid "A Google Drive request failed. Try again."
 msgstr ""
 
-#: lib/mnemo_web/components/game_components.ex:236
+#: lib/mnemo_web/components/game_components.ex:426
 #, elixir-autogen, elixir-format
 msgid "A save file failed validation and was not uploaded: %{file}"
 msgstr ""
 
 #: lib/mnemo_web/live/library_live.ex:68
-#: lib/mnemo_web/live/slots_live.ex:136
-#: lib/mnemo_web/live/slots_live.ex:177
+#: lib/mnemo_web/live/slots_live.ex:157
+#: lib/mnemo_web/live/slots_live.ex:198
+#: lib/mnemo_web/live/slots_live.ex:253
 #, elixir-autogen, elixir-format
 msgid "A sync is already running."
 msgstr ""
@@ -79,18 +80,18 @@ msgid "Add a game"
 msgstr ""
 
 #: lib/mnemo_web/components/layouts.ex:53
-#: lib/mnemo_web/live/enroll_live.ex:12
-#: lib/mnemo_web/live/enroll_live.ex:122
+#: lib/mnemo_web/live/enroll_live.ex:16
+#: lib/mnemo_web/live/enroll_live.ex:264
 #, elixir-autogen, elixir-format
 msgid "Add game"
 msgstr ""
 
-#: lib/mnemo_web/components/game_components.ex:201
+#: lib/mnemo_web/components/game_components.ex:391
 #, elixir-autogen, elixir-format
 msgid "Already up to date."
 msgstr ""
 
-#: lib/mnemo_web/components/game_components.ex:215
+#: lib/mnemo_web/components/game_components.ex:405
 #, elixir-autogen, elixir-format
 msgid "Another device synced newer generations."
 msgstr ""
@@ -106,7 +107,7 @@ msgstr ""
 msgid "Browser did not open? Click here."
 msgstr ""
 
-#: lib/mnemo_web/components/game_components.ex:163
+#: lib/mnemo_web/components/game_components.ex:335
 #, elixir-autogen, elixir-format
 msgid "Conflict"
 msgstr ""
@@ -122,41 +123,42 @@ msgid "Connected to Google Drive"
 msgstr ""
 
 #: lib/mnemo_web/live/library_live.ex:71
-#: lib/mnemo_web/live/slots_live.ex:139
+#: lib/mnemo_web/live/slots_live.ex:160
 #, elixir-autogen, elixir-format
 msgid "Could not start the sync."
 msgstr ""
 
-#: lib/mnemo_web/live/enroll_live.ex:206
+#: lib/mnemo_web/live/enroll_live.ex:283
+#: lib/mnemo_web/live/enroll_live.ex:381
 #, elixir-autogen, elixir-format
 msgid "Enroll"
 msgstr ""
 
-#: lib/mnemo_web/live/enroll_live.ex:197
+#: lib/mnemo_web/live/enroll_live.ex:364
 #, elixir-autogen, elixir-format
 msgid "Enrolled"
 msgstr ""
 
-#: lib/mnemo_web/components/game_components.ex:164
+#: lib/mnemo_web/components/game_components.ex:336
 #, elixir-autogen, elixir-format
 msgid "Error"
 msgstr ""
 
-#: lib/mnemo_web/live/enroll_live.ex:124
+#: lib/mnemo_web/live/enroll_live.ex:266
 #, elixir-autogen, elixir-format
 msgid "Games found in the Ren'Py save folders on this machine."
 msgstr ""
 
-#: lib/mnemo_web/live/library_live.ex:139
-#: lib/mnemo_web/live/slots_live.ex:259
-#: lib/mnemo_web/live/slots_live.ex:369
-#: lib/mnemo_web/live/slots_live.ex:435
-#: lib/mnemo_web/live/slots_live.ex:454
+#: lib/mnemo_web/live/library_live.ex:143
+#: lib/mnemo_web/live/slots_live.ex:383
+#: lib/mnemo_web/live/slots_live.ex:500
+#: lib/mnemo_web/live/slots_live.ex:711
+#: lib/mnemo_web/live/slots_live.ex:730
 #, elixir-autogen, elixir-format
 msgid "Generation %{number}"
 msgstr ""
 
-#: lib/mnemo_web/components/game_components.ex:204
+#: lib/mnemo_web/components/game_components.ex:394
 #, elixir-autogen, elixir-format
 msgid "Generation %{number} uploaded."
 msgstr ""
@@ -172,12 +174,12 @@ msgstr ""
 msgid "Google OAuth client is not configured."
 msgstr ""
 
-#: lib/mnemo_web/components/game_components.ex:154
+#: lib/mnemo_web/components/game_components.ex:324
 #, elixir-autogen, elixir-format
 msgid "Idle"
 msgstr ""
 
-#: lib/mnemo_web/live/enroll_live.ex:140
+#: lib/mnemo_web/live/enroll_live.ex:303
 #, elixir-autogen, elixir-format
 msgid "If a game is installed but not listed, launch it once and quit — Ren'Py creates its save folder on first launch."
 msgstr ""
@@ -188,7 +190,7 @@ msgstr ""
 msgid "Library"
 msgstr ""
 
-#: lib/mnemo_web/live/enroll_live.ex:138
+#: lib/mnemo_web/live/enroll_live.ex:301
 #, elixir-autogen, elixir-format
 msgid "No Ren'Py games found"
 msgstr ""
@@ -198,8 +200,8 @@ msgstr ""
 msgid "No games enrolled yet"
 msgstr ""
 
-#: lib/mnemo_web/components/game_components.ex:233
-#: lib/mnemo_web/live/slots_live.ex:282
+#: lib/mnemo_web/components/game_components.ex:423
+#: lib/mnemo_web/live/slots_live.ex:406
 #, elixir-autogen, elixir-format
 msgid "No saves found. Launch the game once, quit, and try again."
 msgstr ""
@@ -219,27 +221,27 @@ msgstr ""
 msgid "Ren'Py saves, kept safe"
 msgstr ""
 
-#: lib/mnemo_web/live/enroll_live.ex:127
+#: lib/mnemo_web/live/enroll_live.ex:269
 #, elixir-autogen, elixir-format
 msgid "Rescan"
 msgstr ""
 
-#: lib/mnemo_web/components/game_components.ex:239
+#: lib/mnemo_web/components/game_components.ex:429
 #, elixir-autogen, elixir-format
 msgid "Save folder not found: %{path}"
 msgstr ""
 
-#: lib/mnemo_web/live/enroll_live.ex:50
+#: lib/mnemo_web/live/enroll_live.ex:73
 #, elixir-autogen, elixir-format
 msgid "Scanning the Ren'Py folders failed."
 msgstr ""
 
-#: lib/mnemo_web/live/enroll_live.ex:133
+#: lib/mnemo_web/live/enroll_live.ex:296
 #, elixir-autogen, elixir-format
 msgid "Scanning…"
 msgstr ""
 
-#: lib/mnemo_web/components/game_components.ex:155
+#: lib/mnemo_web/components/game_components.ex:325
 #, elixir-autogen, elixir-format
 msgid "Snapshotting…"
 msgstr ""
@@ -249,13 +251,13 @@ msgstr ""
 msgid "Something went wrong!"
 msgstr ""
 
-#: lib/mnemo_web/live/library_live.ex:160
-#: lib/mnemo_web/live/slots_live.ex:274
+#: lib/mnemo_web/live/library_live.ex:164
+#: lib/mnemo_web/live/slots_live.ex:398
 #, elixir-autogen, elixir-format
 msgid "Sync now"
 msgstr ""
 
-#: lib/mnemo_web/components/game_components.ex:160
+#: lib/mnemo_web/components/game_components.ex:331
 #, elixir-autogen, elixir-format
 msgid "Synced"
 msgstr ""
@@ -265,47 +267,48 @@ msgstr ""
 msgid "The Google Drive session expired. Reconnect to resume syncing."
 msgstr ""
 
-#: lib/mnemo_web/components/game_components.ex:224
+#: lib/mnemo_web/components/game_components.ex:414
 #, elixir-autogen, elixir-format
 msgid "The local and remote histories diverged."
 msgstr ""
 
-#: lib/mnemo_web/components/game_components.ex:218
+#: lib/mnemo_web/components/game_components.ex:408
 #, elixir-autogen, elixir-format
 msgid "The remote history is behind this device."
 msgstr ""
 
-#: lib/mnemo_web/components/game_components.ex:248
+#: lib/mnemo_web/components/game_components.ex:438
 #, elixir-autogen, elixir-format
 msgid "The sync crashed unexpectedly."
 msgstr ""
 
-#: lib/mnemo_web/components/game_components.ex:260
+#: lib/mnemo_web/components/game_components.ex:459
 #, elixir-autogen, elixir-format
 msgid "The sync failed."
 msgstr ""
 
-#: lib/mnemo_web/components/game_components.ex:212
+#: lib/mnemo_web/components/game_components.ex:402
 #, elixir-autogen, elixir-format
 msgid "This game already has history in Drive from another install."
 msgstr ""
 
-#: lib/mnemo_web/live/enroll_live.ex:105
+#: lib/mnemo_web/live/enroll_live.ex:118
+#: lib/mnemo_web/live/enroll_live.ex:170
 #, elixir-autogen, elixir-format
 msgid "This game is already enrolled."
 msgstr ""
 
-#: lib/mnemo_web/components/game_components.ex:221
+#: lib/mnemo_web/components/game_components.ex:411
 #, elixir-autogen, elixir-format
 msgid "Two devices wrote the same generation."
 msgstr ""
 
-#: lib/mnemo_web/components/game_components.ex:242
+#: lib/mnemo_web/components/game_components.ex:432
 #, elixir-autogen, elixir-format
 msgid "Upload failed. Nothing was committed; try again."
 msgstr ""
 
-#: lib/mnemo_web/components/game_components.ex:156
+#: lib/mnemo_web/components/game_components.ex:326
 #, elixir-autogen, elixir-format
 msgid "Uploading…"
 msgstr ""
@@ -330,13 +333,13 @@ msgstr ""
 msgid "just now"
 msgstr ""
 
-#: lib/mnemo_web/live/enroll_live.ex:180
+#: lib/mnemo_web/live/enroll_live.ex:347
 #, elixir-autogen, elixir-format
 msgid "last played: %{time}"
 msgstr ""
 
-#: lib/mnemo_web/live/library_live.ex:139
-#: lib/mnemo_web/live/slots_live.ex:259
+#: lib/mnemo_web/live/library_live.ex:143
+#: lib/mnemo_web/live/slots_live.ex:383
 #, elixir-autogen, elixir-format
 msgid "last sync: %{time}"
 msgstr ""
@@ -351,8 +354,9 @@ msgstr ""
 msgid "never"
 msgstr ""
 
-#: lib/mnemo_web/components/game_components.ex:129
-#: lib/mnemo_web/live/enroll_live.ex:156
+#: lib/mnemo_web/components/game_components.ex:159
+#: lib/mnemo_web/components/game_components.ex:261
+#: lib/mnemo_web/live/enroll_live.ex:323
 #, elixir-autogen, elixir-format
 msgid "no screenshot"
 msgstr ""
@@ -429,62 +433,62 @@ msgstr ""
 msgid "The client ID cannot be blank."
 msgstr ""
 
-#: lib/mnemo_web/components/game_components.ex:144
+#: lib/mnemo_web/components/game_components.ex:175
 #, elixir-autogen, elixir-format
 msgid "Autosave %{n}"
 msgstr ""
 
-#: lib/mnemo_web/components/game_components.ex:99
+#: lib/mnemo_web/components/game_components.ex:129
 #, elixir-autogen, elixir-format
 msgid "Autosaves"
 msgstr ""
 
-#: lib/mnemo_web/components/game_components.ex:22
+#: lib/mnemo_web/components/game_components.ex:52
 #, elixir-autogen, elixir-format
 msgid "Click to reveal or hide"
 msgstr ""
 
-#: lib/mnemo_web/live/slots_live.ex:38
+#: lib/mnemo_web/live/slots_live.ex:50
 #, elixir-autogen, elixir-format
 msgid "Game not found."
 msgstr ""
 
-#: lib/mnemo_web/components/game_components.ex:94
+#: lib/mnemo_web/components/game_components.ex:124
 #, elixir-autogen, elixir-format
 msgid "Page %{page}"
 msgstr ""
 
-#: lib/mnemo_web/components/game_components.ex:145
+#: lib/mnemo_web/components/game_components.ex:176
 #, elixir-autogen, elixir-format
 msgid "Quicksave %{n}"
 msgstr ""
 
-#: lib/mnemo_web/components/game_components.ex:104
+#: lib/mnemo_web/components/game_components.ex:134
 #, elixir-autogen, elixir-format
 msgid "Quicksaves"
 msgstr ""
 
-#: lib/mnemo_web/live/library_live.ex:149
+#: lib/mnemo_web/live/library_live.ex:153
 #, elixir-autogen, elixir-format
 msgid "Saves"
 msgstr ""
 
-#: lib/mnemo_web/components/game_components.ex:90
+#: lib/mnemo_web/components/game_components.ex:120
 #, elixir-autogen, elixir-format
 msgid "Screenshots are blurred; click one to reveal or hide it."
 msgstr ""
 
-#: lib/mnemo_web/live/enroll_live.ex:191
+#: lib/mnemo_web/live/enroll_live.ex:358
 #, elixir-autogen, elixir-format
 msgid "Hide saves"
 msgstr ""
 
-#: lib/mnemo_web/live/enroll_live.ex:218
+#: lib/mnemo_web/live/enroll_live.ex:402
 #, elixir-autogen, elixir-format
 msgid "No save slots here yet."
 msgstr ""
 
-#: lib/mnemo_web/live/enroll_live.ex:191
+#: lib/mnemo_web/live/enroll_live.ex:358
 #, elixir-autogen, elixir-format
 msgid "Preview saves"
 msgstr ""
@@ -705,296 +709,304 @@ msgstr ""
 msgid "or type them in"
 msgstr ""
 
-#: lib/mnemo_web/live/slots_live.ex:375
-#: lib/mnemo_web/live/slots_live.ex:435
-#: lib/mnemo_web/live/slots_live.ex:454
+#: lib/mnemo_web/live/slots_live.ex:506
+#: lib/mnemo_web/live/slots_live.ex:711
+#: lib/mnemo_web/live/slots_live.ex:730
 #, elixir-autogen, elixir-format
 msgid "%{count} file"
 msgid_plural "%{count} files"
 msgstr[0] ""
 msgstr[1] ""
 
-#: lib/mnemo_web/components/game_components.ex:251
+#: lib/mnemo_web/components/game_components.ex:441
 #, elixir-autogen, elixir-format
 msgid "A file could not be downloaded intact. Nothing on disk was touched."
 msgstr ""
 
-#: lib/mnemo_web/live/slots_live.ex:291
+#: lib/mnemo_web/live/slots_live.ex:415
 #, elixir-autogen, elixir-format
 msgid "A restore left these behind because the previous files were not published as a generation. Roll one back to undo, or delete it once you are sure."
 msgstr ""
 
-#: lib/mnemo_web/live/slots_live.ex:240
+#: lib/mnemo_web/live/slots_live.ex:316
 #, elixir-autogen, elixir-format
 msgid "Backup deleted."
 msgstr ""
 
-#: lib/mnemo_web/live/slots_live.ex:289
+#: lib/mnemo_web/live/slots_live.ex:413
 #, elixir-autogen, elixir-format
 msgid "Backup folders"
 msgstr ""
 
-#: lib/mnemo_web/live/slots_live.ex:548
+#: lib/mnemo_web/live/enroll_live.ex:500
+#: lib/mnemo_web/live/slots_live.ex:661
+#: lib/mnemo_web/live/slots_live.ex:824
 #, elixir-autogen, elixir-format
 msgid "Cancel"
 msgstr ""
 
-#: lib/mnemo_web/live/slots_live.ex:166
-#: lib/mnemo_web/live/slots_live.ex:216
+#: lib/mnemo_web/live/slots_live.ex:187
+#: lib/mnemo_web/live/slots_live.ex:292
 #, elixir-autogen, elixir-format
 msgid "Confirm the game is closed before restoring."
 msgstr ""
 
-#: lib/mnemo_web/live/slots_live.ex:243
+#: lib/mnemo_web/live/slots_live.ex:319
 #, elixir-autogen, elixir-format
 msgid "Could not delete the backup."
 msgstr ""
 
-#: lib/mnemo_web/live/slots_live.ex:233
+#: lib/mnemo_web/live/slots_live.ex:309
 #, elixir-autogen, elixir-format
 msgid "Could not roll back."
 msgstr ""
 
-#: lib/mnemo_web/live/slots_live.ex:180
+#: lib/mnemo_web/live/slots_live.ex:201
 #, elixir-autogen, elixir-format
 msgid "Could not start the restore."
 msgstr ""
 
-#: lib/mnemo_web/live/slots_live.ex:317
+#: lib/mnemo_web/live/slots_live.ex:441
 #, elixir-autogen, elixir-format
 msgid "Delete"
 msgstr ""
 
-#: lib/mnemo_web/live/slots_live.ex:315
+#: lib/mnemo_web/live/slots_live.ex:439
 #, elixir-autogen, elixir-format
 msgid "Delete this backup folder permanently?"
 msgstr ""
 
-#: lib/mnemo_web/components/game_components.ex:158
+#: lib/mnemo_web/components/game_components.ex:328
 #, elixir-autogen, elixir-format
 msgid "Downloading…"
 msgstr ""
 
-#: lib/mnemo_web/components/game_components.ex:185
+#: lib/mnemo_web/components/game_components.ex:375
 #, elixir-autogen, elixir-format
 msgid "Generation %{number} is back in place."
 msgstr ""
 
-#: lib/mnemo_web/live/slots_live.ex:360
+#: lib/mnemo_web/live/slots_live.ex:491
 #, elixir-autogen, elixir-format
 msgid "History"
 msgstr ""
 
-#: lib/mnemo_web/live/slots_live.ex:308
+#: lib/mnemo_web/live/slots_live.ex:432
 #, elixir-autogen, elixir-format
 msgid "Put this folder back and move the current one aside?"
 msgstr ""
 
-#: lib/mnemo_web/components/game_components.ex:159
+#: lib/mnemo_web/components/game_components.ex:330
 #, elixir-autogen, elixir-format
 msgid "Putting files in place…"
 msgstr ""
 
-#: lib/mnemo_web/components/game_components.ex:254
+#: lib/mnemo_web/components/game_components.ex:444
 #, elixir-autogen, elixir-format
 msgid "Putting the files in place failed. The previous folder was left as it was."
 msgstr ""
 
-#: lib/mnemo_web/live/slots_live.ex:526
+#: lib/mnemo_web/live/slots_live.ex:802
 #, elixir-autogen, elixir-format
 msgid "Replace the current saves with generation %{number}?"
 msgstr ""
 
-#: lib/mnemo_web/live/slots_live.ex:389
-#: lib/mnemo_web/live/slots_live.ex:545
+#: lib/mnemo_web/live/slots_live.ex:520
+#: lib/mnemo_web/live/slots_live.ex:821
 #, elixir-autogen, elixir-format
 msgid "Restore"
 msgstr ""
 
-#: lib/mnemo_web/components/game_components.ex:161
+#: lib/mnemo_web/components/game_components.ex:332
 #, elixir-autogen, elixir-format
 msgid "Restored"
 msgstr ""
 
-#: lib/mnemo_web/live/slots_live.ex:310
+#: lib/mnemo_web/live/slots_live.ex:434
 #, elixir-autogen, elixir-format
 msgid "Roll back"
 msgstr ""
 
-#: lib/mnemo_web/components/game_components.ex:157
+#: lib/mnemo_web/components/game_components.ex:327
 #, elixir-autogen, elixir-format
 msgid "Saving current state…"
 msgstr ""
 
-#: lib/mnemo_web/live/slots_live.ex:534
+#: lib/mnemo_web/live/enroll_live.ex:474
+#: lib/mnemo_web/live/slots_live.ex:635
+#: lib/mnemo_web/live/slots_live.ex:810
 #, elixir-autogen, elixir-format
 msgid "Something wrote to this folder %{time} — the game may still be open."
 msgstr ""
 
-#: lib/mnemo_web/components/game_components.ex:257
+#: lib/mnemo_web/components/game_components.ex:447
 #, elixir-autogen, elixir-format
 msgid "That generation has no files recorded."
 msgstr ""
 
-#: lib/mnemo_web/live/slots_live.ex:529
+#: lib/mnemo_web/live/slots_live.ex:805
 #, elixir-autogen, elixir-format
 msgid "The files on disk now are saved as a new generation first, so you can come back to them."
 msgstr ""
 
-#: lib/mnemo_web/live/slots_live.ex:473
-#: lib/mnemo_web/live/slots_live.ex:540
+#: lib/mnemo_web/live/enroll_live.ex:486
+#: lib/mnemo_web/live/slots_live.ex:648
+#: lib/mnemo_web/live/slots_live.ex:749
+#: lib/mnemo_web/live/slots_live.ex:816
 #, elixir-autogen, elixir-format
 msgid "The game is closed"
 msgstr ""
 
-#: lib/mnemo_web/components/game_components.ex:191
+#: lib/mnemo_web/components/game_components.ex:381
 #, elixir-autogen, elixir-format
 msgid "The previous files could not be published as a generation, so they were kept in a backup folder."
 msgstr ""
 
-#: lib/mnemo_web/live/slots_live.ex:228
+#: lib/mnemo_web/live/slots_live.ex:304
 #, elixir-autogen, elixir-format
 msgid "The previous folder is back in place."
 msgstr ""
 
-#: lib/mnemo_web/components/game_components.ex:196
+#: lib/mnemo_web/components/game_components.ex:386
 #, elixir-autogen, elixir-format
 msgid "The previous state was saved first, so this is undoable."
 msgstr ""
 
-#: lib/mnemo_web/live/slots_live.ex:173
+#: lib/mnemo_web/live/enroll_live.ex:181
+#: lib/mnemo_web/live/slots_live.ex:194
+#: lib/mnemo_web/live/slots_live.ex:249
 #, elixir-autogen, elixir-format
 msgid "The save folder is still changing. Close the game and try again."
 msgstr ""
 
-#: lib/mnemo_web/live/slots_live.ex:371
+#: lib/mnemo_web/live/slots_live.ex:502
 #, elixir-autogen, elixir-format
 msgid "current"
 msgstr ""
 
-#: lib/mnemo_web/live/slots_live.ex:484
+#: lib/mnemo_web/live/slots_live.ex:760
 #, elixir-autogen, elixir-format
 msgid "%{count} slot differs"
 msgid_plural "%{count} slots differ"
 msgstr[0] ""
 msgstr[1] ""
 
-#: lib/mnemo_web/live/slots_live.ex:219
+#: lib/mnemo_web/live/slots_live.ex:295
 #, elixir-autogen, elixir-format
 msgid "Could not resolve the conflict."
 msgstr ""
 
-#: lib/mnemo_web/live/slots_live.ex:447
+#: lib/mnemo_web/live/slots_live.ex:723
 #, elixir-autogen, elixir-format
 msgid "Keep these files"
 msgstr ""
 
-#: lib/mnemo_web/components/game_components.ex:175
+#: lib/mnemo_web/components/game_components.ex:347
 #, elixir-autogen, elixir-format
 msgid "Kept this device's files. The other version stays in the history."
 msgstr ""
 
-#: lib/mnemo_web/components/game_components.ex:162
+#: lib/mnemo_web/components/game_components.ex:334
 #, elixir-autogen, elixir-format
 msgid "Resolved"
 msgstr ""
 
-#: lib/mnemo_web/live/slots_live.ex:419
+#: lib/mnemo_web/live/slots_live.ex:695
 #, elixir-autogen, elixir-format
 msgid "Saves cannot be merged, so pick which side goes on disk. Nothing is deleted either way — both versions stay in the history."
 msgstr ""
 
-#: lib/mnemo_web/live/slots_live.ex:476
+#: lib/mnemo_web/live/slots_live.ex:752
 #, elixir-autogen, elixir-format
 msgid "Take these files"
 msgstr ""
 
-#: lib/mnemo_web/live/slots_live.ex:452
+#: lib/mnemo_web/live/slots_live.ex:728
 #, elixir-autogen, elixir-format
 msgid "The other device"
 msgstr ""
 
-#: lib/mnemo_web/live/slots_live.ex:433
+#: lib/mnemo_web/live/slots_live.ex:709
 #, elixir-autogen, elixir-format
 msgid "This device"
 msgstr ""
 
-#: lib/mnemo_web/components/game_components.ex:179
+#: lib/mnemo_web/components/game_components.ex:351
 #, elixir-autogen, elixir-format
 msgid "Took the other device's files. This device's version was saved to the history first."
 msgstr ""
 
-#: lib/mnemo_web/live/slots_live.ex:426
+#: lib/mnemo_web/live/slots_live.ex:702
 #, elixir-autogen, elixir-format
 msgid "Two devices also published the same generation number. Resolving that needs a newer version of mnemo; nothing here will overwrite your saves."
 msgstr ""
 
-#: lib/mnemo_web/live/slots_live.ex:416
+#: lib/mnemo_web/live/slots_live.ex:692
 #, elixir-autogen, elixir-format
 msgid "Two devices changed this game"
 msgstr ""
 
-#: lib/mnemo_web/live/slots_live.ex:505
+#: lib/mnemo_web/live/slots_live.ex:781
 #, elixir-autogen, elixir-format
 msgid "different"
 msgstr ""
 
-#: lib/mnemo_web/live/slots_live.ex:503
+#: lib/mnemo_web/live/slots_live.ex:779
 #, elixir-autogen, elixir-format
 msgid "only here"
 msgstr ""
 
-#: lib/mnemo_web/live/slots_live.ex:504
+#: lib/mnemo_web/live/slots_live.ex:780
 #, elixir-autogen, elixir-format
 msgid "only there"
 msgstr ""
 
-#: lib/mnemo_web/components/game_components.ex:227
+#: lib/mnemo_web/components/game_components.ex:417
 #, elixir-autogen, elixir-format
 msgid "Nothing was overwritten. Pick which side to keep below."
 msgstr ""
 
-#: lib/mnemo_web/live/slots_live.ex:346
+#: lib/mnemo_web/live/slots_live.ex:477
 #, elixir-autogen, elixir-format
 msgid "Back up autosaves and quicksaves"
 msgstr ""
 
-#: lib/mnemo_web/live/slots_live.ex:202
+#: lib/mnemo_web/live/slots_live.ex:278
 #, elixir-autogen, elixir-format
 msgid "Could not save the options."
 msgstr ""
 
-#: lib/mnemo_web/live/slots_live.ex:327
+#: lib/mnemo_web/live/slots_live.ex:458
 #, elixir-autogen, elixir-format
 msgid "Name"
 msgstr ""
 
-#: lib/mnemo_web/live/slots_live.ex:348
+#: lib/mnemo_web/live/slots_live.ex:479
 #, elixir-autogen, elixir-format
 msgid "Off by default: Ren'Py rewrites them every few minutes, which multiplies generations. With this off they are never uploaded, so they cannot be restored either."
 msgstr ""
 
-#: lib/mnemo_web/live/slots_live.ex:324
+#: lib/mnemo_web/live/slots_live.ex:455
 #, elixir-autogen, elixir-format
 msgid "Options"
 msgstr ""
 
-#: lib/mnemo_web/live/slots_live.ex:199
+#: lib/mnemo_web/live/slots_live.ex:275
 #, elixir-autogen, elixir-format
 msgid "Options saved."
 msgstr ""
 
-#: lib/mnemo_web/live/slots_live.ex:355
+#: lib/mnemo_web/live/slots_live.ex:486
 #, elixir-autogen, elixir-format
 msgid "Save options"
 msgstr ""
 
-#: lib/mnemo_web/live/enroll_live.ex:163
+#: lib/mnemo_web/live/enroll_live.ex:330
 #, elixir-autogen, elixir-format
 msgid "game install folder"
 msgstr ""
 
-#: lib/mnemo_web/live/enroll_live.ex:168
+#: lib/mnemo_web/live/enroll_live.ex:335
 #, elixir-autogen, elixir-format
 msgid "Ren'Py keeps a second copy of these saves, mirrored automatically:"
 msgid_plural "Ren'Py keeps other copies of these saves, mirrored automatically:"
@@ -1039,4 +1051,253 @@ msgstr ""
 #: lib/mnemo_web/live/settings_live.ex:476
 #, elixir-autogen, elixir-format
 msgid "— without one, games with no local artwork keep using a save screenshot."
+msgstr ""
+
+#: lib/mnemo_web/components/game_components.ex:303
+#, elixir-autogen, elixir-format
+msgid "%{count} duplicate ignored"
+msgid_plural "%{count} duplicates ignored"
+msgstr[0] ""
+msgstr[1] ""
+
+#: lib/mnemo_web/components/game_components.ex:296
+#, elixir-autogen, elixir-format
+msgid "%{count} other file ignored"
+msgid_plural "%{count} other files ignored"
+msgstr[0] ""
+msgstr[1] ""
+
+#: lib/mnemo_web/components/game_components.ex:294
+#, elixir-autogen, elixir-format
+msgid "%{count} save found"
+msgid_plural "%{count} saves found"
+msgstr[0] ""
+msgstr[1] ""
+
+#: lib/mnemo_web/components/game_components.ex:358
+#, elixir-autogen, elixir-format
+msgid "%{count} save imported."
+msgid_plural "%{count} saves imported."
+msgstr[0] ""
+msgstr[1] ""
+
+#: lib/mnemo_web/live/enroll_live.ex:467
+#: lib/mnemo_web/live/slots_live.ex:616
+#, elixir-autogen, elixir-format
+msgid "%{count} save will be written."
+msgid_plural "%{count} saves will be written."
+msgstr[0] ""
+msgstr[1] ""
+
+#: lib/mnemo_web/components/game_components.ex:360
+#, elixir-autogen, elixir-format
+msgid "%{count} was already in the folder and was left alone."
+msgid_plural "%{count} were already in the folder and were left alone."
+msgstr[0] ""
+msgstr[1] ""
+
+#: lib/mnemo_web/live/slots_live.ex:622
+#, elixir-autogen, elixir-format
+msgid "%{count} will be left untouched."
+msgid_plural "%{count} will be left untouched."
+msgstr[0] ""
+msgstr[1] ""
+
+#: lib/mnemo_web/live/enroll_live.ex:174
+#: lib/mnemo_web/live/slots_live.ex:242
+#, elixir-autogen, elixir-format
+msgid "Confirm the game is closed before importing."
+msgstr ""
+
+#: lib/mnemo_web/live/enroll_live.ex:185
+#: lib/mnemo_web/live/slots_live.ex:256
+#, elixir-autogen, elixir-format
+msgid "Could not start the import."
+msgstr ""
+
+#: lib/mnemo_web/components/game_components.ex:456
+#, elixir-autogen, elixir-format
+msgid "Every save in that archive is already in the folder."
+msgstr ""
+
+#: lib/mnemo_web/live/slots_live.ex:546
+#, elixir-autogen, elixir-format
+msgid "For a backup you made by hand or a Google Takeout export. Saves are read wherever they sit inside the archive; the folders around them are ignored."
+msgstr ""
+
+#: lib/mnemo_web/live/slots_live.ex:658
+#, elixir-autogen, elixir-format
+msgid "Import"
+msgstr ""
+
+#: lib/mnemo_web/live/slots_live.ex:544
+#, elixir-autogen, elixir-format
+msgid "Import saves from a zip"
+msgstr ""
+
+#: lib/mnemo_web/components/game_components.ex:333
+#, elixir-autogen, elixir-format
+msgid "Imported"
+msgstr ""
+
+#: lib/mnemo_web/live/enroll_live.ex:447
+#: lib/mnemo_web/live/slots_live.ex:563
+#, elixir-autogen, elixir-format
+msgid "No Ren'Py saves in this archive. mnemo looks for files named the way Ren'Py names them, such as 1-1-LT1.save."
+msgstr ""
+
+#: lib/mnemo_web/components/game_components.ex:453
+#, elixir-autogen, elixir-format
+msgid "No Ren'Py saves were found in that archive."
+msgstr ""
+
+#: lib/mnemo_web/components/game_components.ex:315
+#, elixir-autogen, elixir-format
+msgid "Only .zip archives can be imported."
+msgstr ""
+
+#: lib/mnemo_web/live/slots_live.ex:588
+#, elixir-autogen, elixir-format
+msgid "Only add what is missing"
+msgstr ""
+
+#: lib/mnemo_web/live/enroll_live.ex:512
+#: lib/mnemo_web/live/slots_live.ex:673
+#, elixir-autogen, elixir-format
+msgid "Pick another file"
+msgstr ""
+
+#: lib/mnemo_web/components/game_components.ex:316
+#, elixir-autogen, elixir-format
+msgid "Pick one archive at a time."
+msgstr ""
+
+#: lib/mnemo_web/components/game_components.ex:329
+#, elixir-autogen, elixir-format
+msgid "Reading the archive…"
+msgstr ""
+
+#: lib/mnemo_web/live/slots_live.ex:605
+#, elixir-autogen, elixir-format
+msgid "Replace saves of the same name"
+msgstr ""
+
+#: lib/mnemo_web/live/slots_live.ex:590
+#, elixir-autogen, elixir-format
+msgid "Saves already in the folder are left exactly as they are."
+msgstr ""
+
+#: lib/mnemo_web/live/slots_live.ex:631
+#, elixir-autogen, elixir-format
+msgid "Saves already in the folder but missing from the archive are never removed."
+msgstr ""
+
+#: lib/mnemo_web/components/game_components.ex:450
+#: lib/mnemo_web/live/enroll_live.ex:212
+#: lib/mnemo_web/live/slots_live.ex:343
+#, elixir-autogen, elixir-format
+msgid "That file could not be opened as a zip archive."
+msgstr ""
+
+#: lib/mnemo_web/components/game_components.ex:314
+#, elixir-autogen, elixir-format
+msgid "That file is too large to import."
+msgstr ""
+
+#: lib/mnemo_web/live/slots_live.ex:607
+#, elixir-autogen, elixir-format
+msgid "The current files are published as a generation first, so this stays undoable."
+msgstr ""
+
+#: lib/mnemo_web/components/game_components.ex:368
+#, elixir-autogen, elixir-format
+msgid "The previous files were kept in a backup folder."
+msgstr ""
+
+#: lib/mnemo_web/components/game_components.ex:317
+#, elixir-autogen, elixir-format
+msgid "The upload failed. Try again."
+msgstr ""
+
+#: lib/mnemo_web/components/game_components.ex:366
+#, elixir-autogen, elixir-format
+msgid "They are on disk but could not be uploaded yet — sync when you can."
+msgstr ""
+
+#: lib/mnemo_web/components/game_components.ex:177
+#, elixir-autogen, elixir-format
+msgid "Unlocked content and seen text"
+msgstr ""
+
+#: lib/mnemo_web/components/game_components.ex:276
+#, elixir-autogen, elixir-format
+msgid "already in the folder"
+msgstr ""
+
+#: lib/mnemo_web/components/game_components.ex:276
+#, elixir-autogen, elixir-format
+msgid "new"
+msgstr ""
+
+#: lib/mnemo_web/live/enroll_live.ex:165
+#, elixir-autogen, elixir-format
+msgid "%{name} was added. Importing the saves now."
+msgstr ""
+
+#: lib/mnemo_web/live/enroll_live.ex:492
+#, elixir-autogen, elixir-format
+msgid "Enroll and import"
+msgstr ""
+
+#: lib/mnemo_web/live/enroll_live.ex:273
+#, elixir-autogen, elixir-format
+msgid "Enrolling, and bringing old saves back"
+msgstr ""
+
+#: lib/mnemo_web/live/enroll_live.ex:282
+#: lib/mnemo_web/live/enroll_live.ex:372
+#, elixir-autogen, elixir-format
+msgid "Import saves"
+msgstr ""
+
+#: lib/mnemo_web/live/enroll_live.ex:425
+#, elixir-autogen, elixir-format
+msgid "Import saves into %{name}"
+msgstr ""
+
+#: lib/mnemo_web/live/enroll_live.ex:280
+#, elixir-autogen, elixir-format
+msgid "So the save sitting in a freshly installed game is there to identify the folder, nothing more. If your real saves are in a zip — a backup you made or a Google Takeout export — use %{button} instead of %{enroll}: it enrols the game and puts your archive in place of what the folder holds now."
+msgstr ""
+
+#: lib/mnemo_web/live/enroll_live.ex:428
+#, elixir-autogen, elixir-format
+msgid "The %{count} save in this folder will be replaced by what the archive holds. It is published as a generation first, so it stays recoverable."
+msgid_plural "The %{count} saves in this folder will be replaced by what the archive holds. They are published as a generation first, so they stay recoverable."
+msgstr[0] ""
+msgstr[1] ""
+
+#: lib/mnemo_web/live/enroll_live.ex:287
+#, elixir-autogen, elixir-format
+msgid "What gets replaced is published as a generation first, so it stays in the history and can be restored. Files Ren'Py keeps outside the synced set are carried across untouched."
+msgstr ""
+
+#: lib/mnemo_web/live/enroll_live.ex:275
+#, elixir-autogen, elixir-format
+msgid "mnemo never creates a save folder — it only lists folders a game already made. That is why a game has to be launched once and quit before it shows up here: Ren'Py writes the folder on first launch."
+msgstr ""
+
+#: lib/mnemo_web/components/game_components.ex:212
+#, elixir-autogen, elixir-format
+msgid "A backup you made by hand, or a Google Takeout export."
+msgstr ""
+
+#: lib/mnemo_web/components/game_components.ex:209
+#, elixir-autogen, elixir-format
+msgid "Drop a .zip here, or click to choose one"
+msgstr ""
+
+#: lib/mnemo_web/components/game_components.ex:218
+#, elixir-autogen, elixir-format
+msgid "Uploading %{name}…"
 msgstr ""
