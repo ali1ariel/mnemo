@@ -35,6 +35,45 @@ defmodule MnemoWeb.LibraryLiveTest do
     assert has_element?(view, "#sync-#{game.id}")
   end
 
+  describe "cover art" do
+    test "real cover art renders sharp, a save screenshot stays blurred", %{
+      conn: conn,
+      root: root
+    } do
+      dir = Path.join(root, "MyGame-123")
+      RenPyFixtures.write_save(dir, "1-1-LT1.save")
+
+      {:ok, screenshot_game} =
+        Games.enroll(%{save_directory: "MyGame-123", install_root: root, name: "Screenshot Game"})
+
+      install = Path.join(root, "Installed Game")
+      File.mkdir_p!(install)
+      File.write!(Path.join(install, "icon.png"), "fake-png")
+
+      cover_dir = Path.join(root, "Covered-1")
+      RenPyFixtures.write_save(cover_dir, "1-1-LT1.save")
+
+      {:ok, cover_game} =
+        Games.enroll(%{
+          save_directory: "Covered-1",
+          install_root: root,
+          install_path: install,
+          name: "Covered Game"
+        })
+
+      {:ok, view, _html} = live(conn, ~p"/")
+
+      # The screenshot is an arbitrary frame of the game, so it is hidden
+      # until clicked; published artwork is not.
+      assert has_element?(view, "#game-#{screenshot_game.id} img.blur-xl")
+      assert has_element?(view, "#game-#{screenshot_game.id} input[type=checkbox]")
+
+      assert has_element?(view, "#game-#{cover_game.id} img")
+      refute has_element?(view, "#game-#{cover_game.id} img.blur-xl")
+      refute has_element?(view, "#game-#{cover_game.id} input[type=checkbox]")
+    end
+  end
+
   test "the sync button drives a full cycle against the fake drive", %{conn: conn, root: root} do
     dir = Path.join(root, "MyGame-123")
     RenPyFixtures.write_save(dir, "1-1-LT1.save")

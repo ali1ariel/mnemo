@@ -39,14 +39,14 @@ msgid_plural "%{count} new files."
 msgstr[0] ""
 msgstr[1] ""
 
-#: lib/mnemo_web/live/enroll_live.ex:172
+#: lib/mnemo_web/live/enroll_live.ex:178
 #, elixir-autogen, elixir-format
 msgid "%{count} save"
 msgid_plural "%{count} saves"
 msgstr[0] ""
 msgstr[1] ""
 
-#: lib/mnemo_web/live/enroll_live.ex:95
+#: lib/mnemo_web/live/enroll_live.ex:101
 #, elixir-autogen, elixir-format
 msgid "%{name} enrolled."
 msgstr ""
@@ -80,7 +80,7 @@ msgstr ""
 
 #: lib/mnemo_web/components/layouts.ex:53
 #: lib/mnemo_web/live/enroll_live.ex:12
-#: lib/mnemo_web/live/enroll_live.ex:116
+#: lib/mnemo_web/live/enroll_live.ex:122
 #, elixir-autogen, elixir-format
 msgid "Add game"
 msgstr ""
@@ -127,12 +127,12 @@ msgstr ""
 msgid "Could not start the sync."
 msgstr ""
 
-#: lib/mnemo_web/live/enroll_live.ex:200
+#: lib/mnemo_web/live/enroll_live.ex:206
 #, elixir-autogen, elixir-format
 msgid "Enroll"
 msgstr ""
 
-#: lib/mnemo_web/live/enroll_live.ex:191
+#: lib/mnemo_web/live/enroll_live.ex:197
 #, elixir-autogen, elixir-format
 msgid "Enrolled"
 msgstr ""
@@ -142,7 +142,7 @@ msgstr ""
 msgid "Error"
 msgstr ""
 
-#: lib/mnemo_web/live/enroll_live.ex:118
+#: lib/mnemo_web/live/enroll_live.ex:124
 #, elixir-autogen, elixir-format
 msgid "Games found in the Ren'Py save folders on this machine."
 msgstr ""
@@ -167,7 +167,7 @@ msgid "Google OAuth client is not configured"
 msgstr ""
 
 #: lib/mnemo_web/live/library_live.ex:81
-#: lib/mnemo_web/live/settings_live.ex:186
+#: lib/mnemo_web/live/settings_live.ex:208
 #, elixir-autogen, elixir-format
 msgid "Google OAuth client is not configured."
 msgstr ""
@@ -177,7 +177,7 @@ msgstr ""
 msgid "Idle"
 msgstr ""
 
-#: lib/mnemo_web/live/enroll_live.ex:134
+#: lib/mnemo_web/live/enroll_live.ex:140
 #, elixir-autogen, elixir-format
 msgid "If a game is installed but not listed, launch it once and quit — Ren'Py creates its save folder on first launch."
 msgstr ""
@@ -188,7 +188,7 @@ msgstr ""
 msgid "Library"
 msgstr ""
 
-#: lib/mnemo_web/live/enroll_live.ex:132
+#: lib/mnemo_web/live/enroll_live.ex:138
 #, elixir-autogen, elixir-format
 msgid "No Ren'Py games found"
 msgstr ""
@@ -219,7 +219,7 @@ msgstr ""
 msgid "Ren'Py saves, kept safe"
 msgstr ""
 
-#: lib/mnemo_web/live/enroll_live.ex:121
+#: lib/mnemo_web/live/enroll_live.ex:127
 #, elixir-autogen, elixir-format
 msgid "Rescan"
 msgstr ""
@@ -229,12 +229,12 @@ msgstr ""
 msgid "Save folder not found: %{path}"
 msgstr ""
 
-#: lib/mnemo_web/live/enroll_live.ex:45
+#: lib/mnemo_web/live/enroll_live.ex:50
 #, elixir-autogen, elixir-format
 msgid "Scanning the Ren'Py folders failed."
 msgstr ""
 
-#: lib/mnemo_web/live/enroll_live.ex:127
+#: lib/mnemo_web/live/enroll_live.ex:133
 #, elixir-autogen, elixir-format
 msgid "Scanning…"
 msgstr ""
@@ -290,7 +290,7 @@ msgstr ""
 msgid "This game already has history in Drive from another install."
 msgstr ""
 
-#: lib/mnemo_web/live/enroll_live.ex:99
+#: lib/mnemo_web/live/enroll_live.ex:105
 #, elixir-autogen, elixir-format
 msgid "This game is already enrolled."
 msgstr ""
@@ -330,7 +330,7 @@ msgstr ""
 msgid "just now"
 msgstr ""
 
-#: lib/mnemo_web/live/enroll_live.ex:174
+#: lib/mnemo_web/live/enroll_live.ex:180
 #, elixir-autogen, elixir-format
 msgid "last played: %{time}"
 msgstr ""
@@ -352,12 +352,12 @@ msgid "never"
 msgstr ""
 
 #: lib/mnemo_web/components/game_components.ex:129
-#: lib/mnemo_web/live/enroll_live.ex:150
+#: lib/mnemo_web/live/enroll_live.ex:156
 #, elixir-autogen, elixir-format
 msgid "no screenshot"
 msgstr ""
 
-#: lib/mnemo_web/live/settings_live.ex:395
+#: lib/mnemo_web/live/settings_live.ex:417
 #, elixir-autogen, elixir-format
 msgid "A secret is already saved. Leave the field blank to keep it."
 msgstr ""
@@ -367,37 +367,37 @@ msgstr ""
 msgid "Add your Google credentials to start syncing."
 msgstr ""
 
-#: lib/mnemo_web/live/settings_live.ex:436
+#: lib/mnemo_web/live/settings_live.ex:486
 #, elixir-autogen, elixir-format
 msgid "By default mnemo follows the system language."
 msgstr ""
 
-#: lib/mnemo_web/live/settings_live.ex:383
+#: lib/mnemo_web/live/settings_live.ex:405
 #, elixir-autogen, elixir-format
 msgid "Client ID"
 msgstr ""
 
-#: lib/mnemo_web/live/settings_live.ex:390
+#: lib/mnemo_web/live/settings_live.ex:412
 #, elixir-autogen, elixir-format
 msgid "Client secret"
 msgstr ""
 
-#: lib/mnemo_web/live/settings_live.ex:85
+#: lib/mnemo_web/live/settings_live.ex:92
 #, elixir-autogen, elixir-format
 msgid "Credentials saved."
 msgstr ""
 
-#: lib/mnemo_web/live/settings_live.ex:428
+#: lib/mnemo_web/live/settings_live.ex:450
 #, elixir-autogen, elixir-format
 msgid "Disconnect"
 msgstr ""
 
-#: lib/mnemo_web/live/settings_live.ex:426
+#: lib/mnemo_web/live/settings_live.ex:448
 #, elixir-autogen, elixir-format
 msgid "Disconnect from Google Drive? Synced files stay in your Drive."
 msgstr ""
 
-#: lib/mnemo_web/live/settings_live.ex:434
+#: lib/mnemo_web/live/settings_live.ex:484
 #, elixir-autogen, elixir-format
 msgid "Language"
 msgstr ""
@@ -407,24 +407,24 @@ msgstr ""
 msgid "Open Settings"
 msgstr ""
 
-#: lib/mnemo_web/live/settings_live.ex:398
+#: lib/mnemo_web/live/settings_live.ex:420
 #, elixir-autogen, elixir-format
 msgid "Save credentials"
 msgstr ""
 
 #: lib/mnemo_web/components/layouts.ex:57
 #: lib/mnemo_web/live/settings_live.ex:15
-#: lib/mnemo_web/live/settings_live.ex:199
+#: lib/mnemo_web/live/settings_live.ex:221
 #, elixir-autogen, elixir-format
 msgid "Settings"
 msgstr ""
 
-#: lib/mnemo_web/live/settings_live.ex:445
+#: lib/mnemo_web/live/settings_live.ex:495
 #, elixir-autogen, elixir-format
 msgid "System default"
 msgstr ""
 
-#: lib/mnemo_web/live/settings_live.ex:160
+#: lib/mnemo_web/live/settings_live.ex:167
 #, elixir-autogen, elixir-format
 msgid "The client ID cannot be blank."
 msgstr ""
@@ -474,233 +474,233 @@ msgstr ""
 msgid "Screenshots are blurred; click one to reveal or hide it."
 msgstr ""
 
-#: lib/mnemo_web/live/enroll_live.ex:185
+#: lib/mnemo_web/live/enroll_live.ex:191
 #, elixir-autogen, elixir-format
 msgid "Hide saves"
 msgstr ""
 
-#: lib/mnemo_web/live/enroll_live.ex:212
+#: lib/mnemo_web/live/enroll_live.ex:218
 #, elixir-autogen, elixir-format
 msgid "No save slots here yet."
 msgstr ""
 
-#: lib/mnemo_web/live/enroll_live.ex:185
+#: lib/mnemo_web/live/enroll_live.ex:191
 #, elixir-autogen, elixir-format
 msgid "Preview saves"
 msgstr ""
 
-#: lib/mnemo_web/live/settings_live.ex:297
+#: lib/mnemo_web/live/settings_live.ex:319
 #, elixir-autogen, elixir-format
 msgid "Configure the consent screen under \"Google Auth Platform\": choose \"External\" and fill in the app name and your e-mail."
 msgstr ""
 
-#: lib/mnemo_web/live/settings_live.ex:289
+#: lib/mnemo_web/live/settings_live.ex:311
 #, elixir-autogen, elixir-format
 msgid "Create a project. Any name works — \"mnemo\", for example."
 msgstr ""
 
-#: lib/mnemo_web/live/settings_live.ex:314
+#: lib/mnemo_web/live/settings_live.ex:336
 #, elixir-autogen, elixir-format
 msgid "Create an OAuth client under \"Clients\": application type \"Desktop app\"."
 msgstr ""
 
-#: lib/mnemo_web/live/settings_live.ex:293
+#: lib/mnemo_web/live/settings_live.ex:315
 #, elixir-autogen, elixir-format
 msgid "Enable the Google Drive API for that project."
 msgstr ""
 
-#: lib/mnemo_web/live/settings_live.ex:272
+#: lib/mnemo_web/live/settings_live.ex:294
 #, elixir-autogen, elixir-format
 msgid "How to get these credentials, step by step"
 msgstr ""
 
-#: lib/mnemo_web/live/settings_live.ex:283
+#: lib/mnemo_web/live/settings_live.ex:305
 #, elixir-autogen, elixir-format
 msgid "Open the Google Cloud console and sign in with the Google account whose Drive will hold your saves."
 msgstr ""
 
-#: lib/mnemo_web/live/settings_live.ex:308
+#: lib/mnemo_web/live/settings_live.ex:330
 #, elixir-autogen, elixir-format
 msgid "Publish the app to production under \"Audience\". While it stays in testing, Google drops the connection every 7 days."
 msgstr ""
 
-#: lib/mnemo_web/live/settings_live.ex:220
+#: lib/mnemo_web/live/settings_live.ex:242
 #, elixir-autogen, elixir-format
 msgid "mnemo connects to your Drive as a Google OAuth client of type \"Desktop app\". Paste its credentials here — the guide below shows how to create them for free."
 msgstr ""
 
-#: lib/mnemo_web/live/settings_live.ex:144
+#: lib/mnemo_web/live/settings_live.ex:151
 #, elixir-autogen, elixir-format
 msgid "open in the console"
 msgstr ""
 
-#: lib/mnemo_web/live/settings_live.ex:302
+#: lib/mnemo_web/live/settings_live.ex:324
 #, elixir-autogen, elixir-format
 msgid "\"External\" only means a personal Google account instead of a Workspace organization. It does not publish anything, and it does not make your files public."
 msgstr ""
 
-#: lib/mnemo_web/live/settings_live.ex:326
+#: lib/mnemo_web/live/settings_live.ex:348
 #, elixir-autogen, elixir-format
 msgid "Google will show an \"unverified app\" warning when you connect. That is expected: the app is yours, you created it minutes ago, and verification only exists for apps distributed to other people. Click \"Advanced\" and continue."
 msgstr ""
 
-#: lib/mnemo_web/live/settings_live.ex:248
+#: lib/mnemo_web/live/settings_live.ex:270
 #, elixir-autogen, elixir-format
 msgid "On the authorization screen Google words it like this:"
 msgstr ""
 
-#: lib/mnemo_web/live/settings_live.ex:250
+#: lib/mnemo_web/live/settings_live.ex:272
 #, elixir-autogen, elixir-format
 msgid "See, edit, create and delete only the specific Google Drive files you use with this app"
 msgstr ""
 
-#: lib/mnemo_web/live/settings_live.ex:256
+#: lib/mnemo_web/live/settings_live.ex:278
 #, elixir-autogen, elixir-format
 msgid "The credentials are yours: they belong to a Google project in your own account and never leave this computer. mnemo has no server of its own, so nobody else — including whoever wrote it — can reach your saves."
 msgstr ""
 
-#: lib/mnemo_web/live/settings_live.ex:243
+#: lib/mnemo_web/live/settings_live.ex:265
 #, elixir-autogen, elixir-format
 msgid "The permission requested covers only files this app itself created. The rest of your Drive — documents, photos, files from other apps — stays invisible to it. Google enforces that on their side; it is not a promise made by mnemo's code."
 msgstr ""
 
-#: lib/mnemo_web/live/settings_live.ex:261
+#: lib/mnemo_web/live/settings_live.ex:283
 #, elixir-autogen, elixir-format
 msgid "You can revoke this access whenever you want."
 msgstr ""
 
-#: lib/mnemo_web/live/settings_live.ex:239
+#: lib/mnemo_web/live/settings_live.ex:261
 #, elixir-autogen, elixir-format
 msgid "mnemo only ever sees the folder it creates"
 msgstr ""
 
-#: lib/mnemo_web/live/settings_live.ex:264
+#: lib/mnemo_web/live/settings_live.ex:286
 #, elixir-autogen, elixir-format
 msgid "your Google account permissions"
 msgstr ""
 
-#: lib/mnemo_web/live/settings_live.ex:125
+#: lib/mnemo_web/live/settings_live.ex:132
 #, elixir-autogen, elixir-format
 msgid "Connected"
 msgstr ""
 
-#: lib/mnemo_web/live/settings_live.ex:87
+#: lib/mnemo_web/live/settings_live.ex:94
 #, elixir-autogen, elixir-format
 msgid "Credentials saved. Now authorize access in step 2 below."
 msgstr ""
 
-#: lib/mnemo_web/live/settings_live.ex:413
+#: lib/mnemo_web/live/settings_live.ex:435
 #, elixir-autogen, elixir-format
 msgid "Finish step 1 first. Saving the credentials does not connect anything on its own — the authorization happens here."
 msgstr ""
 
-#: lib/mnemo_web/live/settings_live.ex:202
+#: lib/mnemo_web/live/settings_live.ex:224
 #, elixir-autogen, elixir-format
 msgid "Google Drive"
 msgstr ""
 
-#: lib/mnemo_web/live/settings_live.ex:128
-#: lib/mnemo_web/live/settings_live.ex:229
+#: lib/mnemo_web/live/settings_live.ex:135
+#: lib/mnemo_web/live/settings_live.ex:251
 #, elixir-autogen, elixir-format
 msgid "Pending"
 msgstr ""
 
-#: lib/mnemo_web/live/settings_live.ex:127
+#: lib/mnemo_web/live/settings_live.ex:134
 #, elixir-autogen, elixir-format
 msgid "Reconnect needed"
 msgstr ""
 
-#: lib/mnemo_web/live/settings_live.ex:229
+#: lib/mnemo_web/live/settings_live.ex:251
 #, elixir-autogen, elixir-format
 msgid "Saved"
 msgstr ""
 
-#: lib/mnemo_web/live/settings_live.ex:218
+#: lib/mnemo_web/live/settings_live.ex:240
 #, elixir-autogen, elixir-format
 msgid "Step 1 · Credentials"
 msgstr ""
 
-#: lib/mnemo_web/live/settings_live.ex:406
+#: lib/mnemo_web/live/settings_live.ex:428
 #, elixir-autogen, elixir-format
 msgid "Step 2 · Authorize access"
 msgstr ""
 
-#: lib/mnemo_web/live/settings_live.ex:409
+#: lib/mnemo_web/live/settings_live.ex:431
 #, elixir-autogen, elixir-format
 msgid "This opens your browser so Google can confirm that this computer may use the credentials from step 1."
 msgstr ""
 
-#: lib/mnemo_web/live/settings_live.ex:126
+#: lib/mnemo_web/live/settings_live.ex:133
 #, elixir-autogen, elixir-format
 msgid "Waiting…"
 msgstr ""
 
-#: lib/mnemo_web/live/settings_live.ex:277
+#: lib/mnemo_web/live/settings_live.ex:299
 #, elixir-autogen, elixir-format
 msgid "Already set mnemo up on another computer? Do not create anything new — import the same JSON file here, or paste the same two values, and go straight to step 2."
 msgstr ""
 
-#: lib/mnemo_web/live/settings_live.ex:320
+#: lib/mnemo_web/live/settings_live.ex:342
 #, elixir-autogen, elixir-format
 msgid "Download the client's JSON file and import it above. Keep that file somewhere safe and private — it is what you will reuse on your other computers."
 msgstr ""
 
-#: lib/mnemo_web/live/settings_live.ex:345
+#: lib/mnemo_web/live/settings_live.ex:367
 #, elixir-autogen, elixir-format
 msgid "Drop the client_secret_….json file here, or click to pick it. mnemo reads the two keys out of it and keeps no copy of the file."
 msgstr ""
 
-#: lib/mnemo_web/live/settings_live.ex:116
+#: lib/mnemo_web/live/settings_live.ex:123
 #, elixir-autogen, elixir-format
 msgid "File is too large."
 msgstr ""
 
-#: lib/mnemo_web/live/settings_live.ex:342
+#: lib/mnemo_web/live/settings_live.ex:364
 #, elixir-autogen, elixir-format
 msgid "Import the JSON file downloaded from Google"
 msgstr ""
 
-#: lib/mnemo_web/live/settings_live.ex:117
+#: lib/mnemo_web/live/settings_live.ex:124
 #, elixir-autogen, elixir-format
 msgid "Only .json files are accepted."
 msgstr ""
 
-#: lib/mnemo_web/live/settings_live.ex:204
+#: lib/mnemo_web/live/settings_live.ex:226
 #, elixir-autogen, elixir-format
 msgid "Setting this up takes two steps, and both are needed: first you tell mnemo which Google app to use, then you authorize that app to reach your Drive."
 msgstr ""
 
-#: lib/mnemo_web/live/settings_live.ex:118
+#: lib/mnemo_web/live/settings_live.ex:125
 #, elixir-autogen, elixir-format
 msgid "That file could not be read."
 msgstr ""
 
-#: lib/mnemo_web/live/settings_live.ex:103
+#: lib/mnemo_web/live/settings_live.ex:110
 #, elixir-autogen, elixir-format
 msgid "That file is not valid JSON. Download it again from the Google console."
 msgstr ""
 
-#: lib/mnemo_web/live/settings_live.ex:107
+#: lib/mnemo_web/live/settings_live.ex:114
 #, elixir-autogen, elixir-format
 msgid "That file is too large to be an OAuth client file."
 msgstr ""
 
-#: lib/mnemo_web/live/settings_live.ex:111
+#: lib/mnemo_web/live/settings_live.ex:118
 #, elixir-autogen, elixir-format
 msgid "This JSON does not look like a Google OAuth client file. It should be the one downloaded under \"Clients\" in the console."
 msgstr ""
 
-#: lib/mnemo_web/live/settings_live.ex:97
+#: lib/mnemo_web/live/settings_live.ex:104
 #, elixir-autogen, elixir-format
 msgid "This file belongs to a \"Web application\" client. mnemo needs one of type \"Desktop app\" — create a new client with that type and download it again."
 msgstr ""
 
-#: lib/mnemo_web/live/settings_live.ex:209
+#: lib/mnemo_web/live/settings_live.ex:231
 #, elixir-autogen, elixir-format
 msgid "You create the credentials once in your life and reuse the very same ones on every computer. The authorization in step 2 is what happens once per computer."
 msgstr ""
 
-#: lib/mnemo_web/live/settings_live.ex:370
+#: lib/mnemo_web/live/settings_live.ex:392
 #, elixir-autogen, elixir-format
 msgid "or type them in"
 msgstr ""
@@ -989,14 +989,54 @@ msgstr ""
 msgid "Save options"
 msgstr ""
 
-#: lib/mnemo_web/live/enroll_live.ex:157
+#: lib/mnemo_web/live/enroll_live.ex:163
 #, elixir-autogen, elixir-format
 msgid "game install folder"
 msgstr ""
 
-#: lib/mnemo_web/live/enroll_live.ex:162
+#: lib/mnemo_web/live/enroll_live.ex:168
 #, elixir-autogen, elixir-format
 msgid "Ren'Py keeps a second copy of these saves, mirrored automatically:"
 msgid_plural "Ren'Py keeps other copies of these saves, mirrored automatically:"
 msgstr[0] ""
 msgstr[1] ""
+
+#: lib/mnemo_web/live/settings_live.ex:456
+#, elixir-autogen, elixir-format
+msgid "Cover art"
+msgstr ""
+
+#: lib/mnemo_web/live/settings_live.ex:187
+#, elixir-autogen, elixir-format
+msgid "Cover art settings saved."
+msgstr ""
+
+#: lib/mnemo_web/live/settings_live.ex:458
+#, elixir-autogen, elixir-format
+msgid "Covers come from the game itself: the artwork Steam already stored on this computer, or the icon in the install folder. For games from anywhere else, mnemo can look the cover up on SteamGridDB — paste a free API key to enable it."
+msgstr ""
+
+#: lib/mnemo_web/live/settings_live.ex:474
+#, elixir-autogen, elixir-format
+msgid "Get a key"
+msgstr ""
+
+#: lib/mnemo_web/live/settings_live.ex:478
+#, elixir-autogen, elixir-format
+msgid "Save key"
+msgstr ""
+
+#: lib/mnemo_web/live/settings_live.ex:468
+#, elixir-autogen, elixir-format
+msgid "SteamGridDB API key"
+msgstr ""
+
+#: lib/mnemo_web/live/settings_live.ex:469
+#, elixir-autogen, elixir-format
+msgid "optional"
+msgstr ""
+
+#: lib/mnemo_web/live/settings_live.ex:476
+#, elixir-autogen, elixir-format
+msgid "— without one, games with no local artwork keep using a save screenshot."
+msgstr ""

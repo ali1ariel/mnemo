@@ -15,6 +15,7 @@ defmodule MnemoWeb.SettingsLive do
      |> assign(page_title: gettext("Settings"))
      |> assign(drive: Drive.status())
      |> assign_credentials_form()
+     |> assign_cover_form()
      |> assign_language_form()
      |> allow_upload(:client_file,
        accept: ~w(.json application/json),
@@ -37,6 +38,12 @@ defmodule MnemoWeb.SettingsLive do
         as: :credentials
       )
     )
+  end
+
+  defp assign_cover_form(socket) do
+    socket
+    |> assign(:cover_key_set?, Settings.get("steamgriddb_api_key") not in [nil, ""])
+    |> assign(:cover_form, to_form(%{"steamgriddb_api_key" => ""}, as: :cover))
   end
 
   defp assign_language_form(socket) do
@@ -164,6 +171,21 @@ defmodule MnemoWeb.SettingsLive do
   end
 
   def handle_event("validate_upload", _params, socket), do: {:noreply, socket}
+
+  def handle_event("save_cover_key", %{"cover" => %{"steamgriddb_api_key" => key}}, socket) do
+    key = String.trim(key)
+
+    # A blank field means "leave what is stored alone", the same as the
+    # Google secret above.
+    if key != "" do
+      Settings.put("steamgriddb_api_key", key)
+    end
+
+    {:noreply,
+     socket
+     |> assign_cover_form()
+     |> put_flash(:info, gettext("Cover art settings saved."))}
+  end
 
   def handle_event("save_language", %{"language" => %{"locale" => locale}}, socket) do
     cond do
@@ -427,6 +449,34 @@ defmodule MnemoWeb.SettingsLive do
         >
           {gettext("Disconnect")}
         </.button>
+      </section>
+
+      <section class="card bg-base-200 p-6 space-y-4" id="cover-art">
+        <div>
+          <h2 class="font-semibold">{gettext("Cover art")}</h2>
+          <p class="text-sm opacity-70">
+            {gettext(
+              "Covers come from the game itself: the artwork Steam already stored on this computer, or the icon in the install folder. For games from anywhere else, mnemo can look the cover up on SteamGridDB — paste a free API key to enable it."
+            )}
+          </p>
+        </div>
+
+        <.form for={@cover_form} id="cover-form" phx-submit="save_cover_key" class="space-y-4">
+          <.input
+            field={@cover_form[:steamgriddb_api_key]}
+            type="password"
+            label={gettext("SteamGridDB API key")}
+            placeholder={if @cover_key_set?, do: "••••••••••••", else: gettext("optional")}
+            autocomplete="off"
+          />
+          <p class="text-xs opacity-60">
+            <a href="https://www.steamgriddb.com/profile/preferences/api" target="_blank" class="link">
+              {gettext("Get a key")}
+            </a>
+            {gettext("— without one, games with no local artwork keep using a save screenshot.")}
+          </p>
+          <.button variant="primary" id="save-cover-key">{gettext("Save key")}</.button>
+        </.form>
       </section>
 
       <section class="card bg-base-200 p-6 space-y-4" id="language-settings">

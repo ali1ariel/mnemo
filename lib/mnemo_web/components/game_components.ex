@@ -4,6 +4,36 @@ defmodule MnemoWeb.GameComponents do
   use MnemoWeb, :html
 
   @doc """
+  A game's image, blurred only when it needs to be.
+
+  Published cover art is made to be looked at. A save screenshot is an
+  arbitrary frame of the game and cannot be assumed safe to show, so that
+  one stays behind the reveal.
+  """
+  attr :src, :string, required: true
+  attr :kind, :atom, default: :screenshot
+  attr :alt, :string, default: ""
+  attr :hide_on_error, :boolean, default: false
+
+  def game_image(%{kind: :cover} = assigns) do
+    ~H"""
+    <img
+      src={@src}
+      alt={@alt}
+      loading="lazy"
+      class="h-full w-full object-cover"
+      onerror={@hide_on_error && "this.style.display='none'"}
+    />
+    """
+  end
+
+  def game_image(assigns) do
+    ~H"""
+    <.censored_image src={@src} alt={@alt} hide_on_error={@hide_on_error} />
+    """
+  end
+
+  @doc """
   A screenshot that is blurred until clicked.
 
   Save screenshots are arbitrary game frames and cannot be assumed safe

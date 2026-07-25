@@ -3,7 +3,7 @@ defmodule MnemoWeb.EnrollLive do
 
   import MnemoWeb.GameComponents
 
-  alias Mnemo.{Game, Games, RenPy}
+  alias Mnemo.{Covers, Game, Games, RenPy}
 
   @impl true
   def mount(_params, _session, socket) do
@@ -22,8 +22,13 @@ defmodule MnemoWeb.EnrollLive do
 
   defp scan_entries do
     for entry <- RenPy.scan() do
-      preview = entry.preview && "data:image/png;base64," <> Base.encode64(entry.preview)
-      %{entry | preview: preview}
+      {image, kind} =
+        case Covers.for_scan_entry(entry) do
+          {:ok, bytes, type, kind} -> {"data:#{type};base64," <> Base.encode64(bytes), kind}
+          :none -> {nil, :none}
+        end
+
+      entry |> Map.put(:preview, image) |> Map.put(:preview_kind, kind)
     end
   end
 
@@ -83,6 +88,7 @@ defmodule MnemoWeb.EnrollLive do
       attrs = %{
         save_directory: entry.save_directory,
         install_root: install_root,
+        install_path: entry[:install],
         name: entry.name
       }
 
@@ -144,8 +150,12 @@ defmodule MnemoWeb.EnrollLive do
           id={"scan-entry-#{index}"}
         >
           <div class="sm:flex">
-            <figure class="sm:w-56 shrink-0 bg-base-300 aspect-video sm:aspect-auto">
-              <.censored_image :if={entry.preview} src={entry.preview} />
+            <figure class="sm:w-40 shrink-0 bg-base-300 aspect-video sm:aspect-auto self-stretch">
+              <.game_image
+                :if={entry.preview}
+                src={entry.preview}
+                kind={entry.preview_kind}
+              />
               <div :if={entry.preview == nil} class="p-6 text-xs opacity-40">
                 {gettext("no screenshot")}
               </div>

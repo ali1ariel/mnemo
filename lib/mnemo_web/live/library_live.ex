@@ -120,9 +120,13 @@ defmodule MnemoWeb.LibraryLive do
 
   defp game_card(assigns) do
     ~H"""
-    <div class="card bg-base-200 overflow-hidden" id={"game-#{@game.id}"}>
-      <figure class="aspect-video bg-base-300">
-        <.censored_image src={~p"/covers/#{@game.id}?v=#{@status.last_generation}"} hide_on_error />
+    <div class="card card-side bg-base-200 overflow-hidden" id={"game-#{@game.id}"}>
+      <figure class="w-28 sm:w-36 shrink-0 bg-base-300 self-stretch">
+        <.game_image
+          src={~p"/covers/#{@game.id}?v=#{@status.last_generation}"}
+          kind={Mnemo.Covers.kind(@game)}
+          hide_on_error
+        />
       </figure>
       <div class="card-body gap-2">
         <div class="flex items-start justify-between gap-2">

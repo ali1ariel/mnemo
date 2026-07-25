@@ -251,7 +251,12 @@ defmodule Mnemo.RenPy do
   defp merge_group(entries) do
     primary = Enum.find(entries, List.first(entries), &(&1.kind == :user))
 
-    Map.put(primary, :mirrors, entries |> Enum.reject(&(&1 == primary)) |> Enum.map(& &1.path))
+    primary
+    |> Map.put(:mirrors, entries |> Enum.reject(&(&1 == primary)) |> Enum.map(& &1.path))
+    # The user savedir wins as the folder to track, but only the mirror
+    # knows where the game is installed — and that is where the artwork
+    # and the icon live.
+    |> Map.put(:install, Enum.find_value(entries, & &1[:install]))
   end
 
   # A game-local save folder is always called `saves`, so the install

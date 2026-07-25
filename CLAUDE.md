@@ -260,7 +260,6 @@ Sync bugs live in the improbable interleaving, which is what property testing fi
 ## Do not
 
 - Do not abstract for "other game engines". The scope is Ren'Py.
-- Do not integrate SteamGridDB, IGDB, or the Steam CDN — covers come from save screenshots.
 - Do not add a compression layer — everything is already compressed.
 - Do not use Ash Framework.
 - Do not sync the SQLite database.

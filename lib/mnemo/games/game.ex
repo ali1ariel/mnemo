@@ -14,6 +14,7 @@ defmodule Mnemo.Games.Game do
     field :exclude_patterns, {:array, :string}, default: []
     field :sync_autosaves, :boolean, default: false
     field :executable_path, :string
+    field :install_path, :string
     field :remote_folder_id, :string
     field :last_generation_seen, :integer, default: 0
 
@@ -29,7 +30,8 @@ defmodule Mnemo.Games.Game do
       :enabled,
       :exclude_patterns,
       :sync_autosaves,
-      :executable_path
+      :executable_path,
+      :install_path
     ])
     |> validate_required([:save_directory, :install_root])
     |> unique_constraint([:save_directory, :install_root])
