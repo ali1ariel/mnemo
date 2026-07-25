@@ -50,7 +50,9 @@ defmodule Mnemo.Sync.EngineTest do
     assert generation.byte_size > 0
     assert length(generation.manifest) == 3
 
-    {:ok, raw} = Fake.read_path(["mnemo", "games", game.id, "generations", "000001.json"])
+    {:ok, raw} =
+      Fake.read_path(["mnemo", "games", game.save_directory, "generations", "000001.json"])
+
     manifest = Jason.decode!(raw)
     assert manifest["number"] == 1
     assert manifest["parent_number"] == 0
@@ -65,13 +67,18 @@ defmodule Mnemo.Sync.EngineTest do
              %{"type" => "persistent"}
            ]
 
-    {:ok, blobs} = Fake.list_path(["mnemo", "games", game.id, "blobs"])
+    {:ok, blobs} = Fake.list_path(["mnemo", "games", game.save_directory, "blobs"])
     assert length(blobs) == 3
 
     for file <- manifest["files"] do
       assert Enum.any?(blobs, &(&1.name == file["sha256"]))
       assert Sync.get_blob(file["sha256"])
     end
+
+    {:ok, game_json} = Fake.read_path(["mnemo", "games", game.save_directory, "game.json"])
+
+    assert %{"save_directory" => "MyGame-123", "id" => _, "created_by_device" => _} =
+             Jason.decode!(game_json)
 
     {:ok, devices_raw} = Fake.read_path(["mnemo", "devices.json"])
     assert %{"devices" => [%{"id" => device_id}]} = Jason.decode!(devices_raw)
@@ -89,7 +96,7 @@ defmodule Mnemo.Sync.EngineTest do
     assert {:ok, :no_changes} = Engine.run(Games.get!(game.id))
 
     assert Fake.upload_count() == uploads_after_first
-    {:ok, manifests} = Fake.list_path(["mnemo", "games", game.id, "generations"])
+    {:ok, manifests} = Fake.list_path(["mnemo", "games", game.save_directory, "generations"])
     assert length(manifests) == 1
     assert Games.get!(game.id).last_generation_seen == 1
   end
@@ -108,12 +115,14 @@ defmodule Mnemo.Sync.EngineTest do
 
     assert {:ok, %{generation: 2, uploaded: 2, skipped: 2}} = Engine.run(Games.get!(game.id))
 
-    {:ok, raw} = Fake.read_path(["mnemo", "games", game.id, "generations", "000002.json"])
+    {:ok, raw} =
+      Fake.read_path(["mnemo", "games", game.save_directory, "generations", "000002.json"])
+
     manifest = Jason.decode!(raw)
     assert manifest["parent_number"] == 1
     assert length(manifest["files"]) == 4
 
-    {:ok, blobs} = Fake.list_path(["mnemo", "games", game.id, "blobs"])
+    {:ok, blobs} = Fake.list_path(["mnemo", "games", game.save_directory, "blobs"])
     assert length(blobs) == 5
   end
 
@@ -132,14 +141,17 @@ defmodule Mnemo.Sync.EngineTest do
       })
 
     {:ok, _} =
-      Fake.seed_file(["mnemo", "games", game.id, "generations", "000002.json"], other_manifest)
+      Fake.seed_file(
+        ["mnemo", "games", game.save_directory, "generations", "000002.json"],
+        other_manifest
+      )
 
     RenPyFixtures.write_save(dir, "1-1-LT1.save", seed: "a-changed")
 
     assert {:error, :conflict, %{reason: :remote_ahead, remote_head: 2, last_seen: 1}} =
              Engine.run(Games.get!(game.id))
 
-    {:ok, manifests} = Fake.list_path(["mnemo", "games", game.id, "generations"])
+    {:ok, manifests} = Fake.list_path(["mnemo", "games", game.save_directory, "generations"])
     assert length(manifests) == 2
     assert Games.get!(game.id).last_generation_seen == 1
   end
@@ -153,7 +165,10 @@ defmodule Mnemo.Sync.EngineTest do
     duplicate = Jason.encode!(%{"number" => 1, "device_id" => "other-device", "files" => []})
 
     {:ok, _} =
-      Fake.seed_file(["mnemo", "games", game.id, "generations", "000001.json"], duplicate)
+      Fake.seed_file(
+        ["mnemo", "games", game.save_directory, "generations", "000001.json"],
+        duplicate
+      )
 
     assert {:error, :conflict, %{reason: :fork, numbers: [1]}} = Engine.run(Games.get!(game.id))
   end
@@ -209,13 +224,16 @@ defmodule Mnemo.Sync.EngineTest do
     game = enroll!(root, "MyGame-123")
     assert {:ok, %{generation: 1}} = Engine.run(game)
 
-    {:ok, raw} = Fake.read_path(["mnemo", "games", game.id, "generations", "000001.json"])
+    {:ok, raw} =
+      Fake.read_path(["mnemo", "games", game.save_directory, "generations", "000001.json"])
+
     assert Enum.map(Jason.decode!(raw)["files"], & &1["rel_path"]) == ["1-1-LT1.save"]
 
     {:ok, game} = Games.update_game(Games.get!(game.id), %{sync_autosaves: true})
     assert {:ok, %{generation: 2, uploaded: 2}} = Engine.run(game)
 
-    {:ok, raw} = Fake.read_path(["mnemo", "games", game.id, "generations", "000002.json"])
+    {:ok, raw} =
+      Fake.read_path(["mnemo", "games", game.save_directory, "generations", "000002.json"])
 
     assert Enum.map(Jason.decode!(raw)["files"], & &1["rel_path"]) ==
              ["1-1-LT1.save", "auto-1-LT1.save", "quick-1-LT1.save"]

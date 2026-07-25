@@ -17,10 +17,13 @@ defmodule MnemoWeb.Router do
     live_session :default, on_mount: MnemoWeb.LocaleHook do
       live "/", LibraryLive
       live "/enroll", EnrollLive
+      live "/games/:id", SlotsLive
       live "/settings", SettingsLive
     end
 
     get "/covers/:id", CoverController, :show
+    get "/covers/:id/:file", CoverController, :slot
+    get "/scan/preview", CoverController, :scan_preview
   end
 
   # Enable LiveDashboard in development

@@ -18,6 +18,8 @@ defmodule Mnemo.Drive.Remote do
 
   @root_name "mnemo"
   @json_mime "application/json"
+
+  def root_name, do: @root_name
   @blob_mime "application/octet-stream"
   @manifest_re ~r/^(\d{6})\.json$/
 
@@ -34,26 +36,39 @@ defmodule Mnemo.Drive.Remote do
   install already enrolled the same `save_directory`, or create it.
   """
   def ensure_game(backend, games_id, game) do
-    cond do
-      game.remote_folder_id != nil ->
-        load_game_folder(backend, game.remote_folder_id)
-
-      true ->
-        case backend.find_child(games_id, game.id) do
-          {:ok, %{folder?: true} = folder} -> load_game_folder(backend, folder.id)
-          {:ok, _} -> adopt_or_create(backend, games_id, game)
-          error -> error
-        end
+    with {:ok, folder_id} <- locate_game(backend, games_id, game) do
+      case folder_id do
+        nil -> create_game(backend, games_id, game)
+        id -> load_game_folder(backend, id, game)
+      end
     end
   end
 
-  defp adopt_or_create(backend, games_id, game) do
-    case find_by_save_directory(backend, games_id, game.save_directory) do
-      {:ok, nil} -> create_game(backend, games_id, game)
-      {:ok, folder_id} -> load_game_folder(backend, folder_id)
+  defp locate_game(_backend, _games_id, %{remote_folder_id: id}) when is_binary(id) do
+    {:ok, id}
+  end
+
+  defp locate_game(backend, games_id, game) do
+    # Folder names are a fast path only — `game.id` covers folders written
+    # before names were readable, and a folder the user renamed in Drive
+    # still resolves through the game.json scan below.
+    with {:ok, nil} <- find_named_folder(backend, games_id, folder_name(game)),
+         {:ok, nil} <- find_named_folder(backend, games_id, game.id) do
+      find_by_save_directory(backend, games_id, game.save_directory)
+    end
+  end
+
+  defp find_named_folder(backend, games_id, name) do
+    case backend.find_child(games_id, name) do
+      {:ok, %{folder?: true} = folder} -> {:ok, folder.id}
+      {:ok, _} -> {:ok, nil}
       error -> error
     end
   end
+
+  # Drive treats "/" as a path separator in some clients; nothing else in a
+  # Ren'Py save_directory needs escaping.
+  defp folder_name(game), do: String.replace(game.save_directory, ~r"[/\\]", "_")
 
   # game.json carries the save_directory, which is what lets another
   # machine match its local folder to this remote game on its own.
@@ -82,28 +97,65 @@ defmodule Mnemo.Drive.Remote do
   end
 
   defp create_game(backend, games_id, game) do
-    game_json =
-      Jason.encode!(%{
-        "id" => game.id,
-        "save_directory" => game.save_directory,
-        "name" => game.name,
-        "created_by_device" => Settings.device_id(),
-        "created_at" => DateTime.to_iso8601(DateTime.utc_now(:second))
-      })
-
-    with {:ok, folder} <- backend.create_folder(games_id, game.id),
-         {:ok, generations} <- backend.create_folder(folder.id, "generations"),
-         {:ok, blobs} <- backend.create_folder(folder.id, "blobs"),
-         {:ok, _} <- backend.upload(folder.id, "game.json", game_json, @json_mime) do
-      {:ok, %{folder_id: folder.id, generations_id: generations.id, blobs_id: blobs.id}}
+    with {:ok, folder} <- backend.create_folder(games_id, folder_name(game)) do
+      load_game_folder(backend, folder.id, game)
     end
   end
 
-  defp load_game_folder(backend, folder_id) do
+  # Every step here is idempotent, so a run that died partway through
+  # creation is repaired by the next one instead of leaving a folder that
+  # is missing its identity file forever.
+  defp load_game_folder(backend, folder_id, game) do
     with {:ok, generations} <- find_or_create_folder(backend, folder_id, "generations"),
-         {:ok, blobs} <- find_or_create_folder(backend, folder_id, "blobs") do
+         {:ok, blobs} <- find_or_create_folder(backend, folder_id, "blobs"),
+         :ok <- sync_game_json(backend, folder_id, game) do
       {:ok, %{folder_id: folder_id, generations_id: generations.id, blobs_id: blobs.id}}
     end
+  end
+
+  defp sync_game_json(backend, folder_id, game) do
+    case backend.find_child(folder_id, "game.json") do
+      {:ok, nil} ->
+        write_game_json(backend, folder_id, merge_game(%{}, game))
+
+      {:ok, meta} ->
+        with {:ok, raw} <- backend.download(meta.id) do
+          current = decode_game_json(raw)
+          desired = merge_game(current, game)
+
+          if desired == current do
+            :ok
+          else
+            with {:ok, _} <- backend.update(meta.id, Jason.encode!(desired), @json_mime), do: :ok
+          end
+        end
+
+      error ->
+        error
+    end
+  end
+
+  defp write_game_json(backend, folder_id, doc) do
+    with {:ok, _} <- backend.upload(folder_id, "game.json", Jason.encode!(doc), @json_mime),
+         do: :ok
+  end
+
+  defp decode_game_json(raw) do
+    case Jason.decode(raw) do
+      {:ok, %{} = doc} -> doc
+      _ -> %{}
+    end
+  end
+
+  # The name is shared metadata, but a machine that has not named the game
+  # locally must never blank out a name another machine set.
+  defp merge_game(current, game) do
+    current
+    |> Map.put_new("id", game.id)
+    |> Map.put("save_directory", game.save_directory)
+    |> Map.put_new("created_by_device", Settings.device_id())
+    |> Map.put_new("created_at", DateTime.to_iso8601(DateTime.utc_now(:second)))
+    |> then(fn doc -> if game.name, do: Map.put(doc, "name", game.name), else: doc end)
   end
 
   @doc "Every manifest number present remotely, duplicates preserved — a duplicate is a fork."

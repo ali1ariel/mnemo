@@ -2,6 +2,7 @@ defmodule MnemoWeb.LibraryLive do
   use MnemoWeb, :live_view
 
   import MnemoWeb.DriveComponents
+  import MnemoWeb.GameComponents
 
   alias Mnemo.{Drive, Game, Games}
 
@@ -121,17 +122,14 @@ defmodule MnemoWeb.LibraryLive do
     ~H"""
     <div class="card bg-base-200 overflow-hidden" id={"game-#{@game.id}"}>
       <figure class="aspect-video bg-base-300">
-        <img
-          src={~p"/covers/#{@game.id}?v=#{@status.last_generation}"}
-          alt=""
-          class="w-full h-full object-cover"
-          onerror="this.style.display='none'"
-        />
+        <.censored_image src={~p"/covers/#{@game.id}?v=#{@status.last_generation}"} hide_on_error />
       </figure>
       <div class="card-body gap-2">
         <div class="flex items-start justify-between gap-2">
           <div>
-            <h2 class="card-title text-base">{@game.name || @game.save_directory}</h2>
+            <.link navigate={~p"/games/#{@game.id}"} class="hover:underline">
+              <h2 class="card-title text-base">{@game.name || @game.save_directory}</h2>
+            </.link>
             <p class="text-xs opacity-50 font-mono">{@game.save_directory}</p>
           </div>
           <.status_badge status={@status} />
@@ -147,6 +145,9 @@ defmodule MnemoWeb.LibraryLive do
         <p :if={message = detail_message(@status)} class="text-sm">{message}</p>
 
         <div class="card-actions justify-end mt-1">
+          <.link navigate={~p"/games/#{@game.id}"} class="btn btn-ghost" id={"saves-#{@game.id}"}>
+            {gettext("Saves")}
+          </.link>
           <.button
             id={"sync-#{@game.id}"}
             phx-click="sync"
@@ -163,81 +164,4 @@ defmodule MnemoWeb.LibraryLive do
     </div>
     """
   end
-
-  attr :status, :map, required: true
-
-  defp status_badge(assigns) do
-    {class, label} =
-      case assigns.status.status do
-        :idle -> {"badge-ghost", gettext("Idle")}
-        :snapshotting -> {"badge-info", gettext("Snapshotting…")}
-        :uploading -> {"badge-info", gettext("Uploading…")}
-        :ok -> {"badge-success", gettext("Synced")}
-        :conflict -> {"badge-warning", gettext("Conflict")}
-        :error -> {"badge-error", gettext("Error")}
-      end
-
-    assigns = assign(assigns, class: class, label: label)
-
-    ~H"""
-    <span class={["badge badge-soft whitespace-nowrap", @class]}>{@label}</span>
-    """
-  end
-
-  defp detail_message(%{status: :ok, detail: %{result: :no_changes}}),
-    do: gettext("Already up to date.")
-
-  defp detail_message(%{status: :ok, detail: %{generation: n, uploaded: uploaded}}) do
-    gettext("Generation %{number} uploaded.", number: n) <>
-      " " <> ngettext("%{count} new file.", "%{count} new files.", uploaded)
-  end
-
-  defp detail_message(%{status: :conflict, detail: detail}) do
-    reason =
-      case detail[:reason] do
-        :foreign_lineage ->
-          gettext("This game already has history in Drive from another install.")
-
-        :remote_ahead ->
-          gettext("Another device synced newer generations.")
-
-        :remote_behind ->
-          gettext("The remote history is behind this device.")
-
-        :fork ->
-          gettext("Two devices wrote the same generation.")
-
-        _ ->
-          gettext("The local and remote histories diverged.")
-      end
-
-    reason <> " " <> gettext("Nothing was overwritten. Resolution arrives in a future version.")
-  end
-
-  defp detail_message(%{status: :error, detail: detail}) do
-    case detail do
-      %{tag: :no_saves} ->
-        gettext("No saves found. Launch the game once, quit, and try again.")
-
-      %{tag: :invalid_save, file: file} ->
-        gettext("A save file failed validation and was not uploaded: %{file}", file: file)
-
-      %{tag: :missing_folder, path: path} ->
-        gettext("Save folder not found: %{path}", path: path)
-
-      %{tag: :upload_failed} ->
-        gettext("Upload failed. Nothing was committed; try again.")
-
-      %{tag: :drive} ->
-        gettext("A Google Drive request failed. Try again.")
-
-      %{tag: :crashed} ->
-        gettext("The sync crashed unexpectedly.")
-
-      _ ->
-        gettext("The sync failed.")
-    end
-  end
-
-  defp detail_message(_status), do: nil
 end

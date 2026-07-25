@@ -22,4 +22,12 @@ defmodule MnemoWeb.Format do
         ngettext("%{count} day ago", "%{count} days ago", div(diff, 86_400))
     end
   end
+
+  def format_bytes(bytes) when is_integer(bytes) do
+    cond do
+      bytes >= 1_048_576 -> "#{Float.round(bytes / 1_048_576, 1)} MB"
+      bytes >= 1024 -> "#{round(bytes / 1024)} KB"
+      true -> "#{bytes} B"
+    end
+  end
 end

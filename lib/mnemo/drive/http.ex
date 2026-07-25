@@ -91,6 +91,22 @@ defmodule Mnemo.Drive.HTTP do
     end
   end
 
+  @impl true
+  def delete(file_id) do
+    with {:ok, req} <- base_request() do
+      case Req.delete(req, url: "/drive/v3/files/#{file_id}") do
+        {:ok, %{status: status}} when status in 200..299 or status == 404 ->
+          :ok
+
+        {:ok, %{status: status, body: body}} ->
+          {:error, %{op: :delete, status: status, body: body}}
+
+        {:error, exception} ->
+          {:error, %{op: :delete, reason: Exception.message(exception)}}
+      end
+    end
+  end
+
   defp list_all(query, page_token, acc) do
     params =
       [

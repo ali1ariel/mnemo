@@ -247,6 +247,67 @@ defmodule Mnemo.RenPy do
   defp autosave?({:quick, _}), do: true
   defp autosave?(_), do: false
 
+  @doc """
+  Every save slot in a game folder with display metadata, unsorted.
+
+  A corrupt save still shows up (with `screenshot?: false`) — hiding it
+  would make the slot silently disappear from the interface while the
+  file sits broken on disk.
+  """
+  def list_saves(path) do
+    case File.ls(path) do
+      {:ok, names} ->
+        names
+        |> Enum.sort()
+        |> Enum.flat_map(fn name -> save_entry(path, name) end)
+
+      {:error, _} ->
+        []
+    end
+  end
+
+  defp save_entry(path, name) do
+    slot = parse_slot(name)
+    full = Path.join(path, name)
+
+    with true <- slot not in [:other, :persistent],
+         {:ok, %{type: :regular, size: size, mtime: mtime}} <- File.stat(full, time: :posix) do
+      [
+        %{
+          file: name,
+          slot: slot,
+          size: size,
+          mtime: DateTime.from_unix!(mtime),
+          save_name: save_display_name(full),
+          screenshot?: screenshot_member?(full)
+        }
+      ]
+    else
+      _ -> []
+    end
+  end
+
+  defp save_display_name(path) do
+    case save_metadata(path) do
+      {:ok, %{"_save_name" => name}} when is_binary(name) and name != "" -> name
+      _ -> nil
+    end
+  end
+
+  defp screenshot_member?(path) do
+    case :zip.list_dir(to_charlist(path)) do
+      {:ok, entries} ->
+        Enum.any?(entries, fn entry ->
+          elem(entry, 0) == :zip_file and elem(entry, 1) == @screenshot_member
+        end)
+
+      {:error, _} ->
+        false
+    end
+  rescue
+    _ -> false
+  end
+
   defp glob_to_regex(pattern) do
     escaped =
       pattern
@@ -318,5 +379,7 @@ defmodule Mnemo.RenPy do
       {:ok, []} -> {:error, :no_metadata}
       {:error, reason} -> {:error, reason}
     end
+  rescue
+    e -> {:error, Exception.message(e)}
   end
 end

@@ -1,6 +1,8 @@
 defmodule MnemoWeb.EnrollLive do
   use MnemoWeb, :live_view
 
+  import MnemoWeb.GameComponents
+
   alias Mnemo.{Game, Games, RenPy}
 
   @impl true
@@ -14,7 +16,7 @@ defmodule MnemoWeb.EnrollLive do
 
   defp start_scan(socket) do
     socket
-    |> assign(entries: nil)
+    |> assign(entries: nil, expanded: nil, expanded_groups: nil)
     |> start_async(:scan, fn -> scan_entries() end)
   end
 
@@ -48,6 +50,27 @@ defmodule MnemoWeb.EnrollLive do
     {:noreply, start_scan(socket)}
   end
 
+  def handle_event("toggle_saves", %{"index" => index}, socket) do
+    index = String.to_integer(index)
+    entry = Enum.at(socket.assigns.entries || [], index)
+
+    cond do
+      socket.assigns.expanded == index ->
+        {:noreply, assign(socket, expanded: nil, expanded_groups: nil)}
+
+      entry == nil ->
+        {:noreply, socket}
+
+      true ->
+        saves =
+          entry.path
+          |> RenPy.list_saves()
+          |> Enum.map(&Map.put(&1, :src, preview_src(entry, &1)))
+
+        {:noreply, assign(socket, expanded: index, expanded_groups: group_saves(saves))}
+    end
+  end
+
   def handle_event("enroll", %{"index" => index}, socket) do
     entry = Enum.at(socket.assigns.entries || [], String.to_integer(index))
 
@@ -76,6 +99,12 @@ defmodule MnemoWeb.EnrollLive do
           {:noreply, put_flash(socket, :error, gettext("This game is already enrolled."))}
       end
     end
+  end
+
+  defp preview_src(_entry, %{screenshot?: false}), do: nil
+
+  defp preview_src(entry, save) do
+    ~p"/scan/preview?root=#{entry.root}&dir=#{entry.save_directory}&file=#{save.file}&v=#{DateTime.to_unix(save.mtime)}"
   end
 
   @impl true
@@ -111,46 +140,62 @@ defmodule MnemoWeb.EnrollLive do
       <div :if={@entries && @entries != []} class="space-y-4" id="scan-results">
         <div
           :for={{entry, index} <- Enum.with_index(@entries)}
-          class="card bg-base-200 sm:card-side overflow-hidden"
+          class="card bg-base-200 overflow-hidden"
           id={"scan-entry-#{index}"}
         >
-          <figure class="sm:w-56 shrink-0 bg-base-300 aspect-video sm:aspect-auto">
-            <img
-              :if={entry.preview}
-              src={entry.preview}
-              alt=""
-              class="w-full h-full object-cover"
-            />
-            <div :if={entry.preview == nil} class="p-6 text-xs opacity-40">
-              {gettext("no screenshot")}
+          <div class="sm:flex">
+            <figure class="sm:w-56 shrink-0 bg-base-300 aspect-video sm:aspect-auto">
+              <.censored_image :if={entry.preview} src={entry.preview} />
+              <div :if={entry.preview == nil} class="p-6 text-xs opacity-40">
+                {gettext("no screenshot")}
+              </div>
+            </figure>
+            <div class="card-body gap-1">
+              <h2 class="card-title text-base">{RenPy.suggest_name(entry.save_directory)}</h2>
+              <p class="text-xs opacity-50 font-mono">{entry.path}</p>
+              <p class="text-sm opacity-70">
+                {ngettext("%{count} save", "%{count} saves", entry.save_count)}
+                <span :if={entry.latest_save_at}>
+                  · {gettext("last played: %{time}", time: relative_time(entry.latest_save_at))}
+                </span>
+              </p>
+              <div class="card-actions justify-end mt-2">
+                <.button
+                  :if={entry.save_count > 0}
+                  id={"preview-#{index}"}
+                  class="btn btn-ghost"
+                  phx-click="toggle_saves"
+                  phx-value-index={index}
+                >
+                  {if @expanded == index, do: gettext("Hide saves"), else: gettext("Preview saves")}
+                </.button>
+                <span
+                  :if={enrolled?(@enrolled, entry)}
+                  class="badge badge-soft badge-success"
+                >
+                  {gettext("Enrolled")}
+                </span>
+                <.button
+                  :if={not enrolled?(@enrolled, entry)}
+                  id={"enroll-#{index}"}
+                  variant="primary"
+                  phx-click="enroll"
+                  phx-value-index={index}
+                >
+                  {gettext("Enroll")}
+                </.button>
+              </div>
             </div>
-          </figure>
-          <div class="card-body gap-1">
-            <h2 class="card-title text-base">{RenPy.suggest_name(entry.save_directory)}</h2>
-            <p class="text-xs opacity-50 font-mono">{entry.path}</p>
-            <p class="text-sm opacity-70">
-              {ngettext("%{count} save", "%{count} saves", entry.save_count)}
-              <span :if={entry.latest_save_at}>
-                · {gettext("last played: %{time}", time: relative_time(entry.latest_save_at))}
-              </span>
+          </div>
+          <div
+            :if={@expanded == index}
+            class="border-t border-base-300 p-4"
+            id={"scan-entry-saves-#{index}"}
+          >
+            <.saves_browser :if={not @expanded_groups.empty?} groups={@expanded_groups} />
+            <p :if={@expanded_groups.empty?} class="text-sm opacity-70">
+              {gettext("No save slots here yet.")}
             </p>
-            <div class="card-actions justify-end mt-2">
-              <span
-                :if={enrolled?(@enrolled, entry)}
-                class="badge badge-soft badge-success"
-              >
-                {gettext("Enrolled")}
-              </span>
-              <.button
-                :if={not enrolled?(@enrolled, entry)}
-                id={"enroll-#{index}"}
-                variant="primary"
-                phx-click="enroll"
-                phx-value-index={index}
-              >
-                {gettext("Enroll")}
-              </.button>
-            </div>
           </div>
         </div>
       </div>

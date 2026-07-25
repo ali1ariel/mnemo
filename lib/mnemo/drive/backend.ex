@@ -25,6 +25,7 @@ defmodule Mnemo.Drive.Backend do
   @callback upload(id(), String.t(), binary(), String.t()) :: {:ok, file_meta()} | error()
   @callback update(id(), binary(), String.t()) :: {:ok, file_meta()} | error()
   @callback download(id()) :: {:ok, binary()} | error()
+  @callback delete(id()) :: :ok | error()
 
   def impl, do: Application.get_env(:mnemo, :drive_backend, Mnemo.Drive.HTTP)
 end

@@ -33,6 +33,9 @@ defmodule Mnemo.Drive.Fake do
   @impl Mnemo.Drive.Backend
   def download(id), do: call({:download, id})
 
+  @impl Mnemo.Drive.Backend
+  def delete(id), do: call({:delete, id})
+
   ## Test helpers
 
   def reset, do: call(:reset)
@@ -104,6 +107,15 @@ defmodule Mnemo.Drive.Fake do
     end
   end
 
+  def handle_call({:delete, id}, _from, state) do
+    if Map.has_key?(state.files, id) do
+      doomed = [id | descendants(state, id)]
+      {:reply, :ok, %{state | files: Map.drop(state.files, doomed)}}
+    else
+      {:reply, :ok, state}
+    end
+  end
+
   def handle_call({:read_path, segments}, _from, state) do
     case resolve(state, segments) do
       %{content: content, folder?: false} -> {:reply, {:ok, content}, state}
@@ -135,6 +147,11 @@ defmodule Mnemo.Drive.Fake do
       %{folder?: true, id: id} -> {:reply, {:ok, children(state, id) |> Enum.map(&meta/1)}, state}
       _ -> {:reply, {:error, :not_found}, state}
     end
+  end
+
+  defp descendants(state, id) do
+    direct = state |> children(id) |> Enum.map(& &1.id)
+    direct ++ Enum.flat_map(direct, &descendants(state, &1))
   end
 
   defp children(state, parent_id) do

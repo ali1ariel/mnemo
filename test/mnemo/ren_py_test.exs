@@ -129,6 +129,48 @@ defmodule Mnemo.RenPyTest do
     end
   end
 
+  describe "list_saves/1" do
+    setup %{dir: dir} do
+      game = Path.join(dir, "Game-1")
+      RenPyFixtures.write_save(game, "1-Save Slot 2-LT1.save", save_name: "Before the boss")
+      RenPyFixtures.write_save(game, "auto-1-LT1.save")
+      RenPyFixtures.write_garbage_save(game, "2-1-LT1.save")
+      RenPyFixtures.write_save(game, "_reload-1-LT1.save")
+      File.write!(Path.join(game, "persistent"), "p")
+      RenPyFixtures.write_save(Path.join(game, "sync"), "1-1-LT1.save")
+      {:ok, game: game}
+    end
+
+    test "lists slot files with metadata, skipping persistent and internals", %{game: game} do
+      saves = RenPy.list_saves(game)
+
+      assert Enum.map(saves, & &1.file) ==
+               ["1-Save Slot 2-LT1.save", "2-1-LT1.save", "auto-1-LT1.save"]
+
+      named = Enum.find(saves, &(&1.file == "1-Save Slot 2-LT1.save"))
+      assert named.slot == {:slot, 1, "Save Slot 2"}
+      assert named.save_name == "Before the boss"
+      assert named.screenshot?
+      assert named.size > 0
+      assert %DateTime{} = named.mtime
+
+      auto = Enum.find(saves, &(&1.file == "auto-1-LT1.save"))
+      assert auto.slot == {:auto, 1}
+      assert auto.save_name == nil
+    end
+
+    test "a corrupt save is still listed, without screenshot or name", %{game: game} do
+      garbage = Enum.find(RenPy.list_saves(game), &(&1.file == "2-1-LT1.save"))
+      refute garbage.screenshot?
+      assert garbage.save_name == nil
+      assert garbage.size > 0
+    end
+
+    test "a missing folder lists to nothing" do
+      assert RenPy.list_saves("/nonexistent/game/folder") == []
+    end
+  end
+
   describe "tracked_files/2" do
     setup %{dir: dir} do
       game = Path.join(dir, "Game-1")

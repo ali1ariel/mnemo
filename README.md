@@ -59,6 +59,21 @@ mix test        # runs against the in-memory Drive fake
 mix precommit   # compile --warnings-as-errors + format + tests
 ```
 
+### Starting over
+
+```sh
+mix mnemo.reset --local            # games, generations and blobs in SQLite
+mix mnemo.reset --remote           # permanently deletes /mnemo in Drive
+mix mnemo.reset --all --yes        # both, no confirmation
+mix mnemo.reset --local --new-device
+```
+
+Google credentials and the language preference always survive, so you do
+not paste them again on every iteration. `--new-device` also forgets this
+machine's `device_id`, which makes the next sync look like a brand new
+install — handy for exercising the conflict paths against a remote that
+already has history.
+
 Test fixtures are synthetic `.save` zips with the exact member layout of
 real Ren'Py 7.8/8.x saves (`log`, `json`, `screenshot.png`, `extra_info`,
 `renpy_version`, `signatures`), including a truncated one to prove that
