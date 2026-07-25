@@ -39,6 +39,31 @@ defmodule Mnemo.Game do
     end
   end
 
+  @doc """
+  Bring generation `number` back to disk.
+
+  Returns `:ok` once the work is accepted; progress and the outcome
+  arrive over PubSub. Guard failures (`:confirmation_required`,
+  `:game_may_be_running`) come back synchronously so the interface can
+  ask for what is missing.
+  """
+  def restore(game_id, number, opts \\ []) do
+    with {:ok, pid} <- ensure_started(game_id) do
+      GenServer.call(pid, {:restore, number, opts}, 30_000)
+    end
+  end
+
+  @doc """
+  Settle a diverged lineage with `:keep_local` or `:keep_remote`.
+
+  Both are lossless; the choice decides which side ends up on disk.
+  """
+  def resolve_conflict(game_id, choice, opts \\ []) when choice in [:keep_local, :keep_remote] do
+    with {:ok, pid} <- ensure_started(game_id) do
+      GenServer.call(pid, {:resolve_conflict, choice, opts}, 30_000)
+    end
+  end
+
   def stop(game_id) do
     case Registry.lookup(Mnemo.Game.Registry, game_id) do
       [{pid, _}] -> DynamicSupervisor.terminate_child(Mnemo.Game.Supervisor, pid)

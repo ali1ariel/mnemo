@@ -83,7 +83,7 @@ defmodule MnemoWeb.EnrollLive do
       attrs = %{
         save_directory: entry.save_directory,
         install_root: install_root,
-        name: RenPy.suggest_name(entry.save_directory)
+        name: entry.name
       }
 
       case Games.enroll(attrs) do
@@ -151,8 +151,23 @@ defmodule MnemoWeb.EnrollLive do
               </div>
             </figure>
             <div class="card-body gap-1">
-              <h2 class="card-title text-base">{RenPy.suggest_name(entry.save_directory)}</h2>
-              <p class="text-xs opacity-50 font-mono">{entry.path}</p>
+              <div class="flex items-center gap-2 flex-wrap">
+                <h2 class="card-title text-base">{entry.name}</h2>
+                <span :if={entry.kind == :portable} class="badge badge-soft badge-info badge-sm">
+                  {gettext("game install folder")}
+                </span>
+              </div>
+              <p class="text-xs opacity-50 font-mono break-all">{entry.path}</p>
+              <div :if={entry.mirrors != []} class="text-xs opacity-60">
+                {ngettext(
+                  "Ren'Py keeps a second copy of these saves, mirrored automatically:",
+                  "Ren'Py keeps other copies of these saves, mirrored automatically:",
+                  length(entry.mirrors)
+                )}
+                <p :for={mirror <- entry.mirrors} class="font-mono opacity-70 break-all">
+                  {mirror}
+                </p>
+              </div>
               <p class="text-sm opacity-70">
                 {ngettext("%{count} save", "%{count} saves", entry.save_count)}
                 <span :if={entry.latest_save_at}>

@@ -32,14 +32,14 @@ msgid_plural "%{count} minutes ago"
 msgstr[0] "%{count} minuto atrás"
 msgstr[1] "%{count} minutos atrás"
 
-#: lib/mnemo_web/components/game_components.ex:174
+#: lib/mnemo_web/components/game_components.ex:205
 #, elixir-autogen, elixir-format
 msgid "%{count} new file."
 msgid_plural "%{count} new files."
 msgstr[0] "%{count} arquivo novo."
 msgstr[1] "%{count} arquivos novos."
 
-#: lib/mnemo_web/live/enroll_live.ex:157
+#: lib/mnemo_web/live/enroll_live.ex:172
 #, elixir-autogen, elixir-format
 msgid "%{count} save"
 msgid_plural "%{count} saves"
@@ -51,18 +51,19 @@ msgstr[1] "%{count} saves"
 msgid "%{name} enrolled."
 msgstr "%{name} registrado."
 
-#: lib/mnemo_web/components/game_components.ex:214
+#: lib/mnemo_web/components/game_components.ex:245
 #, elixir-autogen, elixir-format
 msgid "A Google Drive request failed. Try again."
 msgstr "Uma chamada ao Google Drive falhou. Tente novamente."
 
-#: lib/mnemo_web/components/game_components.ex:205
+#: lib/mnemo_web/components/game_components.ex:236
 #, elixir-autogen, elixir-format
 msgid "A save file failed validation and was not uploaded: %{file}"
 msgstr "Um save falhou na validação e não foi enviado: %{file}"
 
 #: lib/mnemo_web/live/library_live.ex:68
-#: lib/mnemo_web/live/slots_live.ex:93
+#: lib/mnemo_web/live/slots_live.ex:136
+#: lib/mnemo_web/live/slots_live.ex:177
 #, elixir-autogen, elixir-format
 msgid "A sync is already running."
 msgstr "Uma sincronização já está em andamento."
@@ -84,12 +85,12 @@ msgstr "Adicionar um jogo"
 msgid "Add game"
 msgstr "Adicionar jogo"
 
-#: lib/mnemo_web/components/game_components.ex:170
+#: lib/mnemo_web/components/game_components.ex:201
 #, elixir-autogen, elixir-format
 msgid "Already up to date."
 msgstr "Já está atualizado."
 
-#: lib/mnemo_web/components/game_components.ex:184
+#: lib/mnemo_web/components/game_components.ex:215
 #, elixir-autogen, elixir-format
 msgid "Another device synced newer generations."
 msgstr "Outro dispositivo sincronizou gerações mais novas."
@@ -105,7 +106,7 @@ msgstr "Tentando reconectar"
 msgid "Browser did not open? Click here."
 msgstr "O navegador não abriu? Clique aqui."
 
-#: lib/mnemo_web/components/game_components.ex:158
+#: lib/mnemo_web/components/game_components.ex:163
 #, elixir-autogen, elixir-format
 msgid "Conflict"
 msgstr "Conflito"
@@ -121,22 +122,22 @@ msgid "Connected to Google Drive"
 msgstr "Conectado ao Google Drive"
 
 #: lib/mnemo_web/live/library_live.ex:71
-#: lib/mnemo_web/live/slots_live.ex:96
+#: lib/mnemo_web/live/slots_live.ex:139
 #, elixir-autogen, elixir-format
 msgid "Could not start the sync."
 msgstr "Não foi possível iniciar a sincronização."
 
-#: lib/mnemo_web/live/enroll_live.ex:185
+#: lib/mnemo_web/live/enroll_live.ex:200
 #, elixir-autogen, elixir-format
 msgid "Enroll"
 msgstr "Registrar"
 
-#: lib/mnemo_web/live/enroll_live.ex:176
+#: lib/mnemo_web/live/enroll_live.ex:191
 #, elixir-autogen, elixir-format
 msgid "Enrolled"
 msgstr "Registrado"
 
-#: lib/mnemo_web/components/game_components.ex:159
+#: lib/mnemo_web/components/game_components.ex:164
 #, elixir-autogen, elixir-format
 msgid "Error"
 msgstr "Erro"
@@ -147,12 +148,15 @@ msgid "Games found in the Ren'Py save folders on this machine."
 msgstr "Jogos encontrados nas pastas de saves Ren'Py desta máquina."
 
 #: lib/mnemo_web/live/library_live.ex:139
-#: lib/mnemo_web/live/slots_live.ex:112
+#: lib/mnemo_web/live/slots_live.ex:259
+#: lib/mnemo_web/live/slots_live.ex:369
+#: lib/mnemo_web/live/slots_live.ex:435
+#: lib/mnemo_web/live/slots_live.ex:454
 #, elixir-autogen, elixir-format
 msgid "Generation %{number}"
 msgstr "Geração %{number}"
 
-#: lib/mnemo_web/components/game_components.ex:173
+#: lib/mnemo_web/components/game_components.ex:204
 #, elixir-autogen, elixir-format
 msgid "Generation %{number} uploaded."
 msgstr "Geração %{number} enviada."
@@ -194,8 +198,8 @@ msgstr "Nenhum jogo Ren'Py encontrado"
 msgid "No games enrolled yet"
 msgstr "Nenhum jogo registrado ainda"
 
-#: lib/mnemo_web/components/game_components.ex:202
-#: lib/mnemo_web/live/slots_live.ex:133
+#: lib/mnemo_web/components/game_components.ex:233
+#: lib/mnemo_web/live/slots_live.ex:282
 #, elixir-autogen, elixir-format
 msgid "No saves found. Launch the game once, quit, and try again."
 msgstr "Nenhum save encontrado. Abra o jogo uma vez, feche e tente de novo."
@@ -204,11 +208,6 @@ msgstr "Nenhum save encontrado. Abra o jogo uma vez, feche e tente de novo."
 #, elixir-autogen, elixir-format
 msgid "Not connected to Google Drive."
 msgstr "Não conectado ao Google Drive."
-
-#: lib/mnemo_web/components/game_components.ex:196
-#, elixir-autogen, elixir-format
-msgid "Nothing was overwritten. Resolution arrives in a future version."
-msgstr "Nada foi sobrescrito. A resolução chega em uma versão futura."
 
 #: lib/mnemo_web/components/drive_components.ex:62
 #, elixir-autogen, elixir-format
@@ -225,7 +224,7 @@ msgstr "Saves de Ren'Py, guardados em segurança"
 msgid "Rescan"
 msgstr "Escanear de novo"
 
-#: lib/mnemo_web/components/game_components.ex:208
+#: lib/mnemo_web/components/game_components.ex:239
 #, elixir-autogen, elixir-format
 msgid "Save folder not found: %{path}"
 msgstr "Pasta de saves não encontrada: %{path}"
@@ -251,12 +250,12 @@ msgid "Something went wrong!"
 msgstr "Algo deu errado!"
 
 #: lib/mnemo_web/live/library_live.ex:160
-#: lib/mnemo_web/live/slots_live.ex:127
+#: lib/mnemo_web/live/slots_live.ex:274
 #, elixir-autogen, elixir-format
 msgid "Sync now"
 msgstr "Sincronizar agora"
 
-#: lib/mnemo_web/components/game_components.ex:157
+#: lib/mnemo_web/components/game_components.ex:160
 #, elixir-autogen, elixir-format
 msgid "Synced"
 msgstr "Sincronizado"
@@ -266,27 +265,27 @@ msgstr "Sincronizado"
 msgid "The Google Drive session expired. Reconnect to resume syncing."
 msgstr "A sessão do Google Drive expirou. Reconecte para voltar a sincronizar."
 
-#: lib/mnemo_web/components/game_components.ex:193
+#: lib/mnemo_web/components/game_components.ex:224
 #, elixir-autogen, elixir-format
 msgid "The local and remote histories diverged."
 msgstr "Os históricos local e remoto divergiram."
 
-#: lib/mnemo_web/components/game_components.ex:187
+#: lib/mnemo_web/components/game_components.ex:218
 #, elixir-autogen, elixir-format
 msgid "The remote history is behind this device."
 msgstr "O histórico remoto está atrás deste dispositivo."
 
-#: lib/mnemo_web/components/game_components.ex:217
+#: lib/mnemo_web/components/game_components.ex:248
 #, elixir-autogen, elixir-format
 msgid "The sync crashed unexpectedly."
 msgstr "A sincronização quebrou inesperadamente."
 
-#: lib/mnemo_web/components/game_components.ex:220
+#: lib/mnemo_web/components/game_components.ex:260
 #, elixir-autogen, elixir-format
 msgid "The sync failed."
 msgstr "A sincronização falhou."
 
-#: lib/mnemo_web/components/game_components.ex:181
+#: lib/mnemo_web/components/game_components.ex:212
 #, elixir-autogen, elixir-format
 msgid "This game already has history in Drive from another install."
 msgstr "Este jogo já tem histórico no Drive vindo de outra instalação."
@@ -296,12 +295,12 @@ msgstr "Este jogo já tem histórico no Drive vindo de outra instalação."
 msgid "This game is already enrolled."
 msgstr "Este jogo já está registrado."
 
-#: lib/mnemo_web/components/game_components.ex:190
+#: lib/mnemo_web/components/game_components.ex:221
 #, elixir-autogen, elixir-format
 msgid "Two devices wrote the same generation."
 msgstr "Dois dispositivos escreveram a mesma geração."
 
-#: lib/mnemo_web/components/game_components.ex:211
+#: lib/mnemo_web/components/game_components.ex:242
 #, elixir-autogen, elixir-format
 msgid "Upload failed. Nothing was committed; try again."
 msgstr "O envio falhou. Nada foi confirmado; tente novamente."
@@ -331,13 +330,13 @@ msgstr "fechar"
 msgid "just now"
 msgstr "agora mesmo"
 
-#: lib/mnemo_web/live/enroll_live.ex:159
+#: lib/mnemo_web/live/enroll_live.ex:174
 #, elixir-autogen, elixir-format
 msgid "last played: %{time}"
 msgstr "jogado por último: %{time}"
 
 #: lib/mnemo_web/live/library_live.ex:139
-#: lib/mnemo_web/live/slots_live.ex:112
+#: lib/mnemo_web/live/slots_live.ex:259
 #, elixir-autogen, elixir-format
 msgid "last sync: %{time}"
 msgstr "última sincronização: %{time}"
@@ -445,7 +444,7 @@ msgstr "Autosaves"
 msgid "Click to reveal or hide"
 msgstr "Clique para revelar ou ocultar"
 
-#: lib/mnemo_web/live/slots_live.ex:34
+#: lib/mnemo_web/live/slots_live.ex:38
 #, elixir-autogen, elixir-format
 msgid "Game not found."
 msgstr "Jogo não encontrado."
@@ -475,17 +474,17 @@ msgstr "Saves"
 msgid "Screenshots are blurred; click one to reveal or hide it."
 msgstr "As screenshots ficam borradas; clique em uma para revelar ou ocultar."
 
-#: lib/mnemo_web/live/enroll_live.ex:170
+#: lib/mnemo_web/live/enroll_live.ex:185
 #, elixir-autogen, elixir-format
 msgid "Hide saves"
 msgstr "Ocultar saves"
 
-#: lib/mnemo_web/live/enroll_live.ex:197
+#: lib/mnemo_web/live/enroll_live.ex:212
 #, elixir-autogen, elixir-format
 msgid "No save slots here yet."
 msgstr "Ainda não há slots de save aqui."
 
-#: lib/mnemo_web/live/enroll_live.ex:170
+#: lib/mnemo_web/live/enroll_live.ex:185
 #, elixir-autogen, elixir-format
 msgid "Preview saves"
 msgstr "Ver saves"
@@ -705,3 +704,299 @@ msgstr "Você cria as credenciais uma vez na vida e reutiliza exatamente as mesm
 #, elixir-autogen, elixir-format
 msgid "or type them in"
 msgstr "ou digite manualmente"
+
+#: lib/mnemo_web/live/slots_live.ex:375
+#: lib/mnemo_web/live/slots_live.ex:435
+#: lib/mnemo_web/live/slots_live.ex:454
+#, elixir-autogen, elixir-format
+msgid "%{count} file"
+msgid_plural "%{count} files"
+msgstr[0] "%{count} arquivo"
+msgstr[1] "%{count} arquivos"
+
+#: lib/mnemo_web/components/game_components.ex:251
+#, elixir-autogen, elixir-format
+msgid "A file could not be downloaded intact. Nothing on disk was touched."
+msgstr "Não foi possível baixar um arquivo íntegro. Nada no disco foi tocado."
+
+#: lib/mnemo_web/live/slots_live.ex:291
+#, elixir-autogen, elixir-format
+msgid "A restore left these behind because the previous files were not published as a generation. Roll one back to undo, or delete it once you are sure."
+msgstr "Uma restauração deixou estas pastas porque os arquivos anteriores não puderam ser publicados como geração. Reverta uma para desfazer, ou apague quando tiver certeza."
+
+#: lib/mnemo_web/live/slots_live.ex:240
+#, elixir-autogen, elixir-format
+msgid "Backup deleted."
+msgstr "Backup apagado."
+
+#: lib/mnemo_web/live/slots_live.ex:289
+#, elixir-autogen, elixir-format
+msgid "Backup folders"
+msgstr "Pastas de backup"
+
+#: lib/mnemo_web/live/slots_live.ex:548
+#, elixir-autogen, elixir-format
+msgid "Cancel"
+msgstr "Cancelar"
+
+#: lib/mnemo_web/live/slots_live.ex:166
+#: lib/mnemo_web/live/slots_live.ex:216
+#, elixir-autogen, elixir-format
+msgid "Confirm the game is closed before restoring."
+msgstr "Confirme que o jogo está fechado antes de restaurar."
+
+#: lib/mnemo_web/live/slots_live.ex:243
+#, elixir-autogen, elixir-format
+msgid "Could not delete the backup."
+msgstr "Não foi possível apagar o backup."
+
+#: lib/mnemo_web/live/slots_live.ex:233
+#, elixir-autogen, elixir-format
+msgid "Could not roll back."
+msgstr "Não foi possível reverter."
+
+#: lib/mnemo_web/live/slots_live.ex:180
+#, elixir-autogen, elixir-format
+msgid "Could not start the restore."
+msgstr "Não foi possível iniciar a restauração."
+
+#: lib/mnemo_web/live/slots_live.ex:317
+#, elixir-autogen, elixir-format
+msgid "Delete"
+msgstr "Apagar"
+
+#: lib/mnemo_web/live/slots_live.ex:315
+#, elixir-autogen, elixir-format
+msgid "Delete this backup folder permanently?"
+msgstr "Apagar esta pasta de backup permanentemente?"
+
+#: lib/mnemo_web/components/game_components.ex:158
+#, elixir-autogen, elixir-format
+msgid "Downloading…"
+msgstr "Baixando…"
+
+#: lib/mnemo_web/components/game_components.ex:185
+#, elixir-autogen, elixir-format
+msgid "Generation %{number} is back in place."
+msgstr "A geração %{number} está de volta no lugar."
+
+#: lib/mnemo_web/live/slots_live.ex:360
+#, elixir-autogen, elixir-format
+msgid "History"
+msgstr "Histórico"
+
+#: lib/mnemo_web/live/slots_live.ex:308
+#, elixir-autogen, elixir-format
+msgid "Put this folder back and move the current one aside?"
+msgstr "Colocar esta pasta de volta e mover a atual para o lado?"
+
+#: lib/mnemo_web/components/game_components.ex:159
+#, elixir-autogen, elixir-format
+msgid "Putting files in place…"
+msgstr "Colocando os arquivos no lugar…"
+
+#: lib/mnemo_web/components/game_components.ex:254
+#, elixir-autogen, elixir-format
+msgid "Putting the files in place failed. The previous folder was left as it was."
+msgstr "Falhou ao colocar os arquivos no lugar. A pasta anterior foi mantida como estava."
+
+#: lib/mnemo_web/live/slots_live.ex:526
+#, elixir-autogen, elixir-format
+msgid "Replace the current saves with generation %{number}?"
+msgstr "Substituir os saves atuais pela geração %{number}?"
+
+#: lib/mnemo_web/live/slots_live.ex:389
+#: lib/mnemo_web/live/slots_live.ex:545
+#, elixir-autogen, elixir-format
+msgid "Restore"
+msgstr "Restaurar"
+
+#: lib/mnemo_web/components/game_components.ex:161
+#, elixir-autogen, elixir-format
+msgid "Restored"
+msgstr "Restaurado"
+
+#: lib/mnemo_web/live/slots_live.ex:310
+#, elixir-autogen, elixir-format
+msgid "Roll back"
+msgstr "Reverter"
+
+#: lib/mnemo_web/components/game_components.ex:157
+#, elixir-autogen, elixir-format
+msgid "Saving current state…"
+msgstr "Salvando o estado atual…"
+
+#: lib/mnemo_web/live/slots_live.ex:534
+#, elixir-autogen, elixir-format
+msgid "Something wrote to this folder %{time} — the game may still be open."
+msgstr "Algo escreveu nesta pasta %{time} — o jogo pode estar aberto."
+
+#: lib/mnemo_web/components/game_components.ex:257
+#, elixir-autogen, elixir-format
+msgid "That generation has no files recorded."
+msgstr "Essa geração não tem arquivos registrados."
+
+#: lib/mnemo_web/live/slots_live.ex:529
+#, elixir-autogen, elixir-format
+msgid "The files on disk now are saved as a new generation first, so you can come back to them."
+msgstr "Os arquivos que estão no disco agora são salvos como uma nova geração antes, então dá para voltar a eles."
+
+#: lib/mnemo_web/live/slots_live.ex:473
+#: lib/mnemo_web/live/slots_live.ex:540
+#, elixir-autogen, elixir-format
+msgid "The game is closed"
+msgstr "O jogo está fechado"
+
+#: lib/mnemo_web/components/game_components.ex:191
+#, elixir-autogen, elixir-format
+msgid "The previous files could not be published as a generation, so they were kept in a backup folder."
+msgstr "Os arquivos anteriores não puderam ser publicados como geração, então foram guardados numa pasta de backup."
+
+#: lib/mnemo_web/live/slots_live.ex:228
+#, elixir-autogen, elixir-format
+msgid "The previous folder is back in place."
+msgstr "A pasta anterior está de volta no lugar."
+
+#: lib/mnemo_web/components/game_components.ex:196
+#, elixir-autogen, elixir-format
+msgid "The previous state was saved first, so this is undoable."
+msgstr "O estado anterior foi salvo antes, então isto pode ser desfeito."
+
+#: lib/mnemo_web/live/slots_live.ex:173
+#, elixir-autogen, elixir-format
+msgid "The save folder is still changing. Close the game and try again."
+msgstr "A pasta de saves ainda está mudando. Feche o jogo e tente de novo."
+
+#: lib/mnemo_web/live/slots_live.ex:371
+#, elixir-autogen, elixir-format
+msgid "current"
+msgstr "atual"
+
+#: lib/mnemo_web/live/slots_live.ex:484
+#, elixir-autogen, elixir-format
+msgid "%{count} slot differs"
+msgid_plural "%{count} slots differ"
+msgstr[0] "%{count} slot difere"
+msgstr[1] "%{count} slots diferem"
+
+#: lib/mnemo_web/live/slots_live.ex:219
+#, elixir-autogen, elixir-format
+msgid "Could not resolve the conflict."
+msgstr "Não foi possível resolver o conflito."
+
+#: lib/mnemo_web/live/slots_live.ex:447
+#, elixir-autogen, elixir-format
+msgid "Keep these files"
+msgstr "Ficar com estes"
+
+#: lib/mnemo_web/components/game_components.ex:175
+#, elixir-autogen, elixir-format
+msgid "Kept this device's files. The other version stays in the history."
+msgstr "Ficamos com os arquivos deste dispositivo. A outra versão continua no histórico."
+
+#: lib/mnemo_web/components/game_components.ex:162
+#, elixir-autogen, elixir-format
+msgid "Resolved"
+msgstr "Resolvido"
+
+#: lib/mnemo_web/live/slots_live.ex:419
+#, elixir-autogen, elixir-format
+msgid "Saves cannot be merged, so pick which side goes on disk. Nothing is deleted either way — both versions stay in the history."
+msgstr "Saves não podem ser mesclados, então escolha qual lado fica no disco. Nada é apagado de qualquer forma — as duas versões continuam no histórico."
+
+#: lib/mnemo_web/live/slots_live.ex:476
+#, elixir-autogen, elixir-format
+msgid "Take these files"
+msgstr "Trazer estes"
+
+#: lib/mnemo_web/live/slots_live.ex:452
+#, elixir-autogen, elixir-format
+msgid "The other device"
+msgstr "O outro dispositivo"
+
+#: lib/mnemo_web/live/slots_live.ex:433
+#, elixir-autogen, elixir-format
+msgid "This device"
+msgstr "Este dispositivo"
+
+#: lib/mnemo_web/components/game_components.ex:179
+#, elixir-autogen, elixir-format
+msgid "Took the other device's files. This device's version was saved to the history first."
+msgstr "Trouxemos os arquivos do outro dispositivo. A versão deste foi salva no histórico antes."
+
+#: lib/mnemo_web/live/slots_live.ex:426
+#, elixir-autogen, elixir-format
+msgid "Two devices also published the same generation number. Resolving that needs a newer version of mnemo; nothing here will overwrite your saves."
+msgstr "Dois dispositivos também publicaram o mesmo número de geração. Resolver isso exige uma versão mais nova do mnemo; nada aqui vai sobrescrever seus saves."
+
+#: lib/mnemo_web/live/slots_live.ex:416
+#, elixir-autogen, elixir-format
+msgid "Two devices changed this game"
+msgstr "Dois dispositivos alteraram este jogo"
+
+#: lib/mnemo_web/live/slots_live.ex:505
+#, elixir-autogen, elixir-format
+msgid "different"
+msgstr "diferente"
+
+#: lib/mnemo_web/live/slots_live.ex:503
+#, elixir-autogen, elixir-format
+msgid "only here"
+msgstr "só aqui"
+
+#: lib/mnemo_web/live/slots_live.ex:504
+#, elixir-autogen, elixir-format
+msgid "only there"
+msgstr "só lá"
+
+#: lib/mnemo_web/components/game_components.ex:227
+#, elixir-autogen, elixir-format
+msgid "Nothing was overwritten. Pick which side to keep below."
+msgstr "Nada foi sobrescrito. Escolha abaixo com qual lado ficar."
+
+#: lib/mnemo_web/live/slots_live.ex:346
+#, elixir-autogen, elixir-format
+msgid "Back up autosaves and quicksaves"
+msgstr "Fazer backup de autosaves e quicksaves"
+
+#: lib/mnemo_web/live/slots_live.ex:202
+#, elixir-autogen, elixir-format
+msgid "Could not save the options."
+msgstr "Não foi possível salvar as opções."
+
+#: lib/mnemo_web/live/slots_live.ex:327
+#, elixir-autogen, elixir-format
+msgid "Name"
+msgstr "Nome"
+
+#: lib/mnemo_web/live/slots_live.ex:348
+#, elixir-autogen, elixir-format
+msgid "Off by default: Ren'Py rewrites them every few minutes, which multiplies generations. With this off they are never uploaded, so they cannot be restored either."
+msgstr "Desligado por padrão: o Ren'Py reescreve esses arquivos a cada poucos minutos, o que multiplica as gerações. Desligado, eles nunca são enviados — e portanto também não podem ser restaurados."
+
+#: lib/mnemo_web/live/slots_live.ex:324
+#, elixir-autogen, elixir-format
+msgid "Options"
+msgstr "Opções"
+
+#: lib/mnemo_web/live/slots_live.ex:199
+#, elixir-autogen, elixir-format
+msgid "Options saved."
+msgstr "Opções salvas."
+
+#: lib/mnemo_web/live/slots_live.ex:355
+#, elixir-autogen, elixir-format
+msgid "Save options"
+msgstr "Salvar opções"
+
+#: lib/mnemo_web/live/enroll_live.ex:157
+#, elixir-autogen, elixir-format
+msgid "game install folder"
+msgstr "pasta de instalação do jogo"
+
+#: lib/mnemo_web/live/enroll_live.ex:162
+#, elixir-autogen, elixir-format
+msgid "Ren'Py keeps a second copy of these saves, mirrored automatically:"
+msgid_plural "Ren'Py keeps other copies of these saves, mirrored automatically:"
+msgstr[0] "O Ren'Py mantém uma segunda cópia destes saves, espelhada automaticamente:"
+msgstr[1] "O Ren'Py mantém outras cópias destes saves, espelhadas automaticamente:"

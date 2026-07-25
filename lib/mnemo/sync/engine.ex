@@ -212,9 +212,32 @@ defmodule Mnemo.Sync.Engine do
   ## Upload
 
   defp upload_blobs(backend, blobs_id, snapshot_dir, entries) do
-    unique = Enum.uniq_by(entries, & &1["sha256"])
-    unknown = Enum.reject(unique, &Sync.get_blob(&1["sha256"]))
+    case remote_blob_names(backend, blobs_id) do
+      {:ok, present} ->
+        entries
+        |> Enum.uniq_by(& &1["sha256"])
+        |> Enum.reject(&MapSet.member?(present, &1["sha256"]))
+        |> push(backend, blobs_id, snapshot_dir, length(entries))
 
+      {:error, reason} ->
+        {:error, :drive, %{op: :list_blobs, reason: reason}}
+    end
+  end
+
+  # The local `blobs` table is a cache, never the authority on what the
+  # remote holds: it survives the Drive folder being deleted, the account
+  # being switched, and `mix mnemo.reset --remote`. Trusting it would let
+  # a cycle skip uploads and publish a manifest pointing at bytes that are
+  # not there — a sync that reports success over a hollow backup, which
+  # only surfaces when someone tries to restore. Listing the folder once
+  # per cycle is one call and removes the whole class of failure.
+  defp remote_blob_names(backend, blobs_id) do
+    with {:ok, children} <- backend.list_children(blobs_id) do
+      {:ok, MapSet.new(children, & &1.name)}
+    end
+  end
+
+  defp push(unknown, backend, blobs_id, snapshot_dir, total) do
     results =
       Task.Supervisor.async_stream_nolink(
         Mnemo.TaskSupervisor,
@@ -236,7 +259,7 @@ defmodule Mnemo.Sync.Engine do
 
     if failures == [] do
       uploaded = Enum.count(results, &(&1 == {:ok, {:ok, :uploaded}}))
-      {:ok, %{uploaded: uploaded, skipped: length(entries) - uploaded}}
+      {:ok, %{uploaded: uploaded, skipped: total - uploaded}}
     else
       {:error, :upload_failed, %{failures: failures}}
     end

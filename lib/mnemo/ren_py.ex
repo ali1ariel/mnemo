@@ -71,6 +71,109 @@ defmodule Mnemo.RenPy do
   def resolve_root("appdata"), do: default_root()
   def resolve_root(absolute), do: absolute
 
+  ## Game-local save folders
+
+  @doc """
+  Ren'Py installs that keep their saves next to the executable.
+
+  Ren'Py does not pick one save folder — `savelocation.init/0` builds a
+  `MultiLocation` out of the user savedir *and* `<gamedir>/saves`, so a
+  Steam or itch.io copy reads and writes both at once. Scanning
+  `~/.renpy` alone therefore misses half of a game's save locations,
+  which is why these are found on their own rather than left to manual
+  folder picking.
+
+  An install is recognised by holding both a `renpy/` and a `game/`
+  directory — the layout every packaged Ren'Py build has.
+  """
+  def portable_installs(dirs \\ install_search_dirs()) do
+    for base <- dirs,
+        install <- list_subdirs(base),
+        renpy_install?(install),
+        saves = Path.join([install, "game", "saves"]),
+        File.dir?(saves) do
+      %{path: saves, install: install, name: Path.basename(install)}
+    end
+    |> Enum.uniq_by(&directory_identity(&1.path))
+  end
+
+  # `~/.steam/steam` is a symlink to the real Steam directory on most
+  # Linux setups, so the same install is reachable by two paths. Comparing
+  # the directory itself rather than the string collapses those, along
+  # with bind mounts and any other aliasing.
+  defp directory_identity(path) do
+    case File.stat(path) do
+      {:ok, %{major_device: device, inode: inode}} when inode > 0 -> {device, inode}
+      _ -> path
+    end
+  end
+
+  defp renpy_install?(path) do
+    File.dir?(Path.join(path, "renpy")) and File.dir?(Path.join(path, "game"))
+  end
+
+  defp list_subdirs(base) do
+    case File.ls(base) do
+      {:ok, names} ->
+        for name <- Enum.sort(names),
+            full = Path.join(base, name),
+            File.dir?(full),
+            do: full
+
+      {:error, _} ->
+        []
+    end
+  end
+
+  @doc "Directories that hold unpacked game installs on this machine."
+  def install_search_dirs do
+    case Application.get_env(:mnemo, :install_dirs) do
+      nil -> steam_common_dirs() ++ other_install_dirs()
+      dirs -> dirs
+    end
+  end
+
+  defp other_install_dirs do
+    ~w(~/Games ~/games ~/.itch/apps ~/.config/itch/apps)
+    |> Enum.map(&Path.expand/1)
+    |> Enum.filter(&File.dir?/1)
+  end
+
+  # Steam spreads games across libraries the user added on other disks;
+  # libraryfolders.vdf is the only list of them.
+  defp steam_common_dirs do
+    steam_roots()
+    |> Enum.flat_map(fn root -> [root | library_paths(root)] end)
+    |> Enum.map(&Path.join([&1, "steamapps", "common"]))
+    |> Enum.uniq()
+    |> Enum.filter(&File.dir?/1)
+  end
+
+  defp steam_roots do
+    ~w(~/.local/share/Steam ~/.steam/steam ~/Library/Application\ Support/Steam)
+    |> Enum.map(&Path.expand/1)
+    |> then(fn roots ->
+      case System.get_env("PROGRAMFILES(X86)") do
+        nil -> roots
+        pf -> [Path.join(pf, "Steam") | roots]
+      end
+    end)
+    |> Enum.filter(&File.dir?/1)
+  end
+
+  defp library_paths(steam_root) do
+    vdf = Path.join([steam_root, "steamapps", "libraryfolders.vdf"])
+
+    case File.read(vdf) do
+      {:ok, contents} ->
+        Regex.scan(~r/"path"\s+"([^"]+)"/, contents, capture: :all_but_first)
+        |> List.flatten()
+
+      {:error, _} ->
+        []
+    end
+  end
+
   def game_path(%{install_root: install_root, save_directory: save_directory}) do
     case resolve_root(install_root) do
       nil -> nil
@@ -87,19 +190,108 @@ defmodule Mnemo.RenPy do
   `persistent` file — this filters out Ren'Py's own `tokens` folder.
   """
   def scan(scan_roots \\ roots()) do
-    for root <- scan_roots,
-        dir <- list_dirs(root),
-        entry = scan_entry(root, dir),
-        entry != nil,
-        do: entry
+    user_entries =
+      for root <- scan_roots,
+          dir <- list_dirs(root),
+          entry = scan_entry(root, dir),
+          entry != nil,
+          do: entry
+
+    group_mirrors(user_entries ++ portable_entries())
+  end
+
+  @doc """
+  Collapse folders that are the same game into one entry.
+
+  Ren'Py's `MultiLocation` writes every save to all of its locations and
+  deletes from all of them, so a Steam or itch.io copy is a mirror of the
+  user savedir, not a second game. Listing them separately would invite
+  enrolling one game twice, giving it two lineages and two histories for
+  no benefit.
+
+  The surviving entry keeps the user savedir when there is one — it
+  outlives uninstalling and reinstalling the game — and carries the other
+  paths in `:mirrors`.
+  """
+  def group_mirrors(entries) do
+    entries
+    |> Enum.reduce([], fn entry, groups ->
+      case Enum.find_index(groups, &mirrors?(&1, entry)) do
+        nil -> groups ++ [[entry]]
+        index -> List.update_at(groups, index, &(&1 ++ [entry]))
+      end
+    end)
+    |> Enum.map(&merge_group/1)
+  end
+
+  defp mirrors?(group, entry) do
+    Enum.any?(group, fn other -> MapSet.size(shared_saves(other, entry)) > 0 end)
+  end
+
+  # Identical name and byte size on a `.save` is proof enough of a mirror:
+  # these are multi-megabyte archives, and Ren'Py wrote both copies from
+  # the same bytes. Hashing every file on every scan would cost far more
+  # for no extra certainty.
+  defp shared_saves(a, b), do: MapSet.intersection(save_signature(a), save_signature(b))
+
+  defp save_signature(%{path: path}) do
+    path
+    |> save_files()
+    |> Enum.flat_map(fn file ->
+      case File.stat(file) do
+        {:ok, %{size: size}} -> [{Path.basename(file), size}]
+        _ -> []
+      end
+    end)
+    |> MapSet.new()
+  end
+
+  defp merge_group([entry]), do: Map.put(entry, :mirrors, [])
+
+  defp merge_group(entries) do
+    primary = Enum.find(entries, List.first(entries), &(&1.kind == :user))
+
+    Map.put(primary, :mirrors, entries |> Enum.reject(&(&1 == primary)) |> Enum.map(& &1.path))
+  end
+
+  # A game-local save folder is always called `saves`, so the install
+  # directory name is what identifies it to a person and to the remote.
+  defp portable_entries do
+    for %{path: path, install: install, name: name} <- portable_installs() do
+      saves = save_files(path)
+
+      %{
+        root: Path.dirname(path),
+        save_directory: Path.basename(path),
+        path: path,
+        name: name,
+        kind: :portable,
+        install: install,
+        save_count: length(saves),
+        latest_save_at: latest_mtime(saves),
+        preview: preview_screenshot(path)
+      }
+    end
   end
 
   defp list_dirs(root) do
     case File.ls(root) do
-      {:ok, names} -> Enum.sort(names)
+      {:ok, names} -> names |> Enum.reject(&internal_dir?/1) |> Enum.sort()
       {:error, _} -> []
     end
   end
+
+  @internal_dir_re ~r/\.(bak|mnemo-restore)-\d+$/
+
+  @doc """
+  Directories mnemo itself puts next to a game folder: restore backups
+  and staging areas.
+
+  They hold real `.save` files, so the scan has to skip them — otherwise
+  a restore backup would show up on the enrollment screen as a game of
+  its own.
+  """
+  def internal_dir?(name), do: Regex.match?(@internal_dir_re, name)
 
   defp scan_entry(root, dir) do
     path = Path.join(root, dir)
@@ -111,6 +303,9 @@ defmodule Mnemo.RenPy do
         root: root,
         save_directory: dir,
         path: path,
+        name: suggest_name(dir),
+        kind: :user,
+        install: nil,
         save_count: length(saves),
         latest_save_at: latest_mtime(saves),
         preview: preview_screenshot(path)

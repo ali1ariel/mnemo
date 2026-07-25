@@ -2,17 +2,17 @@ defmodule Mnemo.Game.Server do
   @moduledoc """
   Per-game process holding live sync state.
 
-  States: `:idle → :snapshotting → :uploading → :ok | :conflict | :error`.
-  (`:dirty` and `:settling` arrive with the watcher in v1.) The cycle
-  itself runs in a supervised task so this process stays responsive to
-  status queries; the database is only touched at checkpoints, inside the
-  engine.
+  States: `:idle → :snapshotting → :uploading → :ok | :conflict | :error`,
+  plus `:safety_snapshot → :downloading → :swapping` while restoring.
+  (`:dirty` and `:settling` arrive with the watcher in v1.) The work runs
+  in a supervised task so this process stays responsive to status
+  queries; the database is only touched at checkpoints.
   """
 
   use GenServer, restart: :transient
 
   alias Mnemo.{Games, Sync}
-  alias Mnemo.Sync.Engine
+  alias Mnemo.Sync.{Conflict, Engine, Restore}
 
   def start_link(game_id) do
     GenServer.start_link(__MODULE__, game_id, name: via(game_id))
@@ -48,17 +48,61 @@ defmodule Mnemo.Game.Server do
   end
 
   def handle_call(:sync_now, _from, state) do
-    server = self()
     game = state.game
+    {:reply, :ok, run_task(state, :snapshotting, fn notify -> Engine.run(game, notify) end)}
+  end
+
+  def handle_call({:restore, _number, _opts}, _from, %{task_ref: ref} = state) when ref != nil do
+    {:reply, {:error, :busy}, state}
+  end
+
+  def handle_call({:restore, number, opts}, _from, state) do
+    game = state.game
+
+    # The guards run inline so the caller gets "confirm the game is
+    # closed" as an answer rather than as an asynchronous failure.
+    with :ok <- Restore.precheck(game, opts) do
+      {:reply, :ok,
+       run_task(state, :safety_snapshot, fn notify ->
+         Restore.run(game, number, opts, notify)
+       end)}
+    else
+      error -> {:reply, error, state}
+    end
+  end
+
+  def handle_call({:resolve_conflict, _choice, _opts}, _from, %{task_ref: ref} = state)
+      when ref != nil do
+    {:reply, {:error, :busy}, state}
+  end
+
+  def handle_call({:resolve_conflict, choice, opts}, _from, state) do
+    game = state.game
+
+    with :ok <- conflict_precheck(choice, game, opts) do
+      status = if choice == :keep_remote, do: :safety_snapshot, else: :snapshotting
+
+      {:reply, :ok,
+       run_task(state, status, fn notify -> Conflict.resolve(game, choice, opts, notify) end)}
+    else
+      error -> {:reply, error, state}
+    end
+  end
+
+  defp conflict_precheck(:keep_remote, game, opts), do: Restore.precheck(game, opts)
+  defp conflict_precheck(_choice, _game, _opts), do: :ok
+
+  defp run_task(state, initial_status, fun) do
+    server = self()
 
     task =
       Task.Supervisor.async_nolink(Mnemo.TaskSupervisor, fn ->
-        Engine.run(game, fn phase -> send(server, {:sync_phase, phase}) end)
+        fun.(fn phase -> send(server, {:sync_phase, phase}) end)
       end)
 
-    state = %{state | task_ref: task.ref, status: :snapshotting, detail: %{}}
+    state = %{state | task_ref: task.ref, status: initial_status, detail: %{}}
     publish(state)
-    {:reply, :ok, state}
+    state
   end
 
   @impl true
@@ -82,6 +126,12 @@ defmodule Mnemo.Game.Server do
               detail: %{result: :no_changes},
               last_synced_at: DateTime.utc_now(:second)
           }
+
+        {:ok, %{resolution: _} = summary} ->
+          %{state | status: :resolved, detail: summary, last_synced_at: DateTime.utc_now(:second)}
+
+        {:ok, %{safety: _} = summary} ->
+          %{state | status: :restored, detail: summary, last_synced_at: DateTime.utc_now(:second)}
 
         {:ok, %{generation: _} = summary} ->
           %{state | status: :ok, detail: summary, last_synced_at: DateTime.utc_now(:second)}

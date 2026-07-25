@@ -14,7 +14,7 @@ defmodule Mnemo.Drive.Remote do
   two files with the same name, which is the signature of a fork.
   """
 
-  alias Mnemo.Settings
+  alias Mnemo.{Games, Settings}
 
   @root_name "mnemo"
   @json_mime "application/json"
@@ -54,7 +54,7 @@ defmodule Mnemo.Drive.Remote do
     # still resolves through the game.json scan below.
     with {:ok, nil} <- find_named_folder(backend, games_id, folder_name(game)),
          {:ok, nil} <- find_named_folder(backend, games_id, game.id) do
-      find_by_save_directory(backend, games_id, game.save_directory)
+      find_by_save_directory(backend, games_id, Games.remote_key(game))
     end
   end
 
@@ -68,7 +68,7 @@ defmodule Mnemo.Drive.Remote do
 
   # Drive treats "/" as a path separator in some clients; nothing else in a
   # Ren'Py save_directory needs escaping.
-  defp folder_name(game), do: String.replace(game.save_directory, ~r"[/\\]", "_")
+  defp folder_name(game), do: String.replace(Games.remote_key(game), ~r"[/\\]", "_")
 
   # game.json carries the save_directory, which is what lets another
   # machine match its local folder to this remote game on its own.
@@ -152,7 +152,7 @@ defmodule Mnemo.Drive.Remote do
   defp merge_game(current, game) do
     current
     |> Map.put_new("id", game.id)
-    |> Map.put("save_directory", game.save_directory)
+    |> Map.put("save_directory", Games.remote_key(game))
     |> Map.put_new("created_by_device", Settings.device_id())
     |> Map.put_new("created_at", DateTime.to_iso8601(DateTime.utc_now(:second)))
     |> then(fn doc -> if game.name, do: Map.put(doc, "name", game.name), else: doc end)
@@ -189,6 +189,15 @@ defmodule Mnemo.Drive.Remote do
   end
 
   defp manifest_name(number), do: String.pad_leading(Integer.to_string(number), 6, "0") <> ".json"
+
+  @doc "Fetch a blob's bytes by content hash."
+  def download_blob(backend, blobs_id, sha256) do
+    case backend.find_child(blobs_id, sha256) do
+      {:ok, nil} -> {:error, {:blob_missing, sha256}}
+      {:ok, meta} -> backend.download(meta.id)
+      error -> error
+    end
+  end
 
   @doc "Upload a blob unless it is already present; returns `:uploaded` or `:existed`."
   def upload_blob(backend, blobs_id, sha256, content) do

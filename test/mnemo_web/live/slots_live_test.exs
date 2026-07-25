@@ -5,6 +5,7 @@ defmodule MnemoWeb.SlotsLiveTest do
 
   alias Mnemo.Drive.Fake
   alias Mnemo.{Games, RenPyFixtures}
+  alias Mnemo.Sync.{Engine, Restore}
 
   setup do
     Fake.reset()
@@ -79,5 +80,223 @@ defmodule MnemoWeb.SlotsLiveTest do
   test "unknown and malformed ids navigate back to the library", %{conn: conn} do
     assert {:error, {:live_redirect, %{to: "/"}}} = live(conn, ~p"/games/#{Ecto.UUID.generate()}")
     assert {:error, {:live_redirect, %{to: "/"}}} = live(conn, "/games/not-a-uuid")
+  end
+
+  describe "options" do
+    test "toggling autosave backup persists and changes what gets synced", %{
+      conn: conn,
+      root: root
+    } do
+      game = enroll_with_saves!(root)
+      refute game.sync_autosaves
+
+      {:ok, view, _html} = live(conn, ~p"/games/#{game.id}")
+      assert has_element?(view, "#game-options")
+
+      view
+      |> form("#options-form", %{"name" => "My Game", "sync_autosaves" => "true"})
+      |> render_submit()
+
+      game = Games.get!(game.id)
+      assert game.sync_autosaves
+      assert game.name == "My Game"
+
+      tracked =
+        Mnemo.RenPy.tracked_files(Path.join(root, "MyGame-123"),
+          sync_autosaves: game.sync_autosaves
+        )
+        |> Enum.map(&elem(&1, 0))
+
+      assert "auto-1-LT1.save" in tracked
+      assert "quick-1-LT1.save" in tracked
+    end
+
+    test "unchecking turns autosave backup back off", %{conn: conn, root: root} do
+      game = enroll_with_saves!(root)
+      {:ok, _} = Games.update_game(game, %{sync_autosaves: true})
+
+      {:ok, view, _html} = live(conn, ~p"/games/#{game.id}")
+
+      # A browser sends nothing at all for an unchecked box, so the event
+      # arrives without the key — which is what has to switch it off.
+      render_submit(view, :save_options, %{"name" => "My Game"})
+
+      refute Games.get!(game.id).sync_autosaves
+    end
+  end
+
+  describe "conflict" do
+    setup %{root: root} do
+      dir = Path.join(root, "MyGame-123")
+      RenPyFixtures.write_save(dir, "1-1-LT1.save", seed: "shared")
+      File.write!(Path.join(dir, "persistent"), "local-work")
+
+      {:ok, game} =
+        Games.enroll(%{save_directory: "MyGame-123", install_root: root, name: "My Game"})
+
+      assert {:ok, %{generation: 1}} = Engine.run(game)
+
+      # Another device published on top of what this one last saw.
+      {:ok, _} =
+        Fake.seed_file(
+          ~w(mnemo games MyGame-123 generations 000002.json),
+          Jason.encode!(%{
+            "number" => 2,
+            "parent_number" => 1,
+            "device_id" => "other-device",
+            "files" => []
+          })
+        )
+
+      File.write!(Path.join(dir, "persistent"), "newer-local-work")
+
+      # The divergence has to be discovered through the server, the way it
+      # is in the app: the page reflects live process state and must not
+      # go poking at Drive on every mount.
+      Mnemo.Game.subscribe()
+      :ok = Mnemo.Game.sync_now(game.id)
+      game_id = game.id
+      assert_receive {:game, ^game_id, %{status: :conflict}}, 5_000
+
+      {:ok, game: Games.get!(game.id), dir: dir}
+    end
+
+    test "shows both sides and what differs", %{conn: conn, game: game} do
+      {:ok, view, html} = live(conn, ~p"/games/#{game.id}")
+
+      assert has_element?(view, "#conflict")
+      assert has_element?(view, "#conflict-local")
+      assert has_element?(view, "#conflict-remote")
+      assert has_element?(view, "#keep-local")
+      assert has_element?(view, "#keep-remote")
+      assert html =~ "other-device"
+      assert html =~ "Two devices changed this game"
+    end
+
+    test "taking the other device's files requires confirming the game is closed",
+         %{conn: conn, game: game} do
+      {:ok, view, _html} = live(conn, ~p"/games/#{game.id}")
+      assert has_element?(view, "#keep-remote-form input[name=confirmed][required]")
+    end
+
+    test "keeping this device's files publishes them and clears the conflict",
+         %{conn: conn, game: game, dir: dir} do
+      Mnemo.Game.subscribe()
+
+      {:ok, view, _html} = live(conn, ~p"/games/#{game.id}")
+      view |> element("#keep-local") |> render_click()
+
+      game_id = game.id
+      assert_receive {:game, ^game_id, %{status: :resolved}}, 5_000
+
+      _ = :sys.get_state(view.pid)
+      assert File.read!(Path.join(dir, "persistent")) == "newer-local-work"
+      assert Games.get!(game.id).last_generation_seen == 3
+      refute has_element?(view, "#conflict")
+      assert render(view) =~ "Kept this device&#39;s files."
+    end
+  end
+
+  describe "restore" do
+    setup %{root: root} do
+      dir = Path.join(root, "MyGame-123")
+      RenPyFixtures.write_save(dir, "1-1-LT1.save", seed: "gen1")
+      File.write!(Path.join(dir, "persistent"), "gen1")
+
+      {:ok, game} =
+        Games.enroll(%{save_directory: "MyGame-123", install_root: root, name: "My Game"})
+
+      assert {:ok, %{generation: 1}} = Engine.run(game)
+
+      RenPyFixtures.write_save(dir, "1-1-LT1.save", seed: "gen2")
+      File.write!(Path.join(dir, "persistent"), "gen2")
+      assert {:ok, %{generation: 2}} = Engine.run(Games.get!(game.id))
+
+      {:ok, game: Games.get!(game.id), dir: dir}
+    end
+
+    test "history lists every generation with a restore button", %{conn: conn, game: game} do
+      {:ok, view, html} = live(conn, ~p"/games/#{game.id}")
+
+      assert has_element?(view, "#history")
+      assert has_element?(view, "#generation-1")
+      assert has_element?(view, "#generation-2")
+      assert has_element?(view, "#restore-1")
+      assert html =~ "Generation 2"
+    end
+
+    test "asking to restore requires confirming the game is closed", %{conn: conn, game: game} do
+      {:ok, view, _html} = live(conn, ~p"/games/#{game.id}")
+
+      view |> element("#restore-1") |> render_click()
+
+      assert has_element?(view, "#restore-form-1")
+      assert has_element?(view, "#restore-form-1 input[name=confirmed][required]")
+      assert render(view) =~ "The game is closed"
+    end
+
+    test "confirming runs the restore and the files come back", %{
+      conn: conn,
+      game: game,
+      dir: dir
+    } do
+      Mnemo.Game.subscribe()
+
+      {:ok, view, _html} = live(conn, ~p"/games/#{game.id}")
+      view |> element("#restore-1") |> render_click()
+
+      view
+      |> form("#restore-form-1", %{"confirmed" => "true"})
+      |> render_submit()
+
+      game_id = game.id
+      assert_receive {:game, ^game_id, %{status: :restored}}, 5_000
+
+      _ = :sys.get_state(view.pid)
+      assert File.read!(Path.join(dir, "persistent")) == "gen1"
+      assert render(view) =~ "Generation 1 is back in place."
+    end
+
+    test "cancelling closes the confirmation without touching anything", %{
+      conn: conn,
+      game: game,
+      dir: dir
+    } do
+      {:ok, view, _html} = live(conn, ~p"/games/#{game.id}")
+
+      view |> element("#restore-1") |> render_click()
+      view |> element("#restore-form-1 button[phx-click=cancel_restore]") |> render_click()
+
+      refute has_element?(view, "#restore-form-1")
+      assert File.read!(Path.join(dir, "persistent")) == "gen2"
+    end
+
+    test "leftover backups can be rolled back from the page", %{
+      conn: conn,
+      game: game,
+      dir: dir
+    } do
+      {:ok, %{backup: backup}} =
+        Restore.run(game, 1, confirmed_closed: true, force: true, safety_generation: false)
+
+      assert File.read!(Path.join(dir, "persistent")) == "gen1"
+
+      {:ok, view, _html} = live(conn, ~p"/games/#{game.id}")
+      assert has_element?(view, "#backups")
+
+      view
+      |> element("#backups button[phx-value-path='#{backup}']", "Roll back")
+      |> render_click()
+
+      assert File.read!(Path.join(dir, "persistent")) == "gen2"
+      refute File.exists?(backup)
+
+      # The rollback is itself undoable, so it leaves the state it replaced
+      # as a fresh backup rather than clearing the section.
+      assert has_element?(view, "#backups")
+      assert [%{path: new_backup}] = Restore.list_backups(Games.get!(game.id))
+      assert new_backup != backup
+      assert File.read!(Path.join(new_backup, "persistent")) == "gen1"
+    end
   end
 end

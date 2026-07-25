@@ -22,6 +22,23 @@ defmodule Mnemo.Games do
   def get!(id), do: Repo.get!(Game, id)
   def get(id), do: Repo.get(Game, id)
 
+  @doc """
+  The name this game is filed under in the remote, and the key another
+  machine matches itself against.
+
+  Games in the OS Ren'Py root are identified by their `save_directory`,
+  which `config.save_directory` makes unique. A game-local save folder is
+  always literally `saves`, so every portable install would land in the
+  same remote folder; those are keyed by their install directory name
+  instead, which is what Steam and itch.io keep stable across machines.
+  """
+  def remote_key(%Game{save_directory: "saves", install_root: install_root})
+      when is_binary(install_root) do
+    install_root |> Path.dirname() |> Path.basename()
+  end
+
+  def remote_key(%Game{save_directory: save_directory}), do: save_directory
+
   def get_by_directory(save_directory, install_root) do
     Repo.get_by(Game, save_directory: save_directory, install_root: install_root)
   end

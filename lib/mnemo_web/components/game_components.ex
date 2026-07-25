@@ -154,7 +154,12 @@ defmodule MnemoWeb.GameComponents do
         :idle -> {"badge-ghost", gettext("Idle")}
         :snapshotting -> {"badge-info", gettext("Snapshotting…")}
         :uploading -> {"badge-info", gettext("Uploading…")}
+        :safety_snapshot -> {"badge-info", gettext("Saving current state…")}
+        :downloading -> {"badge-info", gettext("Downloading…")}
+        :swapping -> {"badge-info", gettext("Putting files in place…")}
         :ok -> {"badge-success", gettext("Synced")}
+        :restored -> {"badge-success", gettext("Restored")}
+        :resolved -> {"badge-success", gettext("Resolved")}
         :conflict -> {"badge-warning", gettext("Conflict")}
         :error -> {"badge-error", gettext("Error")}
       end
@@ -164,6 +169,32 @@ defmodule MnemoWeb.GameComponents do
     ~H"""
     <span class={["badge badge-soft whitespace-nowrap", @class]}>{@label}</span>
     """
+  end
+
+  def detail_message(%{status: :resolved, detail: %{resolution: :keep_local}}) do
+    gettext("Kept this device's files. The other version stays in the history.")
+  end
+
+  def detail_message(%{status: :resolved, detail: %{resolution: :keep_remote}}) do
+    gettext(
+      "Took the other device's files. This device's version was saved to the history first."
+    )
+  end
+
+  def detail_message(%{status: :restored, detail: detail}) do
+    base = gettext("Generation %{number} is back in place.", number: detail[:generation])
+
+    case detail[:safety] do
+      {:unavailable, _} ->
+        base <>
+          " " <>
+          gettext(
+            "The previous files could not be published as a generation, so they were kept in a backup folder."
+          )
+
+      _ ->
+        base <> " " <> gettext("The previous state was saved first, so this is undoable.")
+    end
   end
 
   def detail_message(%{status: :ok, detail: %{result: :no_changes}}),
@@ -193,7 +224,7 @@ defmodule MnemoWeb.GameComponents do
           gettext("The local and remote histories diverged.")
       end
 
-    reason <> " " <> gettext("Nothing was overwritten. Resolution arrives in a future version.")
+    reason <> " " <> gettext("Nothing was overwritten. Pick which side to keep below.")
   end
 
   def detail_message(%{status: :error, detail: detail}) do
@@ -215,6 +246,15 @@ defmodule MnemoWeb.GameComponents do
 
       %{tag: :crashed} ->
         gettext("The sync crashed unexpectedly.")
+
+      %{tag: :download_failed} ->
+        gettext("A file could not be downloaded intact. Nothing on disk was touched.")
+
+      %{tag: :swap_failed} ->
+        gettext("Putting the files in place failed. The previous folder was left as it was.")
+
+      %{tag: :empty_generation} ->
+        gettext("That generation has no files recorded.")
 
       _ ->
         gettext("The sync failed.")

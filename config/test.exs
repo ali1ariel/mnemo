@@ -4,6 +4,7 @@ config :mnemo, :drive_backend, Mnemo.Drive.Fake
 config :mnemo, :autostart_games, false
 config :mnemo, :skip_boot_migrations, true
 config :mnemo, :renpy_roots, []
+config :mnemo, :install_dirs, []
 
 # Configure your database
 #

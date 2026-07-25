@@ -49,6 +49,12 @@ defmodule Mnemo.Drive.Fake do
 
   def list_path(segments), do: call({:list_path, segments})
 
+  @doc "Replace an existing file's bytes in place — simulates remote corruption."
+  def overwrite_path(segments, content), do: call({:overwrite_path, segments, content})
+
+  @doc "Remove a file — simulates a blob deleted from Drive behind mnemo's back."
+  def delete_path(segments), do: call({:delete_path, segments})
+
   defp call(msg), do: GenServer.call(__MODULE__, msg)
 
   ## Server
@@ -140,6 +146,24 @@ defmodule Mnemo.Drive.Fake do
 
     {entry, state} = insert(state, parent_id, name, content, false)
     {:reply, {:ok, meta(entry)}, state}
+  end
+
+  def handle_call({:overwrite_path, segments, content}, _from, state) do
+    case resolve(state, segments) do
+      %{folder?: false} = entry ->
+        entry = %{entry | content: content}
+        {:reply, {:ok, meta(entry)}, put_in(state.files[entry.id], entry)}
+
+      _ ->
+        {:reply, {:error, :not_found}, state}
+    end
+  end
+
+  def handle_call({:delete_path, segments}, _from, state) do
+    case resolve(state, segments) do
+      nil -> {:reply, {:error, :not_found}, state}
+      entry -> {:reply, :ok, %{state | files: Map.delete(state.files, entry.id)}}
+    end
   end
 
   def handle_call({:list_path, segments}, _from, state) do

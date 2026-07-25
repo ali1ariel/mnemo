@@ -129,6 +129,106 @@ defmodule Mnemo.RenPyTest do
     end
   end
 
+  describe "portable_installs/1" do
+    # Ren'Py builds a MultiLocation out of the user savedir *and*
+    # <gamedir>/saves, so a Steam or itch.io copy has a second live save
+    # folder that scanning ~/.renpy alone never sees.
+    defp write_install!(base, name, opts \\ []) do
+      install = Path.join(base, name)
+      File.mkdir_p!(Path.join(install, "renpy"))
+      File.mkdir_p!(Path.join(install, "game"))
+
+      if Keyword.get(opts, :saves, true) do
+        File.mkdir_p!(Path.join([install, "game", "saves"]))
+      end
+
+      install
+    end
+
+    test "finds game-local save folders", %{dir: dir} do
+      install = write_install!(dir, "Some Game")
+      RenPyFixtures.write_save(Path.join([install, "game", "saves"]), "1-1-LT1.save")
+
+      assert [%{name: "Some Game", path: path, install: ^install}] =
+               RenPy.portable_installs([dir])
+
+      assert path == Path.join([install, "game", "saves"])
+    end
+
+    test "ignores directories that are not Ren'Py builds", %{dir: dir} do
+      File.mkdir_p!(Path.join([dir, "Not A Game", "game", "saves"]))
+      write_install!(dir, "No Saves Yet", saves: false)
+
+      assert RenPy.portable_installs([dir]) == []
+    end
+
+    test "the same install reached through a symlink is reported once", %{dir: dir} do
+      real = Path.join(dir, "real")
+      File.mkdir_p!(real)
+      write_install!(real, "Some Game")
+
+      link = Path.join(dir, "link")
+      :ok = File.ln_s(real, link)
+
+      assert [_one] = RenPy.portable_installs([real, link])
+    end
+
+    test "a missing search directory is not an error" do
+      assert RenPy.portable_installs(["/nonexistent/steam/common"]) == []
+    end
+  end
+
+  describe "group_mirrors/1" do
+    defp entry(path, kind, name) do
+      %{
+        path: path,
+        kind: kind,
+        name: name,
+        save_directory: Path.basename(path),
+        root: Path.dirname(path)
+      }
+    end
+
+    test "folders holding the same saves collapse into one game", %{dir: dir} do
+      user = Path.join(dir, "user")
+      steam = Path.join(dir, "steam")
+      RenPyFixtures.write_save(user, "1-1-LT1.save", seed: "same")
+      RenPyFixtures.write_save(steam, "1-1-LT1.save", seed: "same")
+
+      assert [merged] =
+               RenPy.group_mirrors([
+                 entry(user, :user, "Game"),
+                 entry(steam, :portable, "Game (Steam)")
+               ])
+
+      # The user savedir wins: it survives uninstalling the game.
+      assert merged.path == user
+      assert merged.mirrors == [steam]
+    end
+
+    test "different games stay separate", %{dir: dir} do
+      a = Path.join(dir, "game-a")
+      b = Path.join(dir, "game-b")
+      RenPyFixtures.write_save(a, "1-1-LT1.save", seed: "a")
+      RenPyFixtures.write_save(b, "1-1-LT1.save", seed: "bbbbbbbbbbbbbbbbbbbb")
+
+      assert [one, two] =
+               RenPy.group_mirrors([entry(a, :user, "A"), entry(b, :user, "B")])
+
+      assert one.mirrors == []
+      assert two.mirrors == []
+    end
+
+    test "a portable-only game keeps its own entry", %{dir: dir} do
+      steam = Path.join(dir, "steam")
+      RenPyFixtures.write_save(steam, "1-1-LT1.save", seed: "only")
+
+      assert [merged] = RenPy.group_mirrors([entry(steam, :portable, "Game")])
+      assert merged.path == steam
+      assert merged.mirrors == []
+    end
+  end
+
   describe "list_saves/1" do
     setup %{dir: dir} do
       game = Path.join(dir, "Game-1")

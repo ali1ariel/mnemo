@@ -253,6 +253,43 @@ defmodule Mnemo.Sync.EngineTest do
     assert Fake.upload_count() == uploads_before
   end
 
+  test "a blob missing from the remote is re-uploaded despite the local index claiming otherwise",
+       %{root: root} do
+    dir = game_dir!(root, "MyGame-123")
+    RenPyFixtures.write_save(dir, "1-1-LT1.save", seed: "a")
+    File.write!(Path.join(dir, "persistent"), "p")
+
+    game = enroll!(root, "MyGame-123")
+    assert {:ok, %{generation: 1, uploaded: 2}} = Engine.run(game)
+
+    sha =
+      Sync.head_generation(game.id).manifest
+      |> Enum.find(&(&1["rel_path"] == "1-1-LT1.save"))
+      |> Map.fetch!("sha256")
+
+    # The bytes are gone from Drive — deleted by the user tidying up, by
+    # `mix mnemo.reset --remote`, or by pointing at a different account —
+    # while the local index still swears they are uploaded.
+    :ok = Fake.delete_path(["mnemo", "games", "MyGame-123", "blobs", sha])
+    assert Sync.get_blob(sha)
+
+    RenPyFixtures.write_save(dir, "1-2-LT1.save", seed: "b")
+    assert {:ok, %{generation: 2, uploaded: 2}} = Engine.run(Games.get!(game.id))
+
+    # A manifest is only worth anything if its bytes are really there, and
+    # restoring from it is the only honest way to prove that.
+    File.rm!(Path.join(dir, "1-1-LT1.save"))
+
+    assert {:ok, _} =
+             Mnemo.Sync.Restore.run(Games.get!(game.id), 2,
+               confirmed_closed: true,
+               force: true,
+               safety_generation: false
+             )
+
+    assert File.exists?(Path.join(dir, "1-1-LT1.save"))
+  end
+
   test "a save folder that vanished is a structured error", %{root: root} do
     game = enroll!(root, "Gone-1")
     assert {:error, :missing_folder, %{path: path}} = Engine.run(game)

@@ -90,7 +90,6 @@ defmodule Mnemo.ResetTest do
     synced_game!(root)
     Reset.all()
 
-    dir = Path.join(root, "MyGame-123")
     {:ok, game} = Games.enroll(%{save_directory: "MyGame-123", install_root: root})
 
     assert {:ok, %{generation: 1}} = Engine.run(game)
