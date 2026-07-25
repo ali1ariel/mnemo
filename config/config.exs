@@ -9,7 +9,18 @@ import Config
 
 config :mnemo,
   ecto_repos: [Mnemo.Repo],
-  generators: [timestamp_type: :utc_datetime]
+  generators: [timestamp_type: :utc_datetime, binary_id: true]
+
+config :mnemo, :drive_backend, Mnemo.Drive.HTTP
+config :mnemo, :autostart_games, true
+
+# Several Game.Server processes write in parallel; WAL avoids
+# intermittent "database is locked" under the default journal.
+config :mnemo, Mnemo.Repo,
+  journal_mode: :wal,
+  busy_timeout: 15_000
+
+config :mnemo, MnemoWeb.Gettext, default_locale: "en", allowed_locales: ~w(en pt_BR)
 
 # Configure the endpoint
 config :mnemo, MnemoWeb.Endpoint,

@@ -1,27 +1,26 @@
 defmodule Mnemo.Application do
-  # See https://elixir.hexdocs.pm/Application.html
-  # for more information on OTP Applications
   @moduledoc false
 
   use Application
 
   @impl true
   def start(_type, _args) do
-    children = [
-      MnemoWeb.Telemetry,
-      Mnemo.Repo,
-      {Ecto.Migrator,
-       repos: Application.fetch_env!(:mnemo, :ecto_repos), skip: skip_migrations?()},
-      {DNSCluster, query: Application.get_env(:mnemo, :dns_cluster_query) || :ignore},
-      {Phoenix.PubSub, name: Mnemo.PubSub},
-      # Start a worker by calling: Mnemo.Worker.start_link(arg)
-      # {Mnemo.Worker, arg},
-      # Start to serve requests, typically the last entry
-      MnemoWeb.Endpoint
-    ]
+    children =
+      [
+        MnemoWeb.Telemetry,
+        Mnemo.Repo,
+        {Ecto.Migrator,
+         repos: Application.fetch_env!(:mnemo, :ecto_repos), skip: skip_migrations?()},
+        {Phoenix.PubSub, name: Mnemo.PubSub},
+        {Registry, keys: :unique, name: Mnemo.Game.Registry},
+        {DynamicSupervisor, name: Mnemo.Game.Supervisor, strategy: :one_for_one},
+        {Task.Supervisor, name: Mnemo.TaskSupervisor}
+      ] ++
+        fake_drive() ++
+        [Mnemo.Drive] ++
+        game_autostart() ++
+        [MnemoWeb.Endpoint]
 
-    # See https://elixir.hexdocs.pm/Supervisor.html
-    # for other strategies and supported options
     opts = [strategy: :one_for_one, name: Mnemo.Supervisor]
     Supervisor.start_link(children, opts)
   end
@@ -34,8 +33,20 @@ defmodule Mnemo.Application do
     :ok
   end
 
-  defp skip_migrations?() do
-    # By default, sqlite migrations are run when using a release
-    System.get_env("RELEASE_NAME") == nil
+  defp fake_drive do
+    if Mnemo.Drive.Backend.impl() == Mnemo.Drive.Fake, do: [Mnemo.Drive.Fake], else: []
   end
+
+  defp game_autostart do
+    if Application.get_env(:mnemo, :autostart_games, true) do
+      [{Task, &Mnemo.Game.start_all/0}]
+    else
+      []
+    end
+  end
+
+  # Migrations run at boot in every environment except test (the test
+  # alias migrates before the sandbox starts). Deleting the database file
+  # and restarting must always come back up.
+  defp skip_migrations?, do: Application.get_env(:mnemo, :skip_boot_migrations, false)
 end

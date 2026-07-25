@@ -1,0 +1,300 @@
+defmodule MnemoWeb.LibraryLive do
+  use MnemoWeb, :live_view
+
+  alias Mnemo.{Drive, Game, Games}
+
+  @impl true
+  def mount(_params, _session, socket) do
+    if connected?(socket) do
+      Game.subscribe()
+      Drive.subscribe()
+    end
+
+    games = Games.list()
+
+    statuses =
+      Map.new(games, fn game ->
+        status =
+          case Game.status(game.id) do
+            %{} = status -> status
+            {:error, _} -> offline_status(game)
+          end
+
+        {game.id, status}
+      end)
+
+    {:ok,
+     socket
+     |> assign(page_title: gettext("Library"))
+     |> assign(drive: Drive.status())
+     |> assign(games: games)
+     |> assign(statuses: statuses)}
+  end
+
+  defp offline_status(game) do
+    %{
+      game_id: game.id,
+      status: :idle,
+      detail: %{},
+      syncing?: false,
+      last_synced_at: nil,
+      last_generation: game.last_generation_seen
+    }
+  end
+
+  @impl true
+  def handle_info({:game, game_id, status}, socket) do
+    if Map.has_key?(socket.assigns.statuses, game_id) do
+      {:noreply, assign(socket, :statuses, Map.put(socket.assigns.statuses, game_id, status))}
+    else
+      {:noreply, socket}
+    end
+  end
+
+  def handle_info({:drive, status}, socket) do
+    {:noreply, assign(socket, :drive, status)}
+  end
+
+  @impl true
+  def handle_event("sync", %{"id" => id}, socket) do
+    case Game.sync_now(id) do
+      :ok ->
+        {:noreply, socket}
+
+      {:error, :busy} ->
+        {:noreply, put_flash(socket, :error, gettext("A sync is already running."))}
+
+      {:error, _} ->
+        {:noreply, put_flash(socket, :error, gettext("Could not start the sync."))}
+    end
+  end
+
+  def handle_event("connect_drive", _params, socket) do
+    case Drive.connect() do
+      :ok ->
+        {:noreply, socket}
+
+      {:error, :not_configured} ->
+        {:noreply, put_flash(socket, :error, gettext("Google OAuth client is not configured."))}
+    end
+  end
+
+  @impl true
+  def render(assigns) do
+    ~H"""
+    <Layouts.app flash={@flash}>
+      <.drive_banner drive={@drive} />
+
+      <div :if={@games == []} id="empty-library" class="card bg-base-200 p-10 text-center space-y-4">
+        <h2 class="text-lg font-semibold">{gettext("No games enrolled yet")}</h2>
+        <p class="opacity-70">
+          {gettext(
+            "mnemo scans the Ren'Py save folders on this machine and keeps them in Google Drive."
+          )}
+        </p>
+        <div>
+          <.link navigate={~p"/enroll"} class="btn btn-primary" id="empty-enroll-link">
+            {gettext("Add a game")}
+          </.link>
+        </div>
+      </div>
+
+      <div :if={@games != []} class="grid grid-cols-1 sm:grid-cols-2 gap-6" id="library-grid">
+        <.game_card
+          :for={game <- @games}
+          game={game}
+          status={@statuses[game.id] || offline_status(game)}
+          drive={@drive}
+        />
+      </div>
+    </Layouts.app>
+    """
+  end
+
+  attr :game, :map, required: true
+  attr :status, :map, required: true
+  attr :drive, :map, required: true
+
+  defp game_card(assigns) do
+    ~H"""
+    <div class="card bg-base-200 overflow-hidden" id={"game-#{@game.id}"}>
+      <figure class="aspect-video bg-base-300">
+        <img
+          src={~p"/covers/#{@game.id}?v=#{@status.last_generation}"}
+          alt=""
+          class="w-full h-full object-cover"
+          onerror="this.style.display='none'"
+        />
+      </figure>
+      <div class="card-body gap-2">
+        <div class="flex items-start justify-between gap-2">
+          <div>
+            <h2 class="card-title text-base">{@game.name || @game.save_directory}</h2>
+            <p class="text-xs opacity-50 font-mono">{@game.save_directory}</p>
+          </div>
+          <.status_badge status={@status} />
+        </div>
+
+        <p class="text-sm opacity-70">
+          {gettext("Generation %{number}", number: @status.last_generation)} · {gettext(
+            "last sync: %{time}",
+            time: relative_time(@status.last_synced_at)
+          )}
+        </p>
+
+        <p :if={message = detail_message(@status)} class="text-sm">{message}</p>
+
+        <div class="card-actions justify-end mt-1">
+          <.button
+            id={"sync-#{@game.id}"}
+            phx-click="sync"
+            phx-value-id={@game.id}
+            disabled={@status.syncing? or @drive.state != :connected}
+          >
+            <.icon
+              name="hero-arrow-path"
+              class={["size-4", @status.syncing? && "motion-safe:animate-spin"]}
+            /> {gettext("Sync now")}
+          </.button>
+        </div>
+      </div>
+    </div>
+    """
+  end
+
+  attr :status, :map, required: true
+
+  defp status_badge(assigns) do
+    {class, label} =
+      case assigns.status.status do
+        :idle -> {"badge-ghost", gettext("Idle")}
+        :snapshotting -> {"badge-info", gettext("Snapshotting…")}
+        :uploading -> {"badge-info", gettext("Uploading…")}
+        :ok -> {"badge-success", gettext("Synced")}
+        :conflict -> {"badge-warning", gettext("Conflict")}
+        :error -> {"badge-error", gettext("Error")}
+      end
+
+    assigns = assign(assigns, class: class, label: label)
+
+    ~H"""
+    <span class={["badge badge-soft whitespace-nowrap", @class]}>{@label}</span>
+    """
+  end
+
+  attr :drive, :map, required: true
+
+  defp drive_banner(assigns) do
+    ~H"""
+    <div id="drive-status" class="card bg-base-200 px-5 py-4">
+      <%= case @drive.state do %>
+        <% :connected -> %>
+          <div class="flex items-center gap-2 text-sm">
+            <span class="inline-block size-2 rounded-full bg-success"></span>
+            {gettext("Connected to Google Drive")}
+          </div>
+        <% :not_configured -> %>
+          <div class="flex items-center justify-between gap-4 text-sm">
+            <div>
+              <p class="font-medium">{gettext("Google OAuth client is not configured")}</p>
+              <p class="opacity-70">
+                {gettext(
+                  "Set MNEMO_GOOGLE_CLIENT_ID and MNEMO_GOOGLE_CLIENT_SECRET and restart. See the README."
+                )}
+              </p>
+            </div>
+          </div>
+        <% :disconnected -> %>
+          <div class="flex items-center justify-between gap-4 text-sm">
+            <p>{gettext("Not connected to Google Drive.")}</p>
+            <.button id="connect-drive" variant="primary" phx-click="connect_drive">
+              {gettext("Connect Google Drive")}
+            </.button>
+          </div>
+        <% :connecting -> %>
+          <div class="flex items-center justify-between gap-4 text-sm">
+            <p class="flex items-center gap-2">
+              <.icon name="hero-arrow-path" class="size-4 motion-safe:animate-spin" />
+              {gettext("Waiting for authorization in the browser…")}
+            </p>
+            <a
+              :if={@drive.auth_url}
+              href={@drive.auth_url}
+              target="_blank"
+              class="link"
+              id="auth-url-fallback"
+            >
+              {gettext("Browser did not open? Click here.")}
+            </a>
+          </div>
+        <% :reconnect_required -> %>
+          <div class="flex items-center justify-between gap-4 text-sm">
+            <p class="text-warning">
+              {gettext("The Google Drive session expired. Reconnect to resume syncing.")}
+            </p>
+            <.button id="reconnect-drive" variant="primary" phx-click="connect_drive">
+              {gettext("Reconnect account")}
+            </.button>
+          </div>
+      <% end %>
+    </div>
+    """
+  end
+
+  defp detail_message(%{status: :ok, detail: %{result: :no_changes}}),
+    do: gettext("Already up to date.")
+
+  defp detail_message(%{status: :ok, detail: %{generation: n, uploaded: uploaded}}) do
+    gettext("Generation %{number} uploaded.", number: n) <>
+      " " <> ngettext("%{count} new file.", "%{count} new files.", uploaded)
+  end
+
+  defp detail_message(%{status: :conflict, detail: detail}) do
+    reason =
+      case detail[:reason] do
+        :foreign_lineage ->
+          gettext("This game already has history in Drive from another install.")
+
+        :remote_ahead ->
+          gettext("Another device synced newer generations.")
+
+        :remote_behind ->
+          gettext("The remote history is behind this device.")
+
+        :fork ->
+          gettext("Two devices wrote the same generation.")
+
+        _ ->
+          gettext("The local and remote histories diverged.")
+      end
+
+    reason <> " " <> gettext("Nothing was overwritten. Resolution arrives in a future version.")
+  end
+
+  defp detail_message(%{status: :error, detail: detail}) do
+    case detail do
+      %{tag: :no_saves} ->
+        gettext("No saves found. Launch the game once, quit, and try again.")
+
+      %{tag: :invalid_save, file: file} ->
+        gettext("A save file failed validation and was not uploaded: %{file}", file: file)
+
+      %{tag: :missing_folder, path: path} ->
+        gettext("Save folder not found: %{path}", path: path)
+
+      %{tag: :upload_failed} ->
+        gettext("Upload failed. Nothing was committed; try again.")
+
+      %{tag: :drive} ->
+        gettext("A Google Drive request failed. Try again.")
+
+      %{tag: :crashed} ->
+        gettext("The sync crashed unexpectedly.")
+
+      _ ->
+        gettext("The sync failed.")
+    end
+  end
+
+  defp detail_message(_status), do: nil
+end

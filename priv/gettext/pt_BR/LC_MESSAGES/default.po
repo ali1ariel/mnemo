@@ -1,0 +1,356 @@
+## "msgid"s in this file come from POT (.pot) files.
+###
+### Do not add, change, or remove "msgid"s manually here as
+### they're tied to the ones in the corresponding POT file
+### (with the same domain).
+###
+### Use "mix gettext.extract --merge" or "mix gettext.merge"
+### to merge POT files into PO files.
+msgid ""
+msgstr ""
+"Language: pt_BR\n"
+"Plural-Forms: nplurals=2; plural=(n>1);\n"
+
+#: lib/mnemo_web/format.ex:22
+#, elixir-autogen, elixir-format
+msgid "%{count} day ago"
+msgid_plural "%{count} days ago"
+msgstr[0] "%{count} dia atrás"
+msgstr[1] "%{count} dias atrás"
+
+#: lib/mnemo_web/format.ex:19
+#, elixir-autogen, elixir-format
+msgid "%{count} hour ago"
+msgid_plural "%{count} hours ago"
+msgstr[0] "%{count} hora atrás"
+msgstr[1] "%{count} horas atrás"
+
+#: lib/mnemo_web/format.ex:16
+#, elixir-autogen, elixir-format
+msgid "%{count} minute ago"
+msgid_plural "%{count} minutes ago"
+msgstr[0] "%{count} minuto atrás"
+msgstr[1] "%{count} minutos atrás"
+
+#: lib/mnemo_web/live/library_live.ex:238
+#, elixir-autogen, elixir-format
+msgid "%{count} new file."
+msgid_plural "%{count} new files."
+msgstr[0] "%{count} arquivo novo."
+msgstr[1] "%{count} arquivos novos."
+
+#: lib/mnemo_web/live/enroll_live.ex:130
+#, elixir-autogen, elixir-format
+msgid "%{count} save"
+msgid_plural "%{count} saves"
+msgstr[0] "%{count} save"
+msgstr[1] "%{count} saves"
+
+#: lib/mnemo_web/live/enroll_live.ex:72
+#, elixir-autogen, elixir-format
+msgid "%{name} enrolled."
+msgstr "%{name} registrado."
+
+#: lib/mnemo_web/live/library_live.ex:278
+#, elixir-autogen, elixir-format
+msgid "A Google Drive request failed. Try again."
+msgstr "Uma chamada ao Google Drive falhou. Tente novamente."
+
+#: lib/mnemo_web/live/library_live.ex:269
+#, elixir-autogen, elixir-format
+msgid "A save file failed validation and was not uploaded: %{file}"
+msgstr "Um save falhou na validação e não foi enviado: %{file}"
+
+#: lib/mnemo_web/live/library_live.ex:62
+#, elixir-autogen, elixir-format
+msgid "A sync is already running."
+msgstr "Uma sincronização já está em andamento."
+
+#: lib/mnemo_web/components/core_components.ex:375
+#, elixir-autogen, elixir-format
+msgid "Actions"
+msgstr "Ações"
+
+#: lib/mnemo_web/live/library_live.ex:90
+#, elixir-autogen, elixir-format
+msgid "Add a game"
+msgstr "Adicionar um jogo"
+
+#: lib/mnemo_web/components/layouts.ex:53
+#: lib/mnemo_web/live/enroll_live.ex:10
+#: lib/mnemo_web/live/enroll_live.ex:87
+#, elixir-autogen, elixir-format
+msgid "Add game"
+msgstr "Adicionar jogo"
+
+#: lib/mnemo_web/live/library_live.ex:234
+#, elixir-autogen, elixir-format
+msgid "Already up to date."
+msgstr "Já está atualizado."
+
+#: lib/mnemo_web/live/library_live.ex:248
+#, elixir-autogen, elixir-format
+msgid "Another device synced newer generations."
+msgstr "Outro dispositivo sincronizou gerações mais novas."
+
+#: lib/mnemo_web/components/layouts.ex:99
+#: lib/mnemo_web/components/layouts.ex:114
+#, elixir-autogen, elixir-format
+msgid "Attempting to reconnect"
+msgstr "Tentando reconectar"
+
+#: lib/mnemo_web/live/library_live.ex:216
+#, elixir-autogen, elixir-format
+msgid "Browser did not open? Click here."
+msgstr "O navegador não abriu? Clique aqui."
+
+#: lib/mnemo_web/live/library_live.ex:165
+#, elixir-autogen, elixir-format
+msgid "Conflict"
+msgstr "Conflito"
+
+#: lib/mnemo_web/live/library_live.ex:200
+#, elixir-autogen, elixir-format
+msgid "Connect Google Drive"
+msgstr "Conectar Google Drive"
+
+#: lib/mnemo_web/live/library_live.ex:185
+#, elixir-autogen, elixir-format
+msgid "Connected to Google Drive"
+msgstr "Conectado ao Google Drive"
+
+#: lib/mnemo_web/live/library_live.ex:63
+#, elixir-autogen, elixir-format
+msgid "Could not start the sync."
+msgstr "Não foi possível iniciar a sincronização."
+
+#: lib/mnemo_web/live/enroll_live.ex:149
+#, elixir-autogen, elixir-format
+msgid "Enroll"
+msgstr "Registrar"
+
+#: lib/mnemo_web/live/enroll_live.ex:140
+#, elixir-autogen, elixir-format
+msgid "Enrolled"
+msgstr "Registrado"
+
+#: lib/mnemo_web/live/library_live.ex:166
+#, elixir-autogen, elixir-format
+msgid "Error"
+msgstr "Erro"
+
+#: lib/mnemo_web/live/enroll_live.ex:89
+#, elixir-autogen, elixir-format
+msgid "Games found in the Ren'Py save folders on this machine."
+msgstr "Jogos encontrados nas pastas de saves Ren'Py desta máquina."
+
+#: lib/mnemo_web/live/library_live.ex:132
+#, elixir-autogen, elixir-format
+msgid "Generation %{number}"
+msgstr "Geração %{number}"
+
+#: lib/mnemo_web/live/library_live.ex:237
+#, elixir-autogen, elixir-format
+msgid "Generation %{number} uploaded."
+msgstr "Geração %{number} enviada."
+
+#: lib/mnemo_web/live/library_live.ex:190
+#, elixir-autogen, elixir-format
+msgid "Google OAuth client is not configured"
+msgstr "O cliente OAuth do Google não está configurado"
+
+#: lib/mnemo_web/live/library_live.ex:73
+#, elixir-autogen, elixir-format
+msgid "Google OAuth client is not configured."
+msgstr "O cliente OAuth do Google não está configurado."
+
+#: lib/mnemo_web/live/library_live.ex:161
+#, elixir-autogen, elixir-format
+msgid "Idle"
+msgstr "Parado"
+
+#: lib/mnemo_web/live/enroll_live.ex:105
+#, elixir-autogen, elixir-format
+msgid "If a game is installed but not listed, launch it once and quit — Ren'Py creates its save folder on first launch."
+msgstr "Se um jogo está instalado mas não aparece, abra-o uma vez e feche — o Ren'Py cria a pasta de saves na primeira execução."
+
+#: lib/mnemo_web/components/layouts.ex:50
+#: lib/mnemo_web/live/library_live.ex:28
+#, elixir-autogen, elixir-format
+msgid "Library"
+msgstr "Biblioteca"
+
+#: lib/mnemo_web/live/enroll_live.ex:103
+#, elixir-autogen, elixir-format
+msgid "No Ren'Py games found"
+msgstr "Nenhum jogo Ren'Py encontrado"
+
+#: lib/mnemo_web/live/library_live.ex:84
+#, elixir-autogen, elixir-format
+msgid "No games enrolled yet"
+msgstr "Nenhum jogo registrado ainda"
+
+#: lib/mnemo_web/live/library_live.ex:266
+#, elixir-autogen, elixir-format
+msgid "No saves found. Launch the game once, quit, and try again."
+msgstr "Nenhum save encontrado. Abra o jogo uma vez, feche e tente de novo."
+
+#: lib/mnemo_web/live/library_live.ex:198
+#, elixir-autogen, elixir-format
+msgid "Not connected to Google Drive."
+msgstr "Não conectado ao Google Drive."
+
+#: lib/mnemo_web/live/library_live.ex:260
+#, elixir-autogen, elixir-format
+msgid "Nothing was overwritten. Resolution arrives in a future version."
+msgstr "Nada foi sobrescrito. A resolução chega em uma versão futura."
+
+#: lib/mnemo_web/live/library_live.ex:225
+#, elixir-autogen, elixir-format
+msgid "Reconnect account"
+msgstr "Reconectar conta"
+
+#: lib/mnemo_web/components/layouts.ex:43
+#, elixir-autogen, elixir-format
+msgid "Ren'Py saves, kept safe"
+msgstr "Saves de Ren'Py, guardados em segurança"
+
+#: lib/mnemo_web/live/enroll_live.ex:92
+#, elixir-autogen, elixir-format
+msgid "Rescan"
+msgstr "Escanear de novo"
+
+#: lib/mnemo_web/live/library_live.ex:272
+#, elixir-autogen, elixir-format
+msgid "Save folder not found: %{path}"
+msgstr "Pasta de saves não encontrada: %{path}"
+
+#: lib/mnemo_web/live/enroll_live.ex:43
+#, elixir-autogen, elixir-format
+msgid "Scanning the Ren'Py folders failed."
+msgstr "A varredura das pastas Ren'Py falhou."
+
+#: lib/mnemo_web/live/enroll_live.ex:98
+#, elixir-autogen, elixir-format
+msgid "Scanning…"
+msgstr "Escaneando…"
+
+#: lib/mnemo_web/live/library_live.ex:192
+#, elixir-autogen, elixir-format
+msgid "Set MNEMO_GOOGLE_CLIENT_ID and MNEMO_GOOGLE_CLIENT_SECRET and restart. See the README."
+msgstr "Defina MNEMO_GOOGLE_CLIENT_ID e MNEMO_GOOGLE_CLIENT_SECRET e reinicie. Veja o README."
+
+#: lib/mnemo_web/live/library_live.ex:162
+#, elixir-autogen, elixir-format
+msgid "Snapshotting…"
+msgstr "Criando snapshot…"
+
+#: lib/mnemo_web/components/layouts.ex:106
+#, elixir-autogen, elixir-format
+msgid "Something went wrong!"
+msgstr "Algo deu errado!"
+
+#: lib/mnemo_web/live/library_live.ex:148
+#, elixir-autogen, elixir-format
+msgid "Sync now"
+msgstr "Sincronizar agora"
+
+#: lib/mnemo_web/live/library_live.ex:164
+#, elixir-autogen, elixir-format
+msgid "Synced"
+msgstr "Sincronizado"
+
+#: lib/mnemo_web/live/library_live.ex:222
+#, elixir-autogen, elixir-format
+msgid "The Google Drive session expired. Reconnect to resume syncing."
+msgstr "A sessão do Google Drive expirou. Reconecte para voltar a sincronizar."
+
+#: lib/mnemo_web/live/library_live.ex:257
+#, elixir-autogen, elixir-format
+msgid "The local and remote histories diverged."
+msgstr "Os históricos local e remoto divergiram."
+
+#: lib/mnemo_web/live/library_live.ex:251
+#, elixir-autogen, elixir-format
+msgid "The remote history is behind this device."
+msgstr "O histórico remoto está atrás deste dispositivo."
+
+#: lib/mnemo_web/live/library_live.ex:281
+#, elixir-autogen, elixir-format
+msgid "The sync crashed unexpectedly."
+msgstr "A sincronização quebrou inesperadamente."
+
+#: lib/mnemo_web/live/library_live.ex:284
+#, elixir-autogen, elixir-format
+msgid "The sync failed."
+msgstr "A sincronização falhou."
+
+#: lib/mnemo_web/live/library_live.ex:245
+#, elixir-autogen, elixir-format
+msgid "This game already has history in Drive from another install."
+msgstr "Este jogo já tem histórico no Drive vindo de outra instalação."
+
+#: lib/mnemo_web/live/enroll_live.ex:76
+#, elixir-autogen, elixir-format
+msgid "This game is already enrolled."
+msgstr "Este jogo já está registrado."
+
+#: lib/mnemo_web/live/library_live.ex:254
+#, elixir-autogen, elixir-format
+msgid "Two devices wrote the same generation."
+msgstr "Dois dispositivos escreveram a mesma geração."
+
+#: lib/mnemo_web/live/library_live.ex:275
+#, elixir-autogen, elixir-format
+msgid "Upload failed. Nothing was committed; try again."
+msgstr "O envio falhou. Nada foi confirmado; tente novamente."
+
+#: lib/mnemo_web/live/library_live.ex:163
+#, elixir-autogen, elixir-format
+msgid "Uploading…"
+msgstr "Enviando…"
+
+#: lib/mnemo_web/live/library_live.ex:207
+#, elixir-autogen, elixir-format
+msgid "Waiting for authorization in the browser…"
+msgstr "Aguardando autorização no navegador…"
+
+#: lib/mnemo_web/components/layouts.ex:91
+#, elixir-autogen, elixir-format
+msgid "We can't find the internet"
+msgstr "Sem conexão com a internet"
+
+#: lib/mnemo_web/components/core_components.ex:81
+#, elixir-autogen, elixir-format
+msgid "close"
+msgstr "fechar"
+
+#: lib/mnemo_web/format.ex:13
+#, elixir-autogen, elixir-format
+msgid "just now"
+msgstr "agora mesmo"
+
+#: lib/mnemo_web/live/enroll_live.ex:132
+#, elixir-autogen, elixir-format
+msgid "last played: %{time}"
+msgstr "jogado por último: %{time}"
+
+#: lib/mnemo_web/live/library_live.ex:133
+#, elixir-autogen, elixir-format
+msgid "last sync: %{time}"
+msgstr "última sincronização: %{time}"
+
+#: lib/mnemo_web/live/library_live.ex:86
+#, elixir-autogen, elixir-format
+msgid "mnemo scans the Ren'Py save folders on this machine and keeps them in Google Drive."
+msgstr "O mnemo escaneia as pastas de saves Ren'Py desta máquina e as guarda no Google Drive."
+
+#: lib/mnemo_web/format.ex:6
+#, elixir-autogen, elixir-format
+msgid "never"
+msgstr "nunca"
+
+#: lib/mnemo_web/live/enroll_live.ex:123
+#, elixir-autogen, elixir-format
+msgid "no screenshot"
+msgstr "sem screenshot"

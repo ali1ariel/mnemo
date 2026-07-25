@@ -86,6 +86,7 @@ defmodule MnemoWeb do
       import Phoenix.HTML
       # Core UI components
       import MnemoWeb.CoreComponents
+      import MnemoWeb.Format
 
       # Common modules used in templates
       alias Phoenix.LiveView.JS

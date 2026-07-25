@@ -8,22 +8,19 @@ defmodule MnemoWeb.Router do
     plug :put_root_layout, html: {MnemoWeb.Layouts, :root}
     plug :protect_from_forgery
     plug :put_secure_browser_headers
-  end
-
-  pipeline :api do
-    plug :accepts, ["json"]
+    plug MnemoWeb.Plugs.Locale
   end
 
   scope "/", MnemoWeb do
     pipe_through :browser
 
-    get "/", PageController, :home
-  end
+    live_session :default, on_mount: MnemoWeb.LocaleHook do
+      live "/", LibraryLive
+      live "/enroll", EnrollLive
+    end
 
-  # Other scopes may use custom stacks.
-  # scope "/api", MnemoWeb do
-  #   pipe_through :api
-  # end
+    get "/covers/:id", CoverController, :show
+  end
 
   # Enable LiveDashboard in development
   if Application.compile_env(:mnemo, :dev_routes) do

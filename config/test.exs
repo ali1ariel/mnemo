@@ -1,5 +1,10 @@
 import Config
 
+config :mnemo, :drive_backend, Mnemo.Drive.Fake
+config :mnemo, :autostart_games, false
+config :mnemo, :skip_boot_migrations, true
+config :mnemo, :renpy_roots, []
+
 # Configure your database
 #
 # The MIX_TEST_PARTITION environment variable can be used

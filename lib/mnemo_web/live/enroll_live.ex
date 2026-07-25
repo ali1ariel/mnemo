@@ -1,0 +1,163 @@
+defmodule MnemoWeb.EnrollLive do
+  use MnemoWeb, :live_view
+
+  alias Mnemo.{Game, Games, RenPy}
+
+  @impl true
+  def mount(_params, _session, socket) do
+    {:ok,
+     socket
+     |> assign(page_title: gettext("Add game"))
+     |> assign(enrolled: enrolled_set())
+     |> start_scan()}
+  end
+
+  defp start_scan(socket) do
+    socket
+    |> assign(entries: nil)
+    |> start_async(:scan, fn -> scan_entries() end)
+  end
+
+  defp scan_entries do
+    for entry <- RenPy.scan() do
+      preview = entry.preview && "data:image/png;base64," <> Base.encode64(entry.preview)
+      %{entry | preview: preview}
+    end
+  end
+
+  defp enrolled_set do
+    MapSet.new(Games.list(), fn game ->
+      {game.save_directory, RenPy.resolve_root(game.install_root)}
+    end)
+  end
+
+  @impl true
+  def handle_async(:scan, {:ok, entries}, socket) do
+    {:noreply, assign(socket, :entries, entries)}
+  end
+
+  def handle_async(:scan, {:exit, _reason}, socket) do
+    {:noreply,
+     socket
+     |> assign(:entries, [])
+     |> put_flash(:error, gettext("Scanning the Ren'Py folders failed."))}
+  end
+
+  @impl true
+  def handle_event("rescan", _params, socket) do
+    {:noreply, start_scan(socket)}
+  end
+
+  def handle_event("enroll", %{"index" => index}, socket) do
+    entry = Enum.at(socket.assigns.entries || [], String.to_integer(index))
+
+    if entry == nil do
+      {:noreply, socket}
+    else
+      install_root =
+        if entry.root == RenPy.default_root(), do: "appdata", else: entry.root
+
+      attrs = %{
+        save_directory: entry.save_directory,
+        install_root: install_root,
+        name: RenPy.suggest_name(entry.save_directory)
+      }
+
+      case Games.enroll(attrs) do
+        {:ok, game} ->
+          Game.ensure_started(game.id)
+
+          {:noreply,
+           socket
+           |> put_flash(:info, gettext("%{name} enrolled.", name: game.name))
+           |> push_navigate(to: ~p"/")}
+
+        {:error, _changeset} ->
+          {:noreply, put_flash(socket, :error, gettext("This game is already enrolled."))}
+      end
+    end
+  end
+
+  @impl true
+  def render(assigns) do
+    ~H"""
+    <Layouts.app flash={@flash}>
+      <div class="flex items-center justify-between">
+        <div>
+          <h1 class="text-lg font-semibold">{gettext("Add game")}</h1>
+          <p class="text-sm opacity-70">
+            {gettext("Games found in the Ren'Py save folders on this machine.")}
+          </p>
+        </div>
+        <.button id="rescan" phx-click="rescan">{gettext("Rescan")}</.button>
+      </div>
+
+      <div :if={@entries == nil} class="card bg-base-200 p-10 text-center" id="scan-loading">
+        <p class="flex items-center justify-center gap-2 text-sm opacity-70">
+          <.icon name="hero-arrow-path" class="size-4 motion-safe:animate-spin" />
+          {gettext("Scanning…")}
+        </p>
+      </div>
+
+      <div :if={@entries == []} class="card bg-base-200 p-10 text-center space-y-2" id="scan-empty">
+        <h2 class="font-semibold">{gettext("No Ren'Py games found")}</h2>
+        <p class="text-sm opacity-70">
+          {gettext(
+            "If a game is installed but not listed, launch it once and quit — Ren'Py creates its save folder on first launch."
+          )}
+        </p>
+      </div>
+
+      <div :if={@entries && @entries != []} class="space-y-4" id="scan-results">
+        <div
+          :for={{entry, index} <- Enum.with_index(@entries)}
+          class="card bg-base-200 sm:card-side overflow-hidden"
+          id={"scan-entry-#{index}"}
+        >
+          <figure class="sm:w-56 shrink-0 bg-base-300 aspect-video sm:aspect-auto">
+            <img
+              :if={entry.preview}
+              src={entry.preview}
+              alt=""
+              class="w-full h-full object-cover"
+            />
+            <div :if={entry.preview == nil} class="p-6 text-xs opacity-40">
+              {gettext("no screenshot")}
+            </div>
+          </figure>
+          <div class="card-body gap-1">
+            <h2 class="card-title text-base">{RenPy.suggest_name(entry.save_directory)}</h2>
+            <p class="text-xs opacity-50 font-mono">{entry.path}</p>
+            <p class="text-sm opacity-70">
+              {ngettext("%{count} save", "%{count} saves", entry.save_count)}
+              <span :if={entry.latest_save_at}>
+                · {gettext("last played: %{time}", time: relative_time(entry.latest_save_at))}
+              </span>
+            </p>
+            <div class="card-actions justify-end mt-2">
+              <span
+                :if={enrolled?(@enrolled, entry)}
+                class="badge badge-soft badge-success"
+              >
+                {gettext("Enrolled")}
+              </span>
+              <.button
+                :if={not enrolled?(@enrolled, entry)}
+                id={"enroll-#{index}"}
+                variant="primary"
+                phx-click="enroll"
+                phx-value-index={index}
+              >
+                {gettext("Enroll")}
+              </.button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </Layouts.app>
+    """
+  end
+
+  defp enrolled?(enrolled, entry),
+    do: MapSet.member?(enrolled, {entry.save_directory, entry.root})
+end

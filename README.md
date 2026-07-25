@@ -1,18 +1,61 @@
-# Mnemo
+# mnemo
 
-To start your Phoenix server:
+Syncs **Ren'Py game saves** to a folder in your Google Drive. Runs in the
+background with a local web interface at `localhost:4000`.
 
-* Run `mix setup` to install and setup dependencies
-* Start Phoenix endpoint with `mix phx.server` or inside IEx with `iex -S mix phx.server`
+The full design lives in [CLAUDE.md](CLAUDE.md). Current state: **v0** —
+scan of the OS Ren'Py root, enrollment, manual sync button, OAuth end to
+end, content-addressed blob dedup, screenshot extraction for covers.
 
-Now you can visit [`localhost:4000`](http://localhost:4000) from your browser.
+## Running
 
-Ready to run in production? Please [check our deployment guides](https://phoenix.hexdocs.pm/deployment.html).
+```sh
+mix setup
+mix phx.server
+```
 
-## Learn more
+Then open [`localhost:4000`](http://localhost:4000).
 
-* Official website: https://www.phoenixframework.org/
-* Guides: https://phoenix.hexdocs.pm/overview.html
-* Docs: https://phoenix.hexdocs.pm
-* Forum: https://elixirforum.com/c/phoenix-forum
-* Source: https://github.com/phoenixframework/phoenix
+To try everything without a Google account (in-memory fake Drive):
+
+```sh
+MNEMO_FAKE_DRIVE=1 mix phx.server
+```
+
+## Google OAuth setup (one-time)
+
+mnemo talks to Drive as an *installed app* with the `drive.file` scope —
+it can only see files it created itself.
+
+1. Create a project at [console.cloud.google.com](https://console.cloud.google.com)
+   and enable the **Google Drive API**.
+2. Configure the OAuth consent screen, add the
+   `https://www.googleapis.com/auth/drive.file` scope, and **publish the
+   app to production**. In "Testing" status refresh tokens expire after
+   7 days, which kills a background sync tool weekly. Personal-use apps
+   (fewer than 100 users) do not need to complete verification — you just
+   click through the "unverified app" screen once.
+3. Create an OAuth client of type **Desktop app** and export its
+   credentials:
+
+```sh
+export MNEMO_GOOGLE_CLIENT_ID="....apps.googleusercontent.com"
+export MNEMO_GOOGLE_CLIENT_SECRET="..."
+mix phx.server
+```
+
+Click **Connect Google Drive** in the interface; the browser opens,
+you authorize, done. The refresh token is stored with `0600` permissions
+under your user config directory.
+
+## Development
+
+```sh
+mix test        # runs against the in-memory Drive fake
+mix precommit   # compile --warnings-as-errors + format + tests
+```
+
+Test fixtures are synthetic `.save` zips with the exact member layout of
+real Ren'Py 7.8/8.x saves (`log`, `json`, `screenshot.png`, `extra_info`,
+`renpy_version`, `signatures`), including a truncated one to prove that
+zip validation rejects corrupt files instead of propagating them.
