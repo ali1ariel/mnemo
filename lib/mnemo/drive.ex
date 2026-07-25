@@ -14,6 +14,7 @@ defmodule Mnemo.Drive do
   require Logger
 
   alias Mnemo.Drive.{Auth, Backend, TokenStore}
+  alias Mnemo.Settings
 
   @topic "drive"
   # Refresh slightly early so a token never expires mid-upload.
@@ -33,6 +34,27 @@ defmodule Mnemo.Drive do
 
   def disconnect, do: GenServer.call(__MODULE__, :disconnect)
 
+  @doc "Re-read credentials after they changed in the settings screen."
+  def reload_client, do: GenServer.call(__MODULE__, :reload_client)
+
+  @doc """
+  The OAuth client currently in effect: values saved in settings win,
+  environment configuration is the fallback. Returns nil when neither
+  provides a client id.
+  """
+  def resolve_client do
+    env = Application.get_env(:mnemo, __MODULE__, [])
+    client_id = presence(Settings.google_client_id()) || presence(env[:client_id])
+    client_secret = presence(Settings.google_client_secret()) || presence(env[:client_secret])
+
+    if client_id, do: %{client_id: client_id, client_secret: client_secret}
+  end
+
+  defp presence(nil), do: nil
+
+  defp presence(value) when is_binary(value),
+    do: if(String.trim(value) == "", do: nil, else: value)
+
   @doc "A valid access token, refreshing if needed. Called by the HTTP backend."
   def access_token, do: GenServer.call(__MODULE__, :access_token, 60_000)
 
@@ -41,7 +63,7 @@ defmodule Mnemo.Drive do
   @impl true
   def init(:ok) do
     state = %{
-      client: load_client(),
+      client: nil,
       refresh_token: nil,
       access_token: nil,
       expires_at: nil,
@@ -51,31 +73,29 @@ defmodule Mnemo.Drive do
       last_error: nil
     }
 
-    state =
-      cond do
-        Backend.impl() != Mnemo.Drive.HTTP ->
-          %{state | status: :connected}
-
-        state.client == nil ->
-          %{state | status: :not_configured}
-
-        true ->
-          case TokenStore.load() do
-            {:ok, %{refresh_token: rt}} -> %{state | refresh_token: rt, status: :connected}
-            :error -> %{state | status: :disconnected}
-          end
-      end
-
-    {:ok, state}
+    # The fake backend never touches credentials or the database — the
+    # real branch reads settings, and in tests the sandbox is not
+    # available at boot time.
+    if Backend.impl() == Mnemo.Drive.HTTP do
+      {:ok, load_credentials(state)}
+    else
+      {:ok, %{state | status: :connected}}
+    end
   end
 
-  defp load_client do
-    config = Application.get_env(:mnemo, __MODULE__, [])
-    client_id = config[:client_id]
-    client_secret = config[:client_secret]
+  defp load_credentials(state) do
+    case resolve_client() do
+      nil ->
+        %{state | client: nil, status: :not_configured}
 
-    if is_binary(client_id) and client_id != "" do
-      %{client_id: client_id, client_secret: client_secret}
+      client ->
+        case TokenStore.load() do
+          {:ok, %{refresh_token: rt}} ->
+            %{state | client: client, refresh_token: rt, status: :connected}
+
+          :error ->
+            %{state | client: client, status: :disconnected}
+        end
     end
   end
 
@@ -104,19 +124,33 @@ defmodule Mnemo.Drive do
   end
 
   def handle_call(:disconnect, _from, state) do
-    TokenStore.clear()
+    if Backend.impl() != Mnemo.Drive.HTTP do
+      {:reply, :ok, state}
+    else
+      TokenStore.clear()
 
-    state = %{
-      state
-      | refresh_token: nil,
-        access_token: nil,
-        expires_at: nil,
-        status: if(state.client, do: :disconnected, else: :not_configured),
-        auth_url: nil
-    }
+      state = %{
+        state
+        | refresh_token: nil,
+          access_token: nil,
+          expires_at: nil,
+          status: if(state.client, do: :disconnected, else: :not_configured),
+          auth_url: nil
+      }
 
-    broadcast(state)
-    {:reply, :ok, state}
+      broadcast(state)
+      {:reply, :ok, state}
+    end
+  end
+
+  def handle_call(:reload_client, _from, state) do
+    if Backend.impl() != Mnemo.Drive.HTTP do
+      {:reply, :ok, state}
+    else
+      state = apply_client_change(state, resolve_client())
+      broadcast(state)
+      {:reply, :ok, state}
+    end
   end
 
   def handle_call(:access_token, _from, state) do
@@ -215,8 +249,36 @@ defmodule Mnemo.Drive do
   defp after_failure_status(%{refresh_token: rt}) when is_binary(rt), do: :connected
   defp after_failure_status(_state), do: :disconnected
 
+  defp apply_client_change(state, nil) do
+    %{state | client: nil, access_token: nil, expires_at: nil, status: :not_configured}
+  end
+
+  defp apply_client_change(%{client: %{client_id: id}} = state, %{client_id: id} = client) do
+    %{state | client: client}
+  end
+
+  defp apply_client_change(state, client) do
+    # A refresh token is bound to the client that issued it; switching
+    # clients invalidates the stored session.
+    TokenStore.clear()
+
+    %{
+      state
+      | client: client,
+        refresh_token: nil,
+        access_token: nil,
+        expires_at: nil,
+        status: :disconnected
+    }
+  end
+
   defp public_status(state) do
-    %{state: state.status, auth_url: state.auth_url, last_error: state.last_error}
+    %{
+      state: state.status,
+      auth_url: state.auth_url,
+      last_error: state.last_error,
+      client_id: state.client && state.client.client_id
+    }
   end
 
   defp broadcast(state) do

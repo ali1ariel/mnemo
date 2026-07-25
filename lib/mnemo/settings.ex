@@ -47,4 +47,11 @@ defmodule Mnemo.Settings do
 
   def locale, do: get("locale")
   def put_locale(locale), do: put("locale", locale)
+  def clear_locale, do: delete("locale")
+
+  def google_client_id, do: get("google_client_id")
+  def put_google_client_id(value), do: put("google_client_id", value)
+
+  def google_client_secret, do: get("google_client_secret")
+  def put_google_client_secret(value), do: put("google_client_secret", value)
 end

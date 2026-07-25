@@ -53,6 +53,11 @@ defmodule MnemoWeb.Layouts do
             <.link navigate={~p"/enroll"} class="btn btn-ghost btn-sm">{gettext("Add game")}</.link>
           </li>
           <li>
+            <.link navigate={~p"/settings"} class="btn btn-ghost btn-sm">
+              {gettext("Settings")}
+            </.link>
+          </li>
+          <li>
             <.theme_toggle />
           </li>
         </ul>

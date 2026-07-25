@@ -35,18 +35,22 @@ it can only see files it created itself.
    7 days, which kills a background sync tool weekly. Personal-use apps
    (fewer than 100 users) do not need to complete verification — you just
    click through the "unverified app" screen once.
-3. Create an OAuth client of type **Desktop app** and export its
-   credentials:
+3. Create an OAuth client of type **Desktop app** and paste its
+   credentials into **Settings** in the mnemo interface
+   ([`localhost:4000/settings`](http://localhost:4000/settings)).
+
+Click **Connect Google Drive**; the browser opens, you authorize, done.
+The refresh token is stored with `0600` permissions under your user
+config directory.
+
+Environment variables work as a fallback when nothing is saved in
+Settings (useful for development):
 
 ```sh
 export MNEMO_GOOGLE_CLIENT_ID="....apps.googleusercontent.com"
 export MNEMO_GOOGLE_CLIENT_SECRET="..."
 mix phx.server
 ```
-
-Click **Connect Google Drive** in the interface; the browser opens,
-you authorize, done. The refresh token is stored with `0600` permissions
-under your user config directory.
 
 ## Development
 

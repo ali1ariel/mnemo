@@ -16,11 +16,17 @@ defmodule Mnemo.Drive.TokenStore do
   end
 
   def save(%{refresh_token: rt}) when is_binary(rt) do
-    dir = Path.dirname(path())
-    File.mkdir_p!(dir)
-    File.chmod!(dir, 0o700)
-    File.write!(path(), Jason.encode!(%{refresh_token: rt}))
-    File.chmod!(path(), 0o600)
+    file = path()
+    File.mkdir_p!(Path.dirname(file))
+
+    # The default config dir is ours to lock down; the parent of a custom
+    # :token_path is not.
+    if Application.get_env(:mnemo, :token_path) == nil do
+      File.chmod!(Path.dirname(file), 0o700)
+    end
+
+    File.write!(file, Jason.encode!(%{refresh_token: rt}))
+    File.chmod!(file, 0o600)
     :ok
   end
 
