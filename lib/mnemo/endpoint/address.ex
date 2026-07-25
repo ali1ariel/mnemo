@@ -26,6 +26,15 @@ defmodule Mnemo.Endpoint.Address do
 
   def start_link(opts), do: GenServer.start_link(__MODULE__, opts, name: __MODULE__)
 
+  @doc "Whether a launcher token authorizes a local control request."
+  def authorized?(token) when is_binary(token) do
+    GenServer.call(__MODULE__, {:authorized?, token})
+  catch
+    :exit, _ -> false
+  end
+
+  def authorized?(_token), do: false
+
   @doc """
   Where the address is published.
 
@@ -34,14 +43,15 @@ defmodule Mnemo.Endpoint.Address do
   """
   def path do
     Application.get_env(:mnemo, :endpoint_address_file) ||
-      Path.join(:filename.basedir(:user_data, "mnemo"), "endpoint.json")
+      Path.join(data_dir(), "endpoint.json")
   end
 
   @doc "Read a published address, for tests and for tooling."
   def read(file \\ path()) do
     with {:ok, raw} <- File.read(file),
-         {:ok, %{"port" => port} = info} when is_integer(port) <- Jason.decode(raw) do
-      {:ok, %{host: info["host"], port: port, os_pid: info["os_pid"]}}
+         {:ok, %{"port" => port, "token" => token} = info}
+         when is_integer(port) and is_binary(token) <- Jason.decode(raw) do
+      {:ok, %{host: info["host"], port: port, os_pid: info["os_pid"], token: token}}
     else
       {:ok, _malformed} -> {:error, :malformed}
       {:error, reason} -> {:error, reason}
@@ -51,10 +61,11 @@ defmodule Mnemo.Endpoint.Address do
   @impl true
   def init(_opts) do
     Process.flag(:trap_exit, true)
+    token = :crypto.strong_rand_bytes(32) |> Base.url_encode64(padding: false)
 
-    case publish() do
+    case publish(token) do
       :ok ->
-        {:ok, %{}}
+        {:ok, %{token: token}}
 
       {:error, reason} ->
         # Losing the address file does not stop the application from
@@ -62,11 +73,11 @@ defmodule Mnemo.Endpoint.Address do
         # brought down: a supervisor restart would not fix a read-only
         # directory.
         Logger.warning("could not publish the endpoint address: #{inspect(reason)}")
-        {:ok, %{}}
+        {:ok, %{token: token}}
     end
   end
 
-  defp publish do
+  defp publish(token) do
     with {:ok, {ip, port}} <- MnemoWeb.Endpoint.server_info(:http),
          file = path(),
          :ok <- File.mkdir_p(Path.dirname(file)) do
@@ -75,6 +86,7 @@ defmodule Mnemo.Endpoint.Address do
           host: ip |> :inet.ntoa() |> to_string(),
           port: port,
           os_pid: System.pid(),
+          token: token,
           url: "http://#{format_host(ip)}:#{port}"
         })
 
@@ -87,6 +99,18 @@ defmodule Mnemo.Endpoint.Address do
   # IPv6 literals need brackets to be a valid URL authority.
   defp format_host(ip) when tuple_size(ip) == 8, do: "[#{ip |> :inet.ntoa() |> to_string()}]"
   defp format_host(ip), do: ip |> :inet.ntoa() |> to_string()
+
+  defp data_dir do
+    System.get_env("MNEMO_DATA_DIR") || :filename.basedir(:user_data, "mnemo")
+  end
+
+  @impl true
+  def handle_call({:authorized?, candidate}, _from, %{token: token} = state) do
+    authorized? =
+      byte_size(candidate) == byte_size(token) and Plug.Crypto.secure_compare(candidate, token)
+
+    {:reply, authorized?, state}
+  end
 
   @impl true
   def terminate(_reason, _state) do

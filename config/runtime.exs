@@ -33,7 +33,10 @@ if config_env() == :prod do
   # so the database lives in the per-user data directory.
   database_path =
     System.get_env("DATABASE_PATH") ||
-      Path.join(:filename.basedir(:user_data, "mnemo"), "mnemo.db")
+      Path.join(
+        System.get_env("MNEMO_DATA_DIR") || :filename.basedir(:user_data, "mnemo"),
+        "mnemo.db"
+      )
 
   File.mkdir_p!(Path.dirname(database_path))
 

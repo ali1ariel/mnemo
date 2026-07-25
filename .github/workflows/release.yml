@@ -1,0 +1,159 @@
+name: Release desktop application
+
+on:
+  push:
+    tags:
+      - "v*.*.*"
+
+permissions:
+  contents: read
+
+concurrency:
+  group: release-${{ github.ref }}
+  cancel-in-progress: false
+
+jobs:
+  check:
+    name: Test source
+    runs-on: ubuntu-22.04
+
+    steps:
+      - name: Check out source
+        uses: actions/checkout@v4
+
+      - name: Install Erlang and Elixir
+        uses: erlef/setup-beam@v1
+        with:
+          otp-version: "27.3.4.3"
+          elixir-version: "1.18.2"
+
+      - name: Install project dependencies
+        run: mix deps.get
+
+      - name: Verify release version
+        env:
+          EXPECTED_VERSION: ${{ github.ref_name }}
+        run: mix run --no-start desktop/check-version.exs
+
+      - name: Run project checks
+        run: mix precommit
+
+  build:
+    name: Build ${{ matrix.name }}
+    needs: check
+    runs-on: ${{ matrix.runner }}
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - name: Linux x86_64
+            runner: ubuntu-22.04
+            config: linux
+            artifact: mnemo-linux-x86_64
+          - name: Windows x86_64
+            runner: windows-latest
+            config: windows
+            artifact: mnemo-windows-x86_64
+
+    steps:
+      - name: Check out source
+        uses: actions/checkout@v4
+
+      - name: Install Erlang and Elixir
+        uses: erlef/setup-beam@v1
+        with:
+          otp-version: "27.3.4.3"
+          elixir-version: "1.18.2"
+
+      - name: Install Rust
+        uses: dtolnay/rust-toolchain@stable
+
+      - name: Cache Rust build
+        uses: Swatinem/rust-cache@v2
+        with:
+          workspaces: desktop/src-tauri
+
+      - name: Install Linux build dependencies
+        if: runner.os == 'Linux'
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y \
+            libwebkit2gtk-4.1-dev \
+            libappindicator3-dev \
+            librsvg2-dev \
+            patchelf
+
+      - name: Install project dependencies
+        run: mix deps.get
+
+      - name: Verify release version
+        env:
+          EXPECTED_VERSION: ${{ github.ref_name }}
+        run: mix run --no-start desktop/check-version.exs
+
+      - name: Build Phoenix assets
+        env:
+          MIX_ENV: prod
+        run: mix assets.deploy
+
+      - name: Build native Elixir release
+        env:
+          MIX_ENV: prod
+        run: mix release --overwrite
+
+      - name: Install Tauri CLI
+        run: cargo install tauri-cli --version "^2" --locked
+
+      - name: Build desktop installer
+        working-directory: desktop/src-tauri
+        run: cargo tauri build --config tauri.${{ matrix.config }}.conf.json
+
+      - name: Upload Linux bundles
+        if: runner.os == 'Linux'
+        uses: actions/upload-artifact@v4
+        with:
+          name: ${{ matrix.artifact }}
+          if-no-files-found: error
+          path: |
+            desktop/src-tauri/target/release/bundle/appimage/*.AppImage
+            desktop/src-tauri/target/release/bundle/deb/*.deb
+
+      - name: Upload Windows installer
+        if: runner.os == 'Windows'
+        uses: actions/upload-artifact@v4
+        with:
+          name: ${{ matrix.artifact }}
+          if-no-files-found: error
+          path: desktop/src-tauri/target/release/bundle/nsis/*-setup.exe
+
+  publish:
+    name: Publish GitHub Release
+    needs: build
+    runs-on: ubuntu-22.04
+    permissions:
+      contents: write
+
+    steps:
+      - name: Download native bundles
+        uses: actions/download-artifact@v4
+        with:
+          path: artifacts
+
+      - name: Write SHA-256 checksums
+        shell: bash
+        run: |
+          find artifacts -mindepth 2 -type f -print0 \
+            | sort -z \
+            | xargs -0 sha256sum > artifacts/SHA256SUMS
+
+      - name: Create GitHub Release
+        env:
+          GH_TOKEN: ${{ github.token }}
+          GH_REPO: ${{ github.repository }}
+        run: gh release create "$GITHUB_REF_NAME" --verify-tag --generate-notes --title "mnemo $GITHUB_REF_NAME"
+
+      - name: Upload release files
+        env:
+          GH_TOKEN: ${{ github.token }}
+          GH_REPO: ${{ github.repository }}
+        run: gh release upload "$GITHUB_REF_NAME" artifacts/**/* artifacts/SHA256SUMS

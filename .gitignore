@@ -54,3 +54,4 @@ npm-debug.log
 # currently packages Linux using only the icon declared in tauri.conf.json.
 /desktop/src-tauri/icons/*
 !/desktop/src-tauri/icons/icon.png
+!/desktop/src-tauri/icons/icon.ico

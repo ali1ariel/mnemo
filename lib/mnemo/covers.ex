@@ -127,7 +127,10 @@ defmodule Mnemo.Covers do
   @doc "Where downloaded art for a game is kept."
   def cache_dir do
     Application.get_env(:mnemo, :cover_cache_dir) ||
-      Path.join(:filename.basedir(:user_cache, "mnemo"), "covers")
+      Path.join(
+        System.get_env("MNEMO_CACHE_DIR") || :filename.basedir(:user_cache, "mnemo"),
+        "covers"
+      )
   end
 
   defp cache_path(game_id), do: Path.join(cache_dir(), game_id)

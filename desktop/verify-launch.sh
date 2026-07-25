@@ -25,7 +25,7 @@ fi
 # Everything the run touches goes here, so a rehearsal never writes to
 # the data directory of an installed copy.
 WORK="$(mktemp -d)"
-ADDRESS="$WORK/xdg/mnemo/endpoint.json"
+ADDRESS="$WORK/data/endpoint.json"
 trap 'rm -rf "$WORK"' EXIT
 
 pass() { printf '  \033[32mok\033[0m    %s\n' "$1"; }
@@ -42,8 +42,8 @@ echo
 PHX_SERVER=true \
 RELEASE_DISTRIBUTION=none \
 MNEMO_FAKE_DRIVE="${MNEMO_FAKE_DRIVE:-1}" \
-DATABASE_PATH="$WORK/mnemo.db" \
-XDG_DATA_HOME="$WORK/xdg" \
+MNEMO_DATA_DIR="$WORK/data" \
+MNEMO_CACHE_DIR="$WORK/cache" \
   "$RELEASE/bin/mnemo" start >"$WORK/out.log" 2>&1 &
 CHILD=$!
 
@@ -68,8 +68,10 @@ pass "address published after ${waited}s"
 
 URL="$(sed -n 's/.*"url":"\([^"]*\)".*/\1/p' "$ADDRESS")"
 PORT="$(sed -n 's/.*"port":\([0-9]*\).*/\1/p' "$ADDRESS")"
+TOKEN="$(sed -n 's/.*"token":"\([^"]*\)".*/\1/p' "$ADDRESS")"
 
 if [ -n "$URL" ]; then pass "url: $URL"; else fail "no url in $ADDRESS"; fi
+if [ -n "$TOKEN" ]; then pass "shutdown token published"; else fail "no token in $ADDRESS"; fi
 
 # Port 0 means the OS chose it, so a fixed number here would be a bug.
 if [ "$PORT" != "4000" ] && [ "$PORT" -gt 1024 ]; then
@@ -85,16 +87,26 @@ done
 
 # The database is created by the migrations that run at boot; a release
 # has no Mix to run them any other way.
-if [ -f "$WORK/mnemo.db" ]; then
+if [ -f "$WORK/data/mnemo.db" ]; then
   pass "database created and migrated at boot"
 else
-  fail "no database at $WORK/mnemo.db"
+  fail "no database at $WORK/data/mnemo.db"
 fi
 
-# A window closing sends a signal, not an rpc. If the BEAM does not shut
-# down gracefully here, the address file outlives the process and the
-# next launch reads a port that belongs to something else.
-kill -TERM "$CHILD" 2>/dev/null
+# The launcher uses the same authenticated loopback request on every
+# platform. SIGTERM is only a Unix fallback.
+code="$(
+  curl -s -o /dev/null -w '%{http_code}' \
+    -X POST \
+    -H "Authorization: Bearer $TOKEN" \
+    "$URL/_mnemo/shutdown"
+)"
+if [ "$code" = "204" ]; then
+  pass "authenticated shutdown accepted"
+else
+  fail "shutdown returned $code"
+fi
+
 waited=0
 while kill -0 "$CHILD" 2>/dev/null && [ "$waited" -lt 15 ]; do
   sleep 1
@@ -102,10 +114,10 @@ while kill -0 "$CHILD" 2>/dev/null && [ "$waited" -lt 15 ]; do
 done
 
 if kill -0 "$CHILD" 2>/dev/null; then
-  fail "still running 15s after SIGTERM"
+  fail "still running 15s after shutdown request"
   kill -KILL "$CHILD" 2>/dev/null
 else
-  pass "shut down on SIGTERM after ${waited}s"
+  pass "shut down gracefully after ${waited}s"
 fi
 
 if [ -f "$ADDRESS" ]; then

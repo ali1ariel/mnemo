@@ -1,6 +1,10 @@
 defmodule MnemoWeb.Router do
   use MnemoWeb, :router
 
+  scope "/_mnemo", MnemoWeb do
+    post "/shutdown", ControlController, :shutdown
+  end
+
   pipeline :browser do
     plug :accepts, ["html"]
     plug :fetch_session

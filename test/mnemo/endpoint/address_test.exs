@@ -24,6 +24,8 @@ defmodule Mnemo.Endpoint.AddressTest do
     assert address.port == port
     assert address.host == "127.0.0.1"
     assert address.os_pid == System.pid()
+    assert is_binary(address.token)
+    assert byte_size(address.token) >= 43
   end
 
   test "the address carries a url the launcher can open as it stands", %{address_file: file} do
@@ -31,6 +33,14 @@ defmodule Mnemo.Endpoint.AddressTest do
 
     assert %{"url" => url, "port" => port} = file |> File.read!() |> Jason.decode!()
     assert url == "http://127.0.0.1:#{port}"
+  end
+
+  test "only authorizes the token published for this launch", %{address_file: file} do
+    start_supervised!(Address)
+    assert {:ok, %{token: token}} = Address.read(file)
+
+    assert Address.authorized?(token)
+    refute Address.authorized?("wrong-token")
   end
 
   test "creates the directory when it is not there yet", %{address_file: file} do

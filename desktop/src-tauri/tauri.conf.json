@@ -14,8 +14,6 @@
   },
   "bundle": {
     "active": true,
-    "targets": ["appimage", "deb"],
-    "icon": ["icons/icon.png"],
     "resources": {
       "../../_build/prod/rel/mnemo/": "mnemo/"
     }
