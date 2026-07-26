@@ -97,7 +97,7 @@ defmodule Mnemo.GamesTest do
         device_id: "device",
         validated: true,
         byte_size: 1,
-        manifest: %{"files" => []}
+        manifest: []
       })
 
       assert {:ok, _} = Games.delete(game)
