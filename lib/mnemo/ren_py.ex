@@ -291,16 +291,37 @@ defmodule Mnemo.RenPy do
   end
 
   defp mirrors?(group, entry) do
-    Enum.any?(group, fn other -> MapSet.size(shared_saves(other, entry)) > 0 end)
+    Enum.any?(group, fn other -> same_game?(other.path, entry.path) end)
   end
 
-  # Identical name and byte size on a `.save` is proof enough of a mirror:
-  # these are multi-megabyte archives, and Ren'Py wrote both copies from
-  # the same bytes. Hashing every file on every scan would cost far more
-  # for no extra certainty.
+  @doc """
+  Whether two save folders hold the same game's saves.
+
+  Nothing in either folder names the other, and the two names look
+  nothing alike — `SleepoverReWake-1755701445` next to `Sleepover
+  reWake` — so what they contain is the only link there is.
+  """
+  def same_game?(a, b) do
+    same_directory?(a, b) or MapSet.size(shared_saves(a, b)) > 0
+  end
+
   defp shared_saves(a, b), do: MapSet.intersection(save_signature(a), save_signature(b))
 
-  defp save_signature(%{path: path}) do
+  # Identical name and byte size on a `.save` is proof enough: these are
+  # multi-megabyte archives and Ren'Py wrote both copies from the same
+  # bytes, so hashing them on every scan would cost far more for no extra
+  # certainty.
+  #
+  # `persistent` is the exception, and it is the one that decides the
+  # common case. A game installed and launched but never saved has
+  # nothing else in either folder — which is exactly the state rule 2
+  # asks the player to be in before enrolling, so matching on `.save`
+  # alone fails precisely when enrollment happens, and the game lists
+  # twice. It is also kilobytes rather than megabytes, small enough that
+  # two unrelated games could share a size, so it is compared by content
+  # instead: a coincidence there would merge two different games into one
+  # lineage.
+  defp save_signature(path) do
     path
     |> save_files()
     |> Enum.flat_map(fn file ->
@@ -309,7 +330,19 @@ defmodule Mnemo.RenPy do
         _ -> []
       end
     end)
+    |> Enum.concat(persistent_signature(path))
     |> MapSet.new()
+  end
+
+  # An empty `persistent` is a write that did not finish rather than
+  # evidence of anything: two of them hash alike, and taking that for a
+  # match would merge two unrelated games.
+  defp persistent_signature(path) do
+    case File.read(Path.join(path, "persistent")) do
+      {:ok, ""} -> []
+      {:ok, contents} -> [{"persistent", :crypto.hash(:sha256, contents)}]
+      {:error, _} -> []
+    end
   end
 
   defp merge_group([entry]), do: Map.put(entry, :mirrors, [])

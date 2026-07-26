@@ -74,6 +74,63 @@ defmodule MnemoWeb.LibraryLiveTest do
     end
   end
 
+  describe "one game enrolled through two of its folders" do
+    setup %{root: root} do
+      install = Path.join(root, "Some Game")
+      local = Path.join([install, "game", "saves"])
+      user = Path.join(root, "SomeGame-1")
+      File.mkdir_p!(local)
+      File.mkdir_p!(user)
+      File.write!(Path.join(local, "persistent"), "same game")
+      File.write!(Path.join(user, "persistent"), "same game")
+
+      {:ok, kept} =
+        Games.enroll(%{
+          save_directory: "SomeGame-1",
+          install_root: root,
+          install_path: install,
+          name: "Some Game"
+        })
+
+      {:ok, extra} =
+        Games.enroll(%{
+          save_directory: "saves",
+          install_root: Path.join(install, "game"),
+          install_path: install,
+          name: "Some Game (install folder)"
+        })
+
+      {:ok, kept: kept, extra: extra, local: local}
+    end
+
+    test "the library says so and offers to drop only the second record",
+         %{conn: conn, kept: kept, extra: extra} do
+      {:ok, view, html} = live(conn, ~p"/")
+
+      assert html =~ "is enrolled more than once"
+      assert has_element?(view, "#mirror-group-0")
+
+      # The user savedir is the one worth keeping: it outlives
+      # uninstalling the game.
+      assert has_element?(view, "#forget-#{extra.id}")
+      refute has_element?(view, "#forget-#{kept.id}")
+    end
+
+    test "dropping it leaves one game and touches neither folder",
+         %{conn: conn, kept: kept, extra: extra, local: local, root: root} do
+      {:ok, view, _html} = live(conn, ~p"/")
+
+      view |> element("#forget-#{extra.id}") |> render_click()
+      assert_redirect(view, "/")
+
+      assert [remaining] = Games.list()
+      assert remaining.id == kept.id
+
+      assert File.exists?(Path.join(local, "persistent"))
+      assert File.exists?(Path.join([root, "SomeGame-1", "persistent"]))
+    end
+  end
+
   test "the sync button drives a full cycle against the fake drive", %{conn: conn, root: root} do
     dir = Path.join(root, "MyGame-123")
     RenPyFixtures.write_save(dir, "1-1-LT1.save")

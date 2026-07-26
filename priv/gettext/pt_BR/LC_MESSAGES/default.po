@@ -1349,3 +1349,38 @@ msgstr "Continue usando estas credenciais, a menos que o Google peça para subst
 #, elixir-autogen, elixir-format
 msgid "SteamGridDB key is saved"
 msgstr "A chave do SteamGridDB está salva"
+
+#: lib/mnemo_web/live/library_live.ex:155
+#, elixir-autogen, elixir-format
+msgid "%{name} is enrolled more than once"
+msgstr "%{name} está registrado mais de uma vez"
+
+#: lib/mnemo_web/live/library_live.ex:87
+#, elixir-autogen, elixir-format
+msgid "%{name} is no longer tracked twice."
+msgstr "%{name} não está mais registrado duas vezes."
+
+#: lib/mnemo_web/live/library_live.ex:169
+#, elixir-autogen, elixir-format
+msgid "Kept"
+msgstr "Mantido"
+
+#: lib/mnemo_web/live/library_live.ex:198
+#, elixir-autogen, elixir-format
+msgid "Remove this enrollment"
+msgstr "Remover este registro"
+
+#: lib/mnemo_web/live/library_live.ex:204
+#, elixir-autogen, elixir-format
+msgid "Removing an enrollment leaves the saves on disk and everything already uploaded in Drive. It only drops mnemo's second record of this game, and the one that stays covers the same folders."
+msgstr "Remover um registro deixa os saves no disco e tudo o que já foi enviado ao Drive. Ele só descarta o segundo registro que o mnemo tem deste jogo, e o que fica cobre as mesmas pastas."
+
+#: lib/mnemo_web/live/library_live.ex:158
+#, elixir-autogen, elixir-format
+msgid "Ren'Py writes this game's saves to every folder it keeps for it, and mnemo is tracking more than one of them as a game of its own. They hold the same saves, so the same slots are being filed under two histories whose generation numbers disagree."
+msgstr "O Ren'Py grava os saves deste jogo em todas as pastas que mantém para ele, e o mnemo está acompanhando mais de uma delas como se fosse um jogo à parte. Elas guardam os mesmos saves, então os mesmos slots estão sendo arquivados em dois históricos cujos números de geração não batem."
+
+#: lib/mnemo_web/live/library_live.ex:193
+#, elixir-autogen, elixir-format
+msgid "Stop tracking this folder as a game of its own? The saves stay where they are."
+msgstr "Parar de acompanhar esta pasta como um jogo à parte? Os saves ficam onde estão."

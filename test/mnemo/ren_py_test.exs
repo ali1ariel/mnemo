@@ -244,6 +244,54 @@ defmodule Mnemo.RenPyTest do
       assert merged.mirrors == [steam]
     end
 
+    # The state rule 2 asks the player to be in before enrolling: the game
+    # launched once and quit, so both folders hold a `persistent` and
+    # nothing else. Matching on `.save` alone finds no evidence here and
+    # lists one Steam game as two.
+    test "folders holding only a matching persistent collapse into one game", %{dir: dir} do
+      user = Path.join(dir, "user")
+      steam = Path.join(dir, "steam")
+      File.mkdir_p!(user)
+      File.mkdir_p!(steam)
+      File.write!(Path.join(user, "persistent"), "fresh install")
+      File.write!(Path.join(steam, "persistent"), "fresh install")
+
+      assert [merged] =
+               RenPy.group_mirrors([
+                 entry(user, :user, "Game"),
+                 entry(steam, :portable, "Game (Steam)")
+               ])
+
+      assert merged.path == user
+      assert merged.mirrors == [steam]
+    end
+
+    test "two freshly installed games stay separate", %{dir: dir} do
+      a = Path.join(dir, "game-a")
+      b = Path.join(dir, "game-b")
+      File.mkdir_p!(a)
+      File.mkdir_p!(b)
+      File.write!(Path.join(a, "persistent"), "game a")
+      File.write!(Path.join(b, "persistent"), "game b")
+
+      assert [one, two] = RenPy.group_mirrors([entry(a, :user, "A"), entry(b, :user, "B")])
+      assert one.mirrors == []
+      assert two.mirrors == []
+    end
+
+    # Two interrupted writes hash alike, and taking that for a match would
+    # merge two games that have nothing to do with each other.
+    test "an empty persistent is not evidence of anything", %{dir: dir} do
+      a = Path.join(dir, "game-a")
+      b = Path.join(dir, "game-b")
+      File.mkdir_p!(a)
+      File.mkdir_p!(b)
+      File.write!(Path.join(a, "persistent"), "")
+      File.write!(Path.join(b, "persistent"), "")
+
+      assert [_one, _two] = RenPy.group_mirrors([entry(a, :user, "A"), entry(b, :user, "B")])
+    end
+
     test "different games stay separate", %{dir: dir} do
       a = Path.join(dir, "game-a")
       b = Path.join(dir, "game-b")

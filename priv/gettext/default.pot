@@ -1349,3 +1349,38 @@ msgstr ""
 #, elixir-autogen, elixir-format
 msgid "SteamGridDB key is saved"
 msgstr ""
+
+#: lib/mnemo_web/live/library_live.ex:155
+#, elixir-autogen, elixir-format
+msgid "%{name} is enrolled more than once"
+msgstr ""
+
+#: lib/mnemo_web/live/library_live.ex:87
+#, elixir-autogen, elixir-format
+msgid "%{name} is no longer tracked twice."
+msgstr ""
+
+#: lib/mnemo_web/live/library_live.ex:169
+#, elixir-autogen, elixir-format
+msgid "Kept"
+msgstr ""
+
+#: lib/mnemo_web/live/library_live.ex:198
+#, elixir-autogen, elixir-format
+msgid "Remove this enrollment"
+msgstr ""
+
+#: lib/mnemo_web/live/library_live.ex:204
+#, elixir-autogen, elixir-format
+msgid "Removing an enrollment leaves the saves on disk and everything already uploaded in Drive. It only drops mnemo's second record of this game, and the one that stays covers the same folders."
+msgstr ""
+
+#: lib/mnemo_web/live/library_live.ex:158
+#, elixir-autogen, elixir-format
+msgid "Ren'Py writes this game's saves to every folder it keeps for it, and mnemo is tracking more than one of them as a game of its own. They hold the same saves, so the same slots are being filed under two histories whose generation numbers disagree."
+msgstr ""
+
+#: lib/mnemo_web/live/library_live.ex:193
+#, elixir-autogen, elixir-format
+msgid "Stop tracking this folder as a game of its own? The saves stay where they are."
+msgstr ""

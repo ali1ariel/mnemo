@@ -101,6 +101,65 @@ defmodule MnemoWeb.EnrollLiveTest do
     assert render(view) =~ "No save slots here yet."
   end
 
+  # A Steam or itch.io copy that has been launched and quit but never
+  # saved: Ren'Py mirrors a `persistent` into both of the folders it keeps
+  # for the game, and there is no `.save` anywhere yet to match them by.
+  describe "a game installed but not yet played" do
+    setup %{root: root} do
+      install = Path.join(root, "Some Game")
+      File.mkdir_p!(Path.join(install, "renpy"))
+      File.mkdir_p!(Path.join([install, "game", "saves"]))
+      File.write!(Path.join([install, "game", "saves", "persistent"]), "same game")
+
+      user = Path.join(root, "SomeGame-1")
+      File.mkdir_p!(user)
+      File.write!(Path.join(user, "persistent"), "same game")
+
+      Application.put_env(:mnemo, :install_dirs, [root])
+      on_exit(fn -> Application.put_env(:mnemo, :install_dirs, []) end)
+
+      {:ok, install: install}
+    end
+
+    test "lists once, with the install folder as a mirror", %{conn: conn, install: install} do
+      {:ok, view, _html} = live(conn, ~p"/enroll")
+      html = render_async(view)
+
+      assert has_element?(view, "#scan-entry-0")
+      refute has_element?(view, "#scan-entry-1")
+      assert html =~ Path.join([install, "game", "saves"])
+    end
+
+    test "enrolling it keeps the user savedir and records where the game lives",
+         %{conn: conn, install: install} do
+      {:ok, view, _html} = live(conn, ~p"/enroll")
+      render_async(view)
+
+      view |> element("#enroll-0") |> render_click()
+      assert_redirect(view, "/")
+
+      assert [game] = Games.list()
+      assert game.save_directory == "SomeGame-1"
+      assert game.install_path == install
+    end
+
+    test "already enrolled through the install folder, it is not offered again",
+         %{conn: conn, install: install} do
+      {:ok, _game} =
+        Games.enroll(%{
+          save_directory: "saves",
+          install_root: Path.join(install, "game"),
+          install_path: install
+        })
+
+      {:ok, view, _html} = live(conn, ~p"/enroll")
+      html = render_async(view)
+
+      assert html =~ "Enrolled"
+      refute has_element?(view, "#enroll-0")
+    end
+  end
+
   describe "enrolling by importing an archive" do
     setup %{root: root} do
       dir = Path.join(root, "SomeGame-1")

@@ -60,4 +60,16 @@ defmodule Mnemo.Sync do
   def list_generations(game_id) do
     Repo.all(from g in Generation, where: g.game_id == ^game_id, order_by: [desc: g.number])
   end
+
+  @doc """
+  Drop the local record of a game's generations.
+
+  The manifests themselves are in the remote and are append-only; this
+  only clears the cache this machine keeps of them, which is what a game
+  being forgotten locally leaves behind.
+  """
+  def delete_generations(game_id) do
+    {count, _} = Repo.delete_all(from g in Generation, where: g.game_id == ^game_id)
+    count
+  end
 end

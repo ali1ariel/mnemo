@@ -31,6 +31,7 @@ defmodule MnemoWeb.LibraryLive do
      |> assign(page_title: gettext("Library"))
      |> assign(drive: Drive.status())
      |> assign(games: games)
+     |> assign(mirror_groups: Games.mirror_groups(games))
      |> assign(statuses: statuses)}
   end
 
@@ -72,6 +73,22 @@ defmodule MnemoWeb.LibraryLive do
     end
   end
 
+  def handle_event("forget", %{"id" => id}, socket) do
+    case Games.get(id) do
+      nil ->
+        {:noreply, socket}
+
+      game ->
+        Game.stop(game.id)
+        {:ok, _} = Games.delete(game)
+
+        {:noreply,
+         socket
+         |> put_flash(:info, gettext("%{name} is no longer tracked twice.", name: game.name))
+         |> push_navigate(to: ~p"/")}
+    end
+  end
+
   def handle_event("connect_drive", _params, socket) do
     case Drive.connect() do
       :ok ->
@@ -87,6 +104,12 @@ defmodule MnemoWeb.LibraryLive do
     ~H"""
     <Layouts.app flash={@flash}>
       <.drive_banner drive={@drive} settings_link />
+
+      <.mirror_notice
+        :for={{group, index} <- Enum.with_index(@mirror_groups)}
+        group={group}
+        index={index}
+      />
 
       <div :if={@games == []} id="empty-library" class="card bg-base-200 p-10 text-center space-y-4">
         <h2 class="text-lg font-semibold">{gettext("No games enrolled yet")}</h2>
@@ -113,6 +136,93 @@ defmodule MnemoWeb.LibraryLive do
     </Layouts.app>
     """
   end
+
+  attr :group, :list, required: true
+  attr :index, :integer, required: true
+
+  defp mirror_notice(assigns) do
+    {keeper, extras} = split_group(assigns.group)
+    assigns = assign(assigns, keeper: keeper, extras: extras)
+
+    ~H"""
+    <section
+      class="card bg-base-200 border border-warning/40 p-6 space-y-4"
+      id={"mirror-group-#{@index}"}
+    >
+      <div class="space-y-2">
+        <h2 class="font-semibold flex items-center gap-2">
+          <.icon name="hero-exclamation-triangle" class="size-5 text-warning" />
+          {gettext("%{name} is enrolled more than once", name: display_name(@keeper))}
+        </h2>
+        <p class="text-sm opacity-80">
+          {gettext(
+            "Ren'Py writes this game's saves to every folder it keeps for it, and mnemo is tracking more than one of them as a game of its own. They hold the same saves, so the same slots are being filed under two histories whose generation numbers disagree."
+          )}
+        </p>
+      </div>
+
+      <ul class="space-y-3">
+        <li class="flex items-start justify-between gap-4 flex-wrap">
+          <div class="space-y-1">
+            <p class="text-sm flex items-center gap-2">
+              {display_name(@keeper)}
+              <span class="badge badge-soft badge-success badge-sm">{gettext("Kept")}</span>
+            </p>
+            <p class="text-xs font-mono opacity-60 break-all">{folder(@keeper)}</p>
+            <p class="text-xs opacity-60">
+              {gettext("Generation %{number}", number: @keeper.last_generation_seen)}
+            </p>
+          </div>
+        </li>
+        <li
+          :for={game <- @extras}
+          class="flex items-start justify-between gap-4 flex-wrap border-t border-base-300 pt-3"
+        >
+          <div class="space-y-1">
+            <p class="text-sm">{display_name(game)}</p>
+            <p class="text-xs font-mono opacity-60 break-all">{folder(game)}</p>
+            <p class="text-xs opacity-60">
+              {gettext("Generation %{number}", number: game.last_generation_seen)}
+            </p>
+          </div>
+          <.button
+            id={"forget-#{game.id}"}
+            phx-click="forget"
+            phx-value-id={game.id}
+            data-confirm={
+              gettext(
+                "Stop tracking this folder as a game of its own? The saves stay where they are."
+              )
+            }
+          >
+            {gettext("Remove this enrollment")}
+          </.button>
+        </li>
+      </ul>
+
+      <p class="text-xs opacity-60">
+        {gettext(
+          "Removing an enrollment leaves the saves on disk and everything already uploaded in Drive. It only drops mnemo's second record of this game, and the one that stays covers the same folders."
+        )}
+      </p>
+    </section>
+    """
+  end
+
+  # The folder in the OS Ren'Py root is the one worth keeping: it outlives
+  # uninstalling the game, while `<gamedir>/saves` is removed with it.
+  # Failing that — two portable installs of one game — the longer lineage
+  # stays, because it is the one with more history to lose.
+  defp split_group(group) do
+    keeper =
+      Enum.find(group, &(&1.install_root == "appdata")) ||
+        Enum.max_by(group, & &1.last_generation_seen)
+
+    {keeper, group -- [keeper]}
+  end
+
+  defp display_name(game), do: game.name || game.save_directory
+  defp folder(game), do: Mnemo.RenPy.game_path(game) || game.save_directory
 
   attr :game, :map, required: true
   attr :status, :map, required: true

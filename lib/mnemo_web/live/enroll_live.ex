@@ -14,7 +14,7 @@ defmodule MnemoWeb.EnrollLive do
     {:ok,
      socket
      |> assign(page_title: gettext("Add game"))
-     |> assign(enrolled: enrolled_set())
+     |> assign(enrolled: enrolled_paths())
      |> assign(import_for: nil, pending_import: nil, import_quiet: nil)
      |> allow_upload(:archive,
        accept: ~w(.zip),
@@ -55,10 +55,13 @@ defmodule MnemoWeb.EnrollLive do
     end
   end
 
-  defp enrolled_set do
-    MapSet.new(Games.list(), fn game ->
-      {game.save_directory, RenPy.resolve_root(game.install_root)}
-    end)
+  # Compared as folders rather than as `{save_directory, root}` pairs
+  # because an entry stands for every folder Ren'Py mirrors it to. A game
+  # enrolled through its `<gamedir>/saves` copy has to read as enrolled
+  # here too — offering it again is how one game ends up with two
+  # lineages.
+  defp enrolled_paths do
+    for game <- Games.list(), path = RenPy.game_path(game), path != nil, do: path
   end
 
   @impl true
@@ -410,8 +413,10 @@ defmodule MnemoWeb.EnrollLive do
     """
   end
 
-  defp enrolled?(enrolled, entry),
-    do: MapSet.member?(enrolled, {entry.save_directory, entry.root})
+  defp enrolled?(enrolled, entry) do
+    locations = [entry.path | entry.mirrors]
+    Enum.any?(enrolled, fn path -> Enum.any?(locations, &RenPy.same_directory?(path, &1)) end)
+  end
 
   attr :index, :integer, required: true
   attr :entry, :map, required: true
